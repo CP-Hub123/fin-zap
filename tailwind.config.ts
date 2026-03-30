@@ -47,6 +47,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        finzap: {
+          green: "hsl(var(--finzap-green))",
+          red: "hsl(var(--finzap-red))",
+          blue: "hsl(var(--finzap-blue))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
