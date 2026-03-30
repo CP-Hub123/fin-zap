@@ -23,7 +23,7 @@ interface TransactionsViewProps {
   onDelete: (id: string) => Promise<any>;
 }
 
-const emptyForm = { name: '', amount: '', category: '', date: new Date().toISOString().split('T')[0], status: 'realized' as const, is_fixed: false, recurrence: 'none' as const };
+const emptyForm = { name: '', amount: '', category: '', date: new Date().toISOString().split('T')[0], status: 'realized' as 'planned' | 'realized', is_fixed: false, recurrence: 'none' as 'none' | 'monthly' };
 
 export const TransactionsView = ({ transactions, monthId, isClosed, categories, onAdd, onUpdate, onDelete }: TransactionsViewProps) => {
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
