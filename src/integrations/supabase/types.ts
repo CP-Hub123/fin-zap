@@ -183,18 +183,21 @@ export type Database = {
       system_settings: {
         Row: {
           id: string
+          is_public: boolean
           key: string
           updated_at: string
           value: string | null
         }
         Insert: {
           id?: string
+          is_public?: boolean
           key: string
           updated_at?: string
           value?: string | null
         }
         Update: {
           id?: string
+          is_public?: boolean
           key?: string
           updated_at?: string
           value?: string | null
