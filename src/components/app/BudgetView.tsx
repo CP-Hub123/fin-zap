@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency } from '@/lib/constants';
 import type { Transaction } from '@/hooks/useTransactions';
@@ -42,90 +41,92 @@ export const BudgetView = ({ transactions, budgetPlans, monthId, isClosed, expen
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Summary message */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
           {totalPlanned > 0 ? (
-            <p className="font-medium" style={{ color: totalDiff >= 0 ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
+            <p className="font-medium text-sm sm:text-base" style={{ color: totalDiff >= 0 ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
               {totalDiff >= 0
                 ? `✓ Você economizou ${formatCurrency(totalDiff)}`
                 : `✗ Você gastou ${formatCurrency(Math.abs(totalDiff))} a mais`
               }
             </p>
           ) : (
-            <p className="text-muted-foreground">Defina valores planejados para cada categoria para acompanhar seu orçamento.</p>
+            <p className="text-muted-foreground text-sm">Defina valores planejados para cada categoria para acompanhar seu orçamento.</p>
           )}
         </CardContent>
       </Card>
 
-      {/* Table */}
-      <div className="rounded-lg border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Planejado</TableHead>
-              <TableHead>Realizado</TableHead>
-              <TableHead>Diferença</TableHead>
-              <TableHead>Progresso</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenseCategories.map(cat => {
-              const planned = parseFloat(editValues[cat]) || 0;
-              const realized = realizedByCategory[cat] || 0;
-              const diff = planned - realized;
-              const pct = planned > 0 ? Math.min(Math.round((realized / planned) * 100), 100) : 0;
+      {/* Category cards (mobile-friendly) */}
+      <div className="space-y-3">
+        {expenseCategories.map(cat => {
+          const planned = parseFloat(editValues[cat]) || 0;
+          const realized = realizedByCategory[cat] || 0;
+          const diff = planned - realized;
+          const pct = planned > 0 ? Math.min(Math.round((realized / planned) * 100), 100) : 0;
+          const over = diff < 0;
 
-              return (
-                <TableRow key={cat}>
-                  <TableCell className="font-medium">{cat}</TableCell>
-                  <TableCell>
+          return (
+            <Card key={cat} className="border-0 shadow-sm">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-sm">{cat}</p>
+                  {planned > 0 && (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${over ? 'bg-[hsl(var(--finzap-red)/0.1)] text-[hsl(var(--finzap-red))]' : 'bg-[hsl(var(--finzap-green)/0.1)] text-[hsl(var(--finzap-green))]'}`}>
+                      {pct}%
+                    </span>
+                  )}
+                </div>
+                {planned > 0 && <Progress value={pct} className={`h-2 ${over ? '[&>div]:bg-[hsl(var(--finzap-red))]' : ''}`} />}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Planejado</p>
                     {isClosed ? (
-                      formatCurrency(planned)
+                      <p className="text-sm font-semibold">{formatCurrency(planned)}</p>
                     ) : (
                       <Input
-                        type="number" step="0.01" className="w-28 h-8"
+                        type="number" step="0.01"
+                        className="h-9 text-center text-sm font-semibold mt-0.5"
                         value={editValues[cat] || ''}
                         onChange={e => setEditValues(v => ({ ...v, [cat]: e.target.value }))}
                         onBlur={() => handleBlur(cat)}
-                        placeholder="0,00"
+                        placeholder="0"
                       />
                     )}
-                  </TableCell>
-                  <TableCell>{formatCurrency(realized)}</TableCell>
-                  <TableCell style={{ color: diff >= 0 ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
-                    {diff >= 0 ? '+' : ''}{formatCurrency(diff)}
-                  </TableCell>
-                  <TableCell className="w-32">
-                    <div className="flex items-center gap-2">
-                      <Progress value={pct} className="h-2 flex-1" />
-                      <span className="text-xs text-muted-foreground w-10">{pct}%</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Realizado</p>
+                    <p className="text-sm font-semibold mt-1.5">{formatCurrency(realized)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Diferença</p>
+                    <p className="text-sm font-semibold mt-1.5" style={{ color: diff >= 0 ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
+                      {diff >= 0 ? '+' : ''}{formatCurrency(diff)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Totals */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-3 text-center">
             <div>
-              <p className="text-xs text-muted-foreground">Total Planejado</p>
-              <p className="text-lg font-bold">{formatCurrency(totalPlanned)}</p>
+              <p className="text-xs text-muted-foreground">Planejado</p>
+              <p className="text-base sm:text-lg font-bold">{formatCurrency(totalPlanned)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total Realizado</p>
-              <p className="text-lg font-bold">{formatCurrency(totalRealized)}</p>
+              <p className="text-xs text-muted-foreground">Realizado</p>
+              <p className="text-base sm:text-lg font-bold">{formatCurrency(totalRealized)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Diferença</p>
-              <p className="text-lg font-bold" style={{ color: totalDiff >= 0 ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
+              <p className="text-base sm:text-lg font-bold" style={{ color: totalDiff >= 0 ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
                 {totalDiff >= 0 ? '+' : ''}{formatCurrency(totalDiff)}
               </p>
             </div>
