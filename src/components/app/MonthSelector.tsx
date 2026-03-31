@@ -11,8 +11,8 @@ interface MonthSelectorProps {
 export const MonthSelector = ({ months, selectedMonthId, onSelect }: MonthSelectorProps) => {
   return (
     <Select value={selectedMonthId} onValueChange={onSelect}>
-      <SelectTrigger className="w-[200px] bg-card">
-        <SelectValue placeholder="Selecione o mês" />
+      <SelectTrigger className="w-[140px] sm:w-[200px] bg-card min-h-[44px] sm:min-h-0">
+        <SelectValue placeholder="Selecione" />
       </SelectTrigger>
       <SelectContent>
         {months.map(m => (
