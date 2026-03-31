@@ -1,17 +1,66 @@
-import { Card, CardContent } from '@/components/ui/card';
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/constants';
-import { TrendingUp, TrendingDown, Wallet, CheckCircle, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, CheckCircle, AlertTriangle, PieChart as PieIcon, BarChart3, Target } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
+  LineChart, Line, Area, AreaChart,
+} from 'recharts';
 import type { Month } from '@/hooks/useMonths';
+import type { Transaction } from '@/hooks/useTransactions';
+import type { BudgetPlan } from '@/hooks/useBudget';
 
 interface SummaryViewProps {
   month: Month;
   totalIncome: number;
   totalExpense: number;
   balance: number;
+  transactions: Transaction[];
+  budgetPlans: BudgetPlan[];
 }
 
-export const SummaryView = ({ month, totalIncome, totalExpense, balance }: SummaryViewProps) => {
+const CHART_COLORS = [
+  'hsl(217, 91%, 60%)',   // primary blue
+  'hsl(142, 71%, 45%)',   // green
+  'hsl(0, 84%, 60%)',     // red
+  'hsl(262, 83%, 58%)',   // purple
+  'hsl(38, 92%, 50%)',    // amber
+  'hsl(174, 72%, 40%)',   // teal
+  'hsl(330, 81%, 60%)',   // pink
+  'hsl(199, 89%, 48%)',   // sky
+  'hsl(24, 95%, 53%)',    // orange
+  'hsl(83, 78%, 44%)',    // lime
+];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border bg-card p-3 shadow-md text-sm">
+      {label && <p className="font-medium mb-1">{label}</p>}
+      {payload.map((entry: any, i: number) => (
+        <p key={i} style={{ color: entry.color }} className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full inline-block" style={{ background: entry.color }} />
+          {entry.name}: {formatCurrency(entry.value)}
+        </p>
+      ))}
+    </div>
+  );
+};
+
+const PieTooltip = ({ active, payload }: any) => {
+  if (!active || !payload?.length) return null;
+  const d = payload[0];
+  return (
+    <div className="rounded-lg border bg-card p-3 shadow-md text-sm">
+      <p className="font-medium">{d.name}</p>
+      <p style={{ color: d.payload.fill }}>{formatCurrency(d.value)} ({d.payload.percent}%)</p>
+    </div>
+  );
+};
+
+export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
   const now = new Date();
   const daysInMonth = new Date(month.year, month.month, 0).getDate();
   const currentDay = month.year === now.getFullYear() && month.month === now.getMonth() + 1
@@ -19,6 +68,79 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance }: Summa
   const monthProgress = Math.round((currentDay / daysInMonth) * 100);
   const finalBalance = balance + Number(month.initial_balance);
   const isPositive = finalBalance >= 0;
+
+  // Budget usage
+  const totalPlanned = budgetPlans.reduce((s, b) => s + Number(b.planned_amount), 0);
+  const budgetUsage = totalPlanned > 0 ? Math.round((totalExpense / totalPlanned) * 100) : 0;
+  const overBudget = budgetUsage > 100;
+
+  // Pie chart data — expense distribution by category
+  const pieData = useMemo(() => {
+    const categoryMap: Record<string, number> = {};
+    transactions.filter(t => t.type === 'expense').forEach(t => {
+      categoryMap[t.category] = (categoryMap[t.category] || 0) + Number(t.amount);
+    });
+    const entries = Object.entries(categoryMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+    const total = entries.reduce((s, e) => s + e.value, 0);
+    return entries.map((e, i) => ({
+      ...e,
+      fill: CHART_COLORS[i % CHART_COLORS.length],
+      percent: total > 0 ? Math.round((e.value / total) * 100) : 0,
+    }));
+  }, [transactions]);
+
+  // Bar chart data — budget vs realized by category
+  const barData = useMemo(() => {
+    const realizedMap: Record<string, number> = {};
+    transactions.filter(t => t.type === 'expense' && t.status === 'realized').forEach(t => {
+      realizedMap[t.category] = (realizedMap[t.category] || 0) + Number(t.amount);
+    });
+    const categories = new Set([
+      ...budgetPlans.map(b => b.category),
+      ...Object.keys(realizedMap),
+    ]);
+    return Array.from(categories).map(cat => ({
+      category: cat.length > 12 ? cat.slice(0, 12) + '…' : cat,
+      Orçado: Number(budgetPlans.find(b => b.category === cat)?.planned_amount || 0),
+      Realizado: realizedMap[cat] || 0,
+    })).sort((a, b) => b.Realizado - a.Realizado);
+  }, [transactions, budgetPlans]);
+
+  // Line chart data — daily cumulative balance evolution
+  const lineData = useMemo(() => {
+    const sorted = [...transactions]
+      .filter(t => t.status === 'realized')
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    if (sorted.length === 0) return [];
+
+    const dailyMap: Record<string, { income: number; expense: number }> = {};
+    sorted.forEach(t => {
+      const day = t.date;
+      if (!dailyMap[day]) dailyMap[day] = { income: 0, expense: 0 };
+      if (t.type === 'income') dailyMap[day].income += Number(t.amount);
+      else dailyMap[day].expense += Number(t.amount);
+    });
+
+    const days = Object.keys(dailyMap).sort();
+    let cumBalance = Number(month.initial_balance);
+    return days.map(day => {
+      cumBalance += dailyMap[day].income - dailyMap[day].expense;
+      const d = new Date(day + 'T12:00:00');
+      return {
+        day: `${d.getDate()}/${d.getMonth() + 1}`,
+        Receitas: dailyMap[day].income,
+        Despesas: dailyMap[day].expense,
+        Saldo: cumBalance,
+      };
+    });
+  }, [transactions, month.initial_balance]);
+
+  const hasExpenses = pieData.length > 0;
+  const hasBudget = barData.length > 0;
+  const hasLineData = lineData.length > 0;
 
   return (
     <div className="space-y-6">
@@ -33,47 +155,187 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance }: Summa
         </span>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'hsl(var(--finzap-green) / 0.1)' }}>
-                <TrendingUp className="h-5 w-5" style={{ color: 'hsl(var(--finzap-green))' }} />
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: 'hsl(var(--finzap-green) / 0.1)' }}>
+                <TrendingUp className="h-4 w-4" style={{ color: 'hsl(var(--finzap-green))' }} />
               </div>
-              <span className="text-sm text-muted-foreground">Receitas</span>
+              <span className="text-xs text-muted-foreground">Receitas</span>
             </div>
-            <p className="text-2xl font-bold" style={{ color: 'hsl(var(--finzap-green))' }}>{formatCurrency(totalIncome)}</p>
+            <p className="text-lg md:text-xl font-bold" style={{ color: 'hsl(var(--finzap-green))' }}>{formatCurrency(totalIncome)}</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'hsl(var(--finzap-red) / 0.1)' }}>
-                <TrendingDown className="h-5 w-5" style={{ color: 'hsl(var(--finzap-red))' }} />
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: 'hsl(var(--finzap-red) / 0.1)' }}>
+                <TrendingDown className="h-4 w-4" style={{ color: 'hsl(var(--finzap-red))' }} />
               </div>
-              <span className="text-sm text-muted-foreground">Despesas</span>
+              <span className="text-xs text-muted-foreground">Despesas</span>
             </div>
-            <p className="text-2xl font-bold" style={{ color: 'hsl(var(--finzap-red))' }}>{formatCurrency(totalExpense)}</p>
+            <p className="text-lg md:text-xl font-bold" style={{ color: 'hsl(var(--finzap-red))' }}>{formatCurrency(totalExpense)}</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Wallet className="h-5 w-5 text-primary" />
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Wallet className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-sm text-muted-foreground">Saldo</span>
+              <span className="text-xs text-muted-foreground">Saldo</span>
             </div>
-            <p className="text-2xl font-bold text-primary">{formatCurrency(finalBalance)}</p>
-            {Number(month.initial_balance) > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">Saldo inicial: {formatCurrency(Number(month.initial_balance))}</p>
+            <p className="text-lg md:text-xl font-bold text-primary">{formatCurrency(finalBalance)}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${overBudget ? 'bg-[hsl(var(--finzap-red)/0.1)]' : 'bg-primary/10'}`}>
+                <Target className={`h-4 w-4 ${overBudget ? '' : 'text-primary'}`} style={overBudget ? { color: 'hsl(var(--finzap-red))' } : {}} />
+              </div>
+              <span className="text-xs text-muted-foreground">Orçamento</span>
+            </div>
+            <p className={`text-lg md:text-xl font-bold ${overBudget ? '' : 'text-primary'}`} style={overBudget ? { color: 'hsl(var(--finzap-red))' } : {}}>
+              {totalPlanned > 0 ? `${budgetUsage}%` : '—'}
+            </p>
+            {totalPlanned > 0 && (
+              <Progress value={Math.min(budgetUsage, 100)} className={`h-1.5 mt-2 ${overBudget ? '[&>div]:bg-[hsl(var(--finzap-red))]' : ''}`} />
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Budget alert */}
+      {overBudget && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-[hsl(var(--finzap-red)/0.1)]">
+          <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: 'hsl(var(--finzap-red))' }} />
+          <span className="text-sm font-medium" style={{ color: 'hsl(var(--finzap-red))' }}>
+            ⚠️ Orçamento ultrapassado! Você gastou {formatCurrency(totalExpense - totalPlanned)} além do previsto.
+          </span>
+        </div>
+      )}
+
+      {/* Charts row 1: Pie + Bar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Pie chart: expense distribution */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <PieIcon className="h-4 w-4 text-muted-foreground" />
+              Distribuição de Despesas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            {hasExpenses ? (
+              <div className="flex flex-col items-center">
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={90}
+                      paddingAngle={3}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {pieData.map((entry, i) => (
+                        <Cell key={i} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip content={<PieTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 mt-2 w-full max-w-xs">
+                  {pieData.map((entry, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: entry.fill }} />
+                      <span className="text-muted-foreground truncate">{entry.name}</span>
+                      <span className="ml-auto font-medium">{entry.percent}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="h-[220px] flex items-center justify-center text-sm text-muted-foreground">
+                Nenhuma despesa registrada
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Bar chart: budget vs realized */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              Orçado vs Realizado
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            {hasBudget ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={barData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="category" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="Orçado" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} barSize={20} />
+                  <Bar dataKey="Realizado" fill="hsl(var(--finzap-red))" radius={[4, 4, 0, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
+                Nenhum dado de orçamento disponível
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Line chart: balance evolution */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            Evolução do Saldo no Mês
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          {hasLineData ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={lineData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gradSaldo" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Area type="monotone" dataKey="Saldo" stroke="hsl(217, 91%, 60%)" fill="url(#gradSaldo)" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="Receitas" stroke="hsl(var(--finzap-green))" strokeWidth={1.5} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="Despesas" stroke="hsl(var(--finzap-red))" strokeWidth={1.5} dot={{ r: 3 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
+              Adicione transações realizadas para ver a evolução
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Month progress */}
       <Card className="border-0 shadow-sm">
