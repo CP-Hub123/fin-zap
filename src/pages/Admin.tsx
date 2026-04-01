@@ -48,27 +48,12 @@ const AdminDashboard = () => {
 
 // Users
 const AdminUsers = () => {
-  const queryClient = useQueryClient();
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
   const { data: users = [] } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       const { data: profiles } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      const { data: roles } = await supabase.from('user_roles').select('*');
-      return (profiles ?? []).map(p => ({
-        ...p,
-        role: roles?.find(r => r.user_id === p.id)?.role ?? 'user',
-      }));
+      return profiles ?? [];
     },
-  });
-
-  const toggleRole = useMutation({
-    mutationFn: async ({ userId, currentRole }: { userId: string; currentRole: string }) => {
-      const newRole = currentRole === 'admin' ? 'user' : 'admin';
-      await supabase.from('user_roles').update({ role: newRole as any }).eq('user_id', userId);
-    },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-users'] }); toast.success('Role atualizada!'); },
   });
 
   return (
@@ -78,26 +63,14 @@ const AdminUsers = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead>Role</TableHead>
               <TableHead>Criado em</TableHead>
-              <TableHead className="w-[100px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map(u => (
               <TableRow key={u.id}>
                 <TableCell className="font-medium">{u.name}</TableCell>
-                <TableCell>
-                  <Badge variant={u.role === 'admin' ? 'default' : 'secondary'}>{u.role}</Badge>
-                </TableCell>
                 <TableCell>{new Date(u.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => toggleRole.mutate({ userId: u.id, currentRole: u.role })}>
-                      {u.role === 'admin' ? 'Tornar user' : 'Tornar admin'}
-                    </Button>
-                  </div>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
