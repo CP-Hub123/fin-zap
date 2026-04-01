@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { DollarSign, ArrowRight, BarChart3, Shield, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Shield, Zap } from 'lucide-react';
+import { Logo } from '@/components/app/Logo';
 
 const Index = () => {
   const { user, isLoading } = useAuth();
@@ -18,12 +19,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <DollarSign className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-lg">FinZap</span>
-          </div>
+          <Logo />
           <Button onClick={() => navigate('/auth')}>
             Entrar <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
