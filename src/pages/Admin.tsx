@@ -232,7 +232,7 @@ const AdminSettings = () => {
 const Admin = () => {
   const navigate = useNavigate();
   const navItems = [
-    { path: '/admin', label: 'Dashboard', icon: DollarSign },
+    { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/users', label: 'Usuários', icon: Users },
     { path: '/admin/tutorials', label: 'Tutoriais', icon: BookOpen },
     { path: '/admin/settings', label: 'Configurações', icon: Settings },
