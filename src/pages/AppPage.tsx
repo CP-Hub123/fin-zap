@@ -74,12 +74,7 @@ const AppPage = () => {
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <DollarSign className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-base sm:text-lg">FinZap</span>
-          </div>
+            <Logo />
 
           {/* Desktop actions */}
           <div className="hidden sm:flex items-center gap-2">
