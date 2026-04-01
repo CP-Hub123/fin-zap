@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MONTH_NAMES, formatCurrency } from '@/lib/constants';
-import { DollarSign, ArrowRight, TrendingUp, TrendingDown, Wallet, CheckCircle } from 'lucide-react';
+import { ArrowRight, TrendingUp, TrendingDown, Wallet, CheckCircle } from 'lucide-react';
+import { Logo } from '@/components/app/Logo';
 import { toast } from 'sonner';
 
 const Onboarding = () => {
@@ -72,8 +73,8 @@ const Onboarding = () => {
   const steps = [
     // Step 0: Welcome
     <div key="welcome" className="flex flex-col items-center text-center space-y-6 py-8">
-      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary">
-        <DollarSign className="h-10 w-10 text-primary-foreground" />
+      <div className="flex justify-center">
+        <Logo />
       </div>
       <h1 className="text-3xl font-bold text-foreground">Bem-vindo ao FinZap!</h1>
       <p className="text-lg text-muted-foreground max-w-md">

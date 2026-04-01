@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, Users, BookOpen, Settings, ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Users, BookOpen, Settings, ArrowLeft, Plus, Pencil, Trash2, LayoutDashboard } from 'lucide-react';
+import { Logo } from '@/components/app/Logo';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -231,7 +232,7 @@ const AdminSettings = () => {
 const Admin = () => {
   const navigate = useNavigate();
   const navItems = [
-    { path: '/admin', label: 'Dashboard', icon: DollarSign },
+    { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/users', label: 'Usuários', icon: Users },
     { path: '/admin/tutorials', label: 'Tutoriais', icon: BookOpen },
     { path: '/admin/settings', label: 'Configurações', icon: Settings },
@@ -244,12 +245,8 @@ const Admin = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate('/app')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <DollarSign className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-lg">Admin</span>
-          </div>
+          <Logo size="small" />
+          <span className="font-bold text-lg text-muted-foreground">/ Admin</span>
         </div>
       </header>
 

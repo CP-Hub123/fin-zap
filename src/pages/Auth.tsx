@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { DollarSign } from 'lucide-react';
+import { Logo } from '@/components/app/Logo';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -48,11 +48,10 @@ const Auth = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md shadow-lg border-0">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-            <DollarSign className="h-7 w-7 text-primary-foreground" />
+          <div className="flex justify-center">
+            <Logo />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">FinZap</CardTitle>
             <CardDescription className="mt-1">
               {isLogin ? 'Entre na sua conta' : 'Crie sua conta gratuita'}
             </CardDescription>
