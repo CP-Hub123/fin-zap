@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { DollarSign, ArrowRight, BarChart3, Shield, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Shield, Zap } from 'lucide-react';
+import { Logo } from '@/components/app/Logo';
 
 const Index = () => {
   const { user, isLoading } = useAuth();
