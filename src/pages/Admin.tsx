@@ -245,12 +245,8 @@ const Admin = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate('/app')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <DollarSign className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-lg">Admin</span>
-          </div>
+          <Logo size="small" />
+          <span className="font-bold text-lg text-muted-foreground">/ Admin</span>
         </div>
       </header>
 
