@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MONTH_NAMES, formatCurrency } from '@/lib/constants';
-import { DollarSign, ArrowRight, TrendingUp, TrendingDown, Wallet, CheckCircle } from 'lucide-react';
+import { ArrowRight, TrendingUp, TrendingDown, Wallet, CheckCircle } from 'lucide-react';
+import { Logo } from '@/components/app/Logo';
 import { toast } from 'sonner';
 
 const Onboarding = () => {
