@@ -182,9 +182,9 @@ const AppPage = () => {
             transactions={transactions}
             budgetPlans={budgetPlans}
             monthId={selectedMonth.id}
-            isClosed={isClosed}
+            isClosed={isBlocked}
             expenseCategories={expenseCategories.map(c => c.name)}
-            onUpsertBudget={data => upsertBudget.mutateAsync(data)}
+            onUpsertBudget={guardedAction(data => upsertBudget.mutateAsync(data))}
           />
         )}
 
