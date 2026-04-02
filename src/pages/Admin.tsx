@@ -17,6 +17,7 @@ import { Users, BookOpen, Settings, ArrowLeft, Plus, Pencil, Trash2, LayoutDashb
 import { Logo } from '@/components/app/Logo';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { AdminSubscriptions } from '@/components/admin/AdminSubscriptions';
 
 // Dashboard
 const AdminDashboard = () => {
