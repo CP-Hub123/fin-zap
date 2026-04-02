@@ -237,6 +237,7 @@ const Admin = () => {
     { path: '/admin/users', label: 'Usuários', icon: Users },
     { path: '/admin/tutorials', label: 'Tutoriais', icon: BookOpen },
     { path: '/admin/settings', label: 'Configurações', icon: Settings },
+    { path: '/admin/subscriptions', label: 'Assinaturas', icon: CreditCard },
   ];
 
   return (
