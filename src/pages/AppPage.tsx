@@ -5,6 +5,7 @@ import { useMonths } from '@/hooks/useMonths';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
 import { useBudget } from '@/hooks/useBudget';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
@@ -12,6 +13,7 @@ import { TransactionsView } from '@/components/app/TransactionsView';
 import { BudgetView } from '@/components/app/BudgetView';
 import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
+import { PaywallModal } from '@/components/app/PaywallModal';
 import { Button } from '@/components/ui/button';
 import { LogOut, BookOpen, Plus, Menu, X } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
@@ -30,6 +32,7 @@ const AppPage = () => {
   const [newYear, setNewYear] = useState(new Date().getFullYear());
   const [newBalance, setNewBalance] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -38,8 +41,15 @@ const AppPage = () => {
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
   const { categories, expenseCategories } = useCategories();
   const { budgetPlans, upsertBudget } = useBudget(selectedMonthId);
+  const { canAct, isTrial, daysLeft, isExpired } = useSubscription();
 
   const isClosed = selectedMonth?.status === 'closed';
+  const isBlocked = isClosed || !canAct;
+
+  const guardedAction = <T,>(fn: (data: T) => Promise<any>) => (data: T) => {
+    if (!canAct) { setPaywallOpen(true); return Promise.resolve(); }
+    return fn(data);
+  };
 
   useEffect(() => {
     if (months.length > 0 && !selectedMonthId) setSelectedMonthId(months[0].id);
@@ -130,6 +140,22 @@ const AppPage = () => {
         </div>
       </div>
 
+        {/* Trial/Expired banner */}
+        {(isTrial || isExpired) && (
+          <div className={`max-w-5xl mx-auto px-3 sm:px-4 pt-3`}>
+            <div className={`flex items-center justify-between gap-3 p-3 rounded-lg text-sm ${isExpired ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
+              <span>
+                {isExpired
+                  ? '⏰ Seu acesso expirou. Ative o premium para continuar.'
+                  : `🎁 Teste gratuito — ${daysLeft} dia(s) restante(s)`}
+              </span>
+              <Button size="sm" variant={isExpired ? 'destructive' : 'default'} className="shrink-0" onClick={() => navigate('/upgrade')}>
+                {isExpired ? 'Ativar acesso' : 'Ver planos'}
+              </Button>
+            </div>
+          </div>
+        )}
+
       {/* Content */}
       <main className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {selectedMonth && <NudgeBanner month={selectedMonth} transactions={transactions} />}
@@ -142,22 +168,23 @@ const AppPage = () => {
           <TransactionsView
             transactions={transactions}
             monthId={selectedMonth.id}
-            isClosed={isClosed}
+            isClosed={isBlocked}
             categories={categories}
-            onAdd={data => addTransaction.mutateAsync(data)}
-            onUpdate={data => updateTransaction.mutateAsync(data)}
-            onDelete={id => deleteTransaction.mutateAsync(id)}
+            onAdd={guardedAction(data => addTransaction.mutateAsync(data))}
+            onUpdate={guardedAction(data => updateTransaction.mutateAsync(data))}
+            onDelete={guardedAction(id => deleteTransaction.mutateAsync(id))}
           />
         )}
+
 
         {selectedMonth && currentStep === 2 && (
           <BudgetView
             transactions={transactions}
             budgetPlans={budgetPlans}
             monthId={selectedMonth.id}
-            isClosed={isClosed}
+            isClosed={isBlocked}
             expenseCategories={expenseCategories.map(c => c.name)}
-            onUpsertBudget={data => upsertBudget.mutateAsync(data)}
+            onUpsertBudget={guardedAction(data => upsertBudget.mutateAsync(data))}
           />
         )}
 
@@ -212,6 +239,8 @@ const AppPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 };

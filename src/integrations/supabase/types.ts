@@ -180,6 +180,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          discount_tag: string | null
+          expires_at: string | null
+          id: string
+          is_manual: boolean
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          starts_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_tag?: string | null
+          expires_at?: string | null
+          id?: string
+          is_manual?: boolean
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          starts_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_tag?: string | null
+          expires_at?: string | null
+          id?: string
+          is_manual?: boolean
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          starts_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           id: string
@@ -295,6 +334,8 @@ export type Database = {
       category_type: "income" | "expense"
       month_status: "draft" | "in_progress" | "ready_to_close" | "closed"
       recurrence_type: "none" | "monthly"
+      subscription_plan: "trial" | "premium"
+      subscription_status: "active" | "expired"
       transaction_status: "planned" | "realized"
       transaction_type: "income" | "expense"
     }
@@ -427,6 +468,8 @@ export const Constants = {
       category_type: ["income", "expense"],
       month_status: ["draft", "in_progress", "ready_to_close", "closed"],
       recurrence_type: ["none", "monthly"],
+      subscription_plan: ["trial", "premium"],
+      subscription_status: ["active", "expired"],
       transaction_status: ["planned", "realized"],
       transaction_type: ["income", "expense"],
     },

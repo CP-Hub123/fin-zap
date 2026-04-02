@@ -13,10 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Users, BookOpen, Settings, ArrowLeft, Plus, Pencil, Trash2, LayoutDashboard } from 'lucide-react';
+import { Users, BookOpen, Settings, ArrowLeft, Plus, Pencil, Trash2, LayoutDashboard, CreditCard } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { AdminSubscriptions } from '@/components/admin/AdminSubscriptions';
 
 // Dashboard
 const AdminDashboard = () => {
@@ -236,6 +237,7 @@ const Admin = () => {
     { path: '/admin/users', label: 'Usuários', icon: Users },
     { path: '/admin/tutorials', label: 'Tutoriais', icon: BookOpen },
     { path: '/admin/settings', label: 'Configurações', icon: Settings },
+    { path: '/admin/subscriptions', label: 'Assinaturas', icon: CreditCard },
   ];
 
   return (
@@ -268,6 +270,7 @@ const Admin = () => {
           <Route path="users" element={<AdminUsers />} />
           <Route path="tutorials" element={<AdminTutorials />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="subscriptions" element={<AdminSubscriptions />} />
         </Routes>
       </div>
     </div>
