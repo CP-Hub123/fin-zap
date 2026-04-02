@@ -134,6 +134,22 @@ const AppPage = () => {
         </div>
       </div>
 
+        {/* Trial/Expired banner */}
+        {(isTrial || isExpired) && (
+          <div className={`max-w-5xl mx-auto px-3 sm:px-4 pt-3`}>
+            <div className={`flex items-center justify-between gap-3 p-3 rounded-lg text-sm ${isExpired ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
+              <span>
+                {isExpired
+                  ? '⏰ Seu acesso expirou. Ative o premium para continuar.'
+                  : `🎁 Teste gratuito — ${daysLeft} dia(s) restante(s)`}
+              </span>
+              <Button size="sm" variant={isExpired ? 'destructive' : 'default'} className="shrink-0" onClick={() => navigate('/upgrade')}>
+                {isExpired ? 'Ativar acesso' : 'Ver planos'}
+              </Button>
+            </div>
+          </div>
+        )}
+
       {/* Content */}
       <main className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {selectedMonth && <NudgeBanner month={selectedMonth} transactions={transactions} />}
