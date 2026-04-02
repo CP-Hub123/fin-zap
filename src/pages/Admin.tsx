@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Users, BookOpen, Settings, ArrowLeft, Plus, Pencil, Trash2, LayoutDashboard } from 'lucide-react';
+import { Users, BookOpen, Settings, ArrowLeft, Plus, Pencil, Trash2, LayoutDashboard, CreditCard } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
