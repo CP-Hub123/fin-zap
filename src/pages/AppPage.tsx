@@ -44,6 +44,12 @@ const AppPage = () => {
   const { canAct, isTrial, daysLeft, isExpired } = useSubscription();
 
   const isClosed = selectedMonth?.status === 'closed';
+  const isBlocked = isClosed || !canAct;
+
+  const guardedAction = <T,>(fn: (data: T) => Promise<any>) => (data: T) => {
+    if (!canAct) { setPaywallOpen(true); return Promise.resolve(); }
+    return fn(data);
+  };
 
   useEffect(() => {
     if (months.length > 0 && !selectedMonthId) setSelectedMonthId(months[0].id);
