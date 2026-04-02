@@ -32,6 +32,7 @@ const AppPage = () => {
   const [newYear, setNewYear] = useState(new Date().getFullYear());
   const [newBalance, setNewBalance] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
