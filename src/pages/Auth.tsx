@@ -61,13 +61,40 @@ const Auth = () => {
     setLoading(false);
   };
 
+  if (showForgot) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <Card className="w-full max-w-md shadow-lg border-0">
+          <CardHeader className="text-center space-y-4">
+            <div className="flex justify-center"><Logo /></div>
+            <CardDescription>Digite seu email para recuperar a senha</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" required />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Enviando...' : 'Enviar link de recuperação'}
+              </Button>
+            </form>
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              <button onClick={() => setShowForgot(false)} className="text-primary font-medium hover:underline">
+                Voltar ao login
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md shadow-lg border-0">
         <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center">
-            <Logo />
-          </div>
+          <div className="flex justify-center"><Logo /></div>
           <div>
             <CardDescription className="mt-1">
               {isLogin ? 'Entre na sua conta' : 'Crie sua conta gratuita'}
@@ -94,6 +121,13 @@ const Auth = () => {
               {loading ? 'Carregando...' : isLogin ? 'Entrar' : 'Criar conta'}
             </Button>
           </form>
+          {isLogin && (
+            <div className="mt-2 text-center">
+              <button onClick={() => setShowForgot(true)} className="text-sm text-muted-foreground hover:text-primary hover:underline">
+                Esqueci minha senha
+              </button>
+            </div>
+          )}
           <div className="mt-4 text-center text-sm text-muted-foreground">
             {isLogin ? 'Não tem conta?' : 'Já tem conta?'}{' '}
             <button onClick={() => setIsLogin(!isLogin)} className="text-primary font-medium hover:underline">
