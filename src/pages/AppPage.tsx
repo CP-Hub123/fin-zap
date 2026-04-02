@@ -41,6 +41,7 @@ const AppPage = () => {
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
   const { categories, expenseCategories } = useCategories();
   const { budgetPlans, upsertBudget } = useBudget(selectedMonthId);
+  const { canAct, isTrial, daysLeft, isExpired } = useSubscription();
 
   const isClosed = selectedMonth?.status === 'closed';
 
