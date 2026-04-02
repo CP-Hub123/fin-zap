@@ -13,6 +13,7 @@ import { TransactionsView } from '@/components/app/TransactionsView';
 import { BudgetView } from '@/components/app/BudgetView';
 import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
+import { PaywallModal } from '@/components/app/PaywallModal';
 import { Button } from '@/components/ui/button';
 import { LogOut, BookOpen, Plus, Menu, X } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
