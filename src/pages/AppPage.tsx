@@ -232,6 +232,8 @@ const AppPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 };
