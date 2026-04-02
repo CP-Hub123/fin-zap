@@ -168,11 +168,12 @@ const AppPage = () => {
           <TransactionsView
             transactions={transactions}
             monthId={selectedMonth.id}
-            isClosed={isClosed}
+            isClosed={isBlocked}
             categories={categories}
-            onAdd={data => addTransaction.mutateAsync(data)}
-            onUpdate={data => updateTransaction.mutateAsync(data)}
-            onDelete={id => deleteTransaction.mutateAsync(id)}
+            onAdd={guardedAction(data => addTransaction.mutateAsync(data))}
+            onUpdate={guardedAction(data => updateTransaction.mutateAsync(data))}
+            onDelete={guardedAction(id => deleteTransaction.mutateAsync(id))}
+          />
           />
         )}
 
