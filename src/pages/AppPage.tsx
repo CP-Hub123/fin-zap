@@ -173,8 +173,8 @@ const AppPage = () => {
             onAdd={guardedAction(data => addTransaction.mutateAsync(data))}
             onUpdate={guardedAction(data => updateTransaction.mutateAsync(data))}
             onDelete={guardedAction(id => deleteTransaction.mutateAsync(id))}
+          />
         )}
-
 
 
         {selectedMonth && currentStep === 2 && (
