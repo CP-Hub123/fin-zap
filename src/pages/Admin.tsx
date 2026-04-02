@@ -270,6 +270,7 @@ const Admin = () => {
           <Route path="users" element={<AdminUsers />} />
           <Route path="tutorials" element={<AdminTutorials />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="subscriptions" element={<AdminSubscriptions />} />
         </Routes>
       </div>
     </div>

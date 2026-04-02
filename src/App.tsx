@@ -31,6 +31,7 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
             <Route path="/tutorials" element={<ProtectedRoute><Tutorials /></ProtectedRoute>} />
+            <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/admin/*" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
