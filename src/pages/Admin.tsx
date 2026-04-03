@@ -3,13 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, Routes, Route, NavLink } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -35,13 +34,13 @@ const AdminDashboard = () => {
       <Card className="border-0 shadow-sm">
         <CardContent className="p-6 text-center">
           <p className="text-sm text-muted-foreground">Total de usuários</p>
-          <p className="text-4xl font-bold mt-2">{stats?.total ?? '-'}</p>
+          <p className="text-4xl font-bold mt-2">{stats?.total ?? '—'}</p>
         </CardContent>
       </Card>
       <Card className="border-0 shadow-sm">
         <CardContent className="p-6 text-center">
           <p className="text-sm text-muted-foreground">Usuários ativos</p>
-          <p className="text-4xl font-bold mt-2">{stats?.active ?? '-'}</p>
+          <p className="text-4xl font-bold mt-2">{stats?.active ?? '—'}</p>
         </CardContent>
       </Card>
     </div>
@@ -60,7 +59,22 @@ const AdminUsers = () => {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border bg-card">
+      <p className="text-sm text-muted-foreground">{users.length} usuário(s) encontrado(s)</p>
+      {/* Mobile cards */}
+      <div className="space-y-3 sm:hidden">
+        {users.map(u => (
+          <Card key={u.id} className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <p className="font-medium text-sm">{u.name || '—'}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Criado em {new Date(u.created_at).toLocaleDateString('pt-BR')}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden sm:block rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -71,7 +85,7 @@ const AdminUsers = () => {
           <TableBody>
             {users.map(u => (
               <TableRow key={u.id}>
-                <TableCell className="font-medium">{u.name}</TableCell>
+                <TableCell className="font-medium">{u.name || '—'}</TableCell>
                 <TableCell>{new Date(u.created_at).toLocaleDateString('pt-BR')}</TableCell>
               </TableRow>
             ))}
@@ -186,7 +200,7 @@ const AdminTutorials = () => {
   );
 };
 
-// Settings
+// Settings with toggle for system status
 const AdminSettings = () => {
   const queryClient = useQueryClient();
   const { data: settings = [] } = useQuery({
@@ -200,28 +214,76 @@ const AdminSettings = () => {
   const [values, setValues] = useState<Record<string, string>>({});
 
   const getSetting = (key: string) => values[key] ?? settings.find(s => s.key === key)?.value ?? '';
+  const currentStatus = getSetting('system_status') || 'active';
+  const isMaintenance = currentStatus === 'maintenance';
 
   const saveSetting = useMutation({
-    mutationFn: async (key: string) => {
-      await supabase.from('system_settings').update({ value: values[key] ?? '' }).eq('key', key);
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      await supabase.from('system_settings').update({ value }).eq('key', key);
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-settings'] }); toast.success('Configuração salva!'); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['system-status'] });
+      toast.success('Configuração salva!');
+    },
   });
+
+  const toggleStatus = () => {
+    const newStatus = isMaintenance ? 'active' : 'maintenance';
+    setValues(v => ({ ...v, system_status: newStatus }));
+    saveSetting.mutate({ key: 'system_status', value: newStatus });
+  };
 
   return (
     <div className="space-y-6">
+      {/* System Status Toggle */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-4 space-y-3">
+          <Label className="text-base font-medium">Status do sistema</Label>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleStatus}
+              disabled={saveSetting.isPending}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                !isMaintenance ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              )}
+            >
+              Ativo
+            </button>
+            <button
+              onClick={toggleStatus}
+              disabled={saveSetting.isPending}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                isMaintenance ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-muted-foreground'
+              )}
+            >
+              Manutenção
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {isMaintenance
+              ? '⚠️ Sistema em manutenção. Apenas admins podem acessar.'
+              : '✅ Sistema ativo. Todos os usuários podem acessar.'}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Other settings */}
       {[
         { key: 'app_name', label: 'Nome do sistema' },
-        { key: 'global_message', label: 'Mensagem global' },
-        { key: 'system_status', label: 'Status do sistema (active/maintenance)' },
+        { key: 'global_message', label: 'Mensagem global (exibida na página de manutenção)' },
       ].map(({ key, label }) => (
         <Card key={key} className="border-0 shadow-sm">
-          <CardContent className="p-4 flex items-end gap-4">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
             <div className="flex-1 space-y-2">
               <Label>{label}</Label>
               <Input value={getSetting(key)} onChange={e => setValues(v => ({ ...v, [key]: e.target.value }))} />
             </div>
-            <Button onClick={() => saveSetting.mutate(key)} disabled={saveSetting.isPending}>Salvar</Button>
+            <Button onClick={() => saveSetting.mutate({ key, value: values[key] ?? getSetting(key) })} disabled={saveSetting.isPending} className="min-h-[44px]">
+              Salvar
+            </Button>
           </CardContent>
         </Card>
       ))}
