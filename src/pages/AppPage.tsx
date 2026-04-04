@@ -6,6 +6,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
 import { useBudget } from '@/hooks/useBudget';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
@@ -42,6 +43,15 @@ const AppPage = () => {
   const { categories, expenseCategories } = useCategories();
   const { budgetPlans, upsertBudget } = useBudget(selectedMonthId);
   const { canAct, isTrial, daysLeft, isExpired } = useSubscription();
+  const { permission, subscribe: subscribePush } = usePushNotifications();
+
+  // Prompt for push permission after first load
+  useEffect(() => {
+    if (permission === 'default') {
+      const timer = setTimeout(() => subscribePush(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [permission, subscribePush]);
 
   const isClosed = selectedMonth?.status === 'closed';
   const isBlocked = isClosed || !canAct;

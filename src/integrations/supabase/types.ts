@@ -162,6 +162,33 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications_log: {
+        Row: {
+          id: string
+          message: string
+          sent_at: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message: string
+          sent_at?: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message?: string
+          sent_at?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -177,6 +204,33 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
         }
         Relationships: []
       }
