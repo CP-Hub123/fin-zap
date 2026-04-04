@@ -48,12 +48,8 @@ export const useSubscription = () => {
         return newSub as unknown as Subscription;
       }
 
-      // Auto-expire if past date
+      // Auto-expire if past date (client-side only, read-only check)
       if (data.expires_at && new Date(data.expires_at) < new Date() && data.status === 'active') {
-        await supabase
-          .from('subscriptions')
-          .update({ status: 'expired' })
-          .eq('id', data.id);
         return { ...data, status: 'expired' } as unknown as Subscription;
       }
 
