@@ -6,6 +6,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
 import { useBudget } from '@/hooks/useBudget';
 import { useSubscription } from '@/hooks/useSubscription';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
