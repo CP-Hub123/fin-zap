@@ -203,11 +203,23 @@ const AdminTutorials = () => {
 // Settings with toggle for system status
 const AdminSettings = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [testMessage, setTestMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
   const { data: settings = [] } = useQuery({
     queryKey: ['admin-settings'],
     queryFn: async () => {
       const { data } = await supabase.from('system_settings').select('*');
       return data ?? [];
+    },
+  });
+
+  const { data: subCount } = useQuery({
+    queryKey: ['admin-push-sub-count'],
+    queryFn: async () => {
+      const { count } = await supabase.from('push_subscriptions').select('*', { count: 'exact', head: true });
+      return count ?? 0;
     },
   });
 
@@ -232,6 +244,33 @@ const AdminSettings = () => {
     const newStatus = isMaintenance ? 'active' : 'maintenance';
     setValues(v => ({ ...v, system_status: newStatus }));
     saveSetting.mutate({ key: 'system_status', value: newStatus });
+  };
+
+  const sendTestPush = async () => {
+    if (!user) return;
+    if (subCount === 0) {
+      toast.error('Nenhum usuário inscrito para notificações');
+      return;
+    }
+    setSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-push', {
+        body: {
+          user_id: user.id,
+          title: 'FinZap',
+          body: testMessage || '🚀 FinZap: Notificações estão funcionando!',
+          type: 'test',
+        },
+      });
+      if (error) throw error;
+      toast.success(`Notificação enviada! (${data?.sent ?? 0} dispositivo(s))`);
+      setTestMessage('');
+    } catch (err: any) {
+      toast.error('Erro ao enviar notificação');
+      console.error(err);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -267,6 +306,25 @@ const AdminSettings = () => {
               ? '⚠️ Sistema em manutenção. Apenas admins podem acessar.'
               : '✅ Sistema ativo. Todos os usuários podem acessar.'}
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Push Notification Test */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-4 space-y-3">
+          <Label className="text-base font-medium">Teste de Notificação</Label>
+          <p className="text-xs text-muted-foreground">
+            {subCount != null ? `${subCount} inscrição(ões) ativa(s)` : 'Carregando...'}
+          </p>
+          <Input
+            value={testMessage}
+            onChange={e => setTestMessage(e.target.value)}
+            placeholder="Digite a mensagem (opcional)"
+            className="min-h-[44px]"
+          />
+          <Button onClick={sendTestPush} disabled={sending} className="w-full sm:w-auto min-h-[44px]">
+            {sending ? 'Enviando...' : 'Enviar Notificação Teste'}
+          </Button>
         </CardContent>
       </Card>
 
