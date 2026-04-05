@@ -166,6 +166,7 @@ export type Database = {
         Row: {
           id: string
           message: string
+          read: boolean
           sent_at: string
           title: string
           type: string
@@ -174,6 +175,7 @@ export type Database = {
         Insert: {
           id?: string
           message: string
+          read?: boolean
           sent_at?: string
           title: string
           type: string
@@ -182,6 +184,7 @@ export type Database = {
         Update: {
           id?: string
           message?: string
+          read?: boolean
           sent_at?: string
           title?: string
           type?: string
