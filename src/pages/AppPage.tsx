@@ -47,6 +47,14 @@ const AppPage = () => {
   const { canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
 
+  // Automatic notification triggers
+  useNotificationTriggers({
+    transactions,
+    budgetPlans,
+    subscription: subscription ?? null,
+    monthId: selectedMonthId,
+  });
+
   // Prompt for push permission after first load
   useEffect(() => {
     if (permission === 'default') {
