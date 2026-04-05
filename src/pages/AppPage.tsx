@@ -7,6 +7,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { useBudget } from '@/hooks/useBudget';
 import { useSubscription } from '@/hooks/useSubscription';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
 import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
@@ -43,8 +44,16 @@ const AppPage = () => {
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
   const { categories, expenseCategories } = useCategories();
   const { budgetPlans, upsertBudget } = useBudget(selectedMonthId);
-  const { canAct, isTrial, daysLeft, isExpired } = useSubscription();
+  const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
+
+  // Automatic notification triggers
+  useNotificationTriggers({
+    transactions,
+    budgetPlans,
+    subscription: subscription ?? null,
+    monthId: selectedMonthId,
+  });
 
   // Prompt for push permission after first load
   useEffect(() => {
