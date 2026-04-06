@@ -15,6 +15,16 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+function isValidPushEndpoint(endpoint?: string | null) {
+  if (!endpoint || endpoint.includes('permanently-removed.invalid')) return false;
+
+  try {
+    return new URL(endpoint).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export const usePushNotifications = () => {
   const { user } = useAuth();
   const [permission, setPermission] = useState<NotificationPermission>(
@@ -23,17 +33,38 @@ export const usePushNotifications = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   const subscribe = useCallback(async () => {
-    if (!user || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (!user || typeof Notification === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
 
     try {
-      const result = await Notification.requestPermission();
-      setPermission(result);
-      if (result !== 'granted') return;
+      const result = Notification.permission === 'granted'
+        ? 'granted'
+        : await Notification.requestPermission();
 
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
+      setPermission(result);
+      if (result !== 'granted') {
+        setIsSubscribed(false);
+        return;
+      }
+
+      await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.ready;
 
       let subscription = await registration.pushManager.getSubscription();
+      const existingJson = subscription?.toJSON();
+      const shouldRecreate =
+        !subscription ||
+        !isValidPushEndpoint(existingJson?.endpoint) ||
+        !existingJson?.keys?.p256dh ||
+        !existingJson?.keys?.auth;
+
+      if (subscription && shouldRecreate) {
+        console.warn('Invalid push subscription detected, recreating', {
+          endpoint: existingJson?.endpoint ?? null,
+        });
+        await subscription.unsubscribe().catch(() => undefined);
+        subscription = null;
+      }
+
       if (!subscription) {
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
@@ -42,26 +73,46 @@ export const usePushNotifications = () => {
       }
 
       const subJson = subscription.toJSON();
+      if (!isValidPushEndpoint(subJson.endpoint) || !subJson.keys?.p256dh || !subJson.keys?.auth) {
+        await subscription.unsubscribe().catch(() => undefined);
+        throw new Error(`Invalid push subscription endpoint: ${subJson.endpoint ?? 'missing'}`);
+      }
+
+      console.info('Push subscription ready', { endpoint: subJson.endpoint });
+
+      await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('user_id', user.id)
+        .like('endpoint', '%permanently-removed.invalid%');
+
       const { error } = await supabase.from('push_subscriptions').upsert(
         {
           user_id: user.id,
-          endpoint: subJson.endpoint!,
-          p256dh: subJson.keys!.p256dh!,
-          auth: subJson.keys!.auth!,
+          endpoint: subJson.endpoint,
+          p256dh: subJson.keys.p256dh,
+          auth: subJson.keys.auth,
         },
         { onConflict: 'user_id,endpoint' }
       );
 
-      if (!error) setIsSubscribed(true);
+      if (error) throw error;
+      setIsSubscribed(true);
     } catch (err) {
       console.error('Push subscription failed:', err);
+      setIsSubscribed(false);
     }
   }, [user]);
 
   useEffect(() => {
     if (!user || typeof Notification === 'undefined') return;
+
+    setPermission(Notification.permission);
+
     if (Notification.permission === 'granted') {
       subscribe();
+    } else {
+      setIsSubscribed(false);
     }
   }, [user, subscribe]);
 
