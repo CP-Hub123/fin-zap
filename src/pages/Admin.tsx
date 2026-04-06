@@ -218,7 +218,11 @@ const AdminSettings = () => {
   const { data: subCount } = useQuery({
     queryKey: ['admin-push-sub-count'],
     queryFn: async () => {
-      const { count } = await supabase.from('push_subscriptions').select('*', { count: 'exact', head: true });
+      const { count } = await supabase
+        .from('push_subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .not('endpoint', 'like', '%permanently-removed.invalid%');
+
       return count ?? 0;
     },
   });
@@ -249,36 +253,43 @@ const AdminSettings = () => {
   const sendTestPush = async () => {
     if (!user) return;
     if (subCount === 0) {
-      toast.error('Nenhum usuário inscrito para notificações');
+      toast.error('Nenhum dispositivo inscrito para notificações');
       return;
     }
+
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-push', {
         body: {
-          user_id: user.id,
           title: 'FinZap',
-          body: testMessage || '🚀 FinZap: Notificações estão funcionando!',
+          body: testMessage || 'Teste de notificação funcionando 🚀',
           type: 'test',
           broadcast: true,
         },
       });
+
       if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['admin-push-sub-count'] });
+
       const sent = data?.sent ?? 0;
       const total = data?.total ?? 0;
+      const removed = data?.removed ?? 0;
+
       if (sent > 0) {
-        toast.success(`Push enviado com sucesso! ${sent}/${total} dispositivo(s)`);
-      } else if (data?.errors?.length) {
-        toast.error(`Falha no envio: ${data.errors[0]}`);
+        toast.success(`Push real enviado: ${sent}/${total} dispositivo(s)${removed ? `, ${removed} removido(s)` : ''}`);
       } else {
-        toast.warning(data?.message || 'Nenhum push enviado');
+        toast.error(data?.message || 'Nenhum dispositivo inscrito para notificações');
       }
+
+      console.info('Push broadcast result', data);
       if (data?.errors?.length) {
         console.warn('Push errors:', data.errors);
       }
+
       setTestMessage('');
     } catch (err: any) {
-      toast.error('Erro ao enviar notificação');
+      toast.error('Erro ao enviar push real');
       console.error(err);
     } finally {
       setSending(false);

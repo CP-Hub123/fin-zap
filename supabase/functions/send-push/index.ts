@@ -1,225 +1,85 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import * as webpush from "jsr:@negrel/webpush@0.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const VAPID_SUBJECT = "mailto:christianpietromello079@gmail.com";
-const VAPID_PUBLIC_KEY =
-  "BFkJUOVv4zqJ66952R07dAL9LFzYfunNlPnOvTzN8jVd5c0ZWOWkNn4fcpL3Zca_BO3f1rFJXDAvzEdNr2wf3z0";
+const VAPID_PUBLIC_KEY = "BFkJUOVv4zqJ66952R07dAL9LFzYfunNlPnOvTzN8jVd5c0ZWOWkNn4fcpL3Zca_BO3f1rFJXDAvzEdNr2wf3z0";
 
-// ── helpers ──────────────────────────────────────────────────────────
+type SendPushBody = {
+  user_id?: string;
+  title?: string;
+  body?: string;
+  type?: string;
+  broadcast?: boolean;
+};
 
-function b64url(buf: ArrayBuffer | Uint8Array): string {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+type PushSubscriptionRow = {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+};
+
+function decodeBase64Url(value: string): Uint8Array {
+  const padding = "=".repeat((4 - (value.length % 4)) % 4);
+  const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const bytes = new Uint8Array(raw.length);
+
+  for (let i = 0; i < raw.length; i++) {
+    bytes[i] = raw.charCodeAt(i);
+  }
+
+  return bytes;
+}
+
+function encodeBase64Url(value: Uint8Array): string {
+  return btoa(String.fromCharCode(...value))
     .replace(/=/g, "")
     .replace(/\+/g, "-")
     .replace(/\//g, "_");
 }
 
-function b64urlDecode(s: string): Uint8Array {
-  const p = "=".repeat((4 - (s.length % 4)) % 4);
-  const b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/"));
-  const a = new Uint8Array(b.length);
-  for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
-  return a;
-}
-
-function concat(...bufs: (Uint8Array | ArrayBuffer)[]): Uint8Array {
-  const arrays = bufs.map((b) => new Uint8Array(b));
-  const len = arrays.reduce((s, a) => s + a.length, 0);
-  const r = new Uint8Array(len);
-  let o = 0;
-  for (const a of arrays) { r.set(a, o); o += a.length; }
-  return r;
-}
-
-// ── VAPID JWT (ES256) ────────────────────────────────────────────────
-
-async function makeVapidJwt(
-  endpoint: string,
-  vapidPrivateKeyB64: string,
-): Promise<string> {
-  const aud = new URL(endpoint).origin;
-  const now = Math.floor(Date.now() / 1000);
-  const header = b64url(new TextEncoder().encode(JSON.stringify({ typ: "JWT", alg: "ES256" })));
-  const payload = b64url(new TextEncoder().encode(JSON.stringify({ aud, exp: now + 86400, sub: VAPID_SUBJECT })));
-  const unsigned = `${header}.${payload}`;
-
-  // Decode the raw 65-byte uncompressed public key to extract x, y
-  const pubRaw = b64urlDecode(VAPID_PUBLIC_KEY); // 65 bytes: 0x04 || x(32) || y(32)
-  const x = b64url(pubRaw.slice(1, 33));
-  const y = b64url(pubRaw.slice(33, 65));
-
-  const key = await crypto.subtle.importKey(
-    "jwk",
-    { kty: "EC", crv: "P-256", d: vapidPrivateKeyB64, x, y },
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["sign"],
-  );
-
-  const sigDer = new Uint8Array(
-    await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, new TextEncoder().encode(unsigned)),
-  );
-
-  // Web Crypto returns raw r||s (64 bytes) for P-256
-  return `${unsigned}.${b64url(sigDer)}`;
-}
-
-// ── Payload encryption (aes128gcm) ───────────────────────────────────
-
-async function encryptPayload(
-  plaintext: string,
-  p256dhB64: string,
-  authB64: string,
-): Promise<Uint8Array> {
-  const subscriberPub = b64urlDecode(p256dhB64);
-  const authSecret = b64urlDecode(authB64);
-
-  const localKP = await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
-  const subKey = await crypto.subtle.importKey("raw", subscriberPub, { name: "ECDH", namedCurve: "P-256" }, false, []);
-  const shared = new Uint8Array(await crypto.subtle.deriveBits({ name: "ECDH", public: subKey }, localKP.privateKey, 256));
-  const localPub = new Uint8Array(await crypto.subtle.exportKey("raw", localKP.publicKey));
-
-  // IKM via HKDF
-  const ikm = await hkdf(shared, authSecret, concat(new TextEncoder().encode("WebPush: info\0"), subscriberPub, localPub), 32);
-
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const cek = await hkdf(ikm, salt, new TextEncoder().encode("Content-Encoding: aes128gcm\0"), 16);
-  const nonce = await hkdf(ikm, salt, new TextEncoder().encode("Content-Encoding: nonce\0"), 12);
-
-  const aesKey = await crypto.subtle.importKey("raw", cek, { name: "AES-GCM" }, false, ["encrypt"]);
-  const padded = concat(new Uint8Array([2, 0]), new TextEncoder().encode(plaintext));
-  const encrypted = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, padded));
-
-  const rs = new ArrayBuffer(4);
-  new DataView(rs).setUint32(0, 4096);
-
-  return concat(salt, new Uint8Array(rs), new Uint8Array([65]), localPub, encrypted);
-}
-
-async function hkdf(ikm: Uint8Array, salt: Uint8Array, info: Uint8Array, len: number): Promise<Uint8Array> {
-  const k1 = await crypto.subtle.importKey("raw", salt, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", k1, ikm));
-  const k2 = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const out = new Uint8Array(await crypto.subtle.sign("HMAC", k2, concat(info, new Uint8Array([1]))));
-  return out.slice(0, len);
-}
-
-// ── Send one push ────────────────────────────────────────────────────
-
-async function sendOne(
-  sub: { endpoint: string; p256dh: string; auth: string },
-  payload: string,
-  vapidPrivKey: string,
-): Promise<void> {
-  const jwt = await makeVapidJwt(sub.endpoint, vapidPrivKey);
-  const body = await encryptPayload(payload, sub.p256dh, sub.auth);
-
-  const res = await fetch(sub.endpoint, {
-    method: "POST",
-    headers: {
-      Authorization: `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`,
-      "Content-Type": "application/octet-stream",
-      "Content-Encoding": "aes128gcm",
-      TTL: "86400",
-    },
-    body,
-  });
-
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`${res.status} ${t}`);
-  } else {
-    await res.text(); // consume body
-  }
-}
-
-// ── Main handler ─────────────────────────────────────────────────────
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+function isValidEndpoint(endpoint?: string | null): boolean {
+  if (!endpoint || endpoint.includes("permanently-removed.invalid")) return false;
 
   try {
-    const { user_id, title, body, type, broadcast } = await req.json();
-
-    if (!title || !body) {
-      return respond({ error: "Missing title or body" }, 400);
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
-    const sb = createClient(supabaseUrl, supabaseKey);
-
-    // Fetch subscriptions: broadcast=true → all users, otherwise just user_id
-    let query = sb.from("push_subscriptions").select("*");
-    if (!broadcast && user_id) {
-      query = query.eq("user_id", user_id);
-    }
-    const { data: subs, error: subErr } = await query;
-    if (subErr) throw subErr;
-
-    if (!subs || subs.length === 0) {
-      return respond({ sent: 0, total: 0, message: "No subscriptions found" });
-    }
-
-    // Skip dedup for test/broadcast notifications
-    if (type && type !== "test" && user_id) {
-      const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
-      const { data: recent } = await sb
-        .from("notifications_log")
-        .select("id")
-        .eq("user_id", user_id)
-        .eq("type", type)
-        .gte("sent_at", oneHourAgo)
-        .limit(1);
-      if (recent && recent.length > 0) {
-        return respond({ sent: 0, total: subs.length, message: "Duplicate prevented" });
-      }
-    }
-
-    const payload = JSON.stringify({ title, body, url: "/app" });
-    let sent = 0;
-    const errors: string[] = [];
-
-    for (const sub of subs) {
-      try {
-        await sendOne(
-          { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
-          payload,
-          vapidPrivateKey,
-        );
-        sent++;
-      } catch (e) {
-        const msg = (e as Error).message || String(e);
-        errors.push(msg);
-        if (msg.includes("410") || msg.includes("404")) {
-          await sb.from("push_subscriptions").delete().eq("id", sub.id);
-        }
-      }
-    }
-
-    // Log notification
-    if (user_id) {
-      await sb.from("notifications_log").insert({
-        user_id,
-        type: type || "general",
-        title,
-        message: body,
-      });
-    }
-
-    return respond({ sent, total: subs.length, errors: errors.length > 0 ? errors : undefined });
-  } catch (err) {
-    return respond({ error: (err as Error).message }, 500);
+    return new URL(endpoint).protocol === "https:";
+  } catch {
+    return false;
   }
-});
+}
+
+async function importVapidKeysFromEnv(privateKey: string): Promise<CryptoKeyPair> {
+  const rawPublic = decodeBase64Url(VAPID_PUBLIC_KEY);
+
+  if (rawPublic.length !== 65 || rawPublic[0] !== 4) {
+    throw new Error("Invalid VAPID public key");
+  }
+
+  const x = encodeBase64Url(rawPublic.slice(1, 33));
+  const y = encodeBase64Url(rawPublic.slice(33, 65));
+
+  return webpush.importVapidKeys({
+    publicKey: { kty: "EC", crv: "P-256", x, y },
+    privateKey: { kty: "EC", crv: "P-256", x, y, d: privateKey },
+  });
+}
+
+async function describePushError(error: unknown): Promise<string> {
+  if (error instanceof webpush.PushMessageError) {
+    const body = await error.response.text();
+    return `${error.response.status} ${body || error.response.statusText}`.trim();
+  }
+
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
 
 function respond(data: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -227,3 +87,152 @@ function respond(data: Record<string, unknown>, status = 200) {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const { user_id, title, body, type, broadcast = false } = await req.json() as SendPushBody;
+
+    if (!title || !body) {
+      return respond({ error: "Missing title or body" }, 400);
+    }
+
+    if (!broadcast && !user_id) {
+      return respond({ error: "Missing user_id for targeted push" }, 400);
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    let query = supabase
+      .from("push_subscriptions")
+      .select("id, user_id, endpoint, p256dh, auth");
+
+    if (!broadcast && user_id) {
+      query = query.eq("user_id", user_id);
+    }
+
+    const { data: subscriptions, error: subscriptionsError } = await query;
+    if (subscriptionsError) throw subscriptionsError;
+
+    const allSubscriptions = (subscriptions ?? []) as PushSubscriptionRow[];
+    console.log(`[send-push] found subscriptions=${allSubscriptions.length} broadcast=${broadcast}`);
+
+    let removed = 0;
+    const validSubscriptions: PushSubscriptionRow[] = [];
+
+    for (const sub of allSubscriptions) {
+      if (!isValidEndpoint(sub.endpoint) || !sub.p256dh || !sub.auth) {
+        console.warn(`[send-push] removing invalid subscription id=${sub.id} endpoint=${sub.endpoint}`);
+        await supabase.from("push_subscriptions").delete().eq("id", sub.id);
+        removed++;
+        continue;
+      }
+
+      validSubscriptions.push(sub);
+    }
+
+    if (validSubscriptions.length === 0) {
+      return respond({
+        sent: 0,
+        total: 0,
+        found: allSubscriptions.length,
+        removed,
+        message: "No subscriptions found",
+      });
+    }
+
+    if (!broadcast && type && type !== "test" && user_id) {
+      const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+      const { data: recent } = await supabase
+        .from("notifications_log")
+        .select("id")
+        .eq("user_id", user_id)
+        .eq("type", type)
+        .gte("sent_at", oneHourAgo)
+        .limit(1);
+
+      if (recent && recent.length > 0) {
+        return respond({
+          sent: 0,
+          total: validSubscriptions.length,
+          found: allSubscriptions.length,
+          removed,
+          message: "Duplicate prevented",
+        });
+      }
+    }
+
+    const appServer = await webpush.ApplicationServer.new({
+      contactInformation: VAPID_SUBJECT,
+      vapidKeys: await importVapidKeysFromEnv(vapidPrivateKey),
+    });
+
+    const payload = JSON.stringify({ title, body, url: "/app" });
+    let sent = 0;
+    const errors: string[] = [];
+
+    for (const sub of validSubscriptions) {
+      try {
+        const subscriber = appServer.subscribe({
+          endpoint: sub.endpoint,
+          keys: {
+            p256dh: sub.p256dh,
+            auth: sub.auth,
+          },
+        });
+
+        await subscriber.pushTextMessage(payload, {
+          urgency: webpush.Urgency.High,
+          ttl: 60,
+        });
+
+        sent++;
+        console.log(`[send-push] sent subscription id=${sub.id}`);
+      } catch (error) {
+        const message = await describePushError(error);
+        console.error(`[send-push] failed subscription id=${sub.id} error=${message}`);
+        errors.push(message);
+
+        const isGone = error instanceof webpush.PushMessageError &&
+          (error.isGone() || error.response.status === 404);
+
+        if (isGone) {
+          await supabase.from("push_subscriptions").delete().eq("id", sub.id);
+          removed++;
+          console.warn(`[send-push] removed stale subscription id=${sub.id}`);
+        }
+      }
+    }
+
+    if (user_id) {
+      const { error: logError } = await supabase.from("notifications_log").insert({
+        user_id,
+        type: type || "general",
+        title,
+        message: body,
+      });
+
+      if (logError) {
+        console.error(`[send-push] failed to log notification error=${logError.message}`);
+      }
+    }
+
+    return respond({
+      sent,
+      total: validSubscriptions.length,
+      found: allSubscriptions.length,
+      removed,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[send-push] unexpected error=${message}`);
+    return respond({ error: message }, 500);
+  }
+});
