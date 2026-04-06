@@ -260,10 +260,22 @@ const AdminSettings = () => {
           title: 'FinZap',
           body: testMessage || '🚀 FinZap: Notificações estão funcionando!',
           type: 'test',
+          broadcast: true,
         },
       });
       if (error) throw error;
-      toast.success(`Notificação enviada! (${data?.sent ?? 0} dispositivo(s))`);
+      const sent = data?.sent ?? 0;
+      const total = data?.total ?? 0;
+      if (sent > 0) {
+        toast.success(`Push enviado com sucesso! ${sent}/${total} dispositivo(s)`);
+      } else if (data?.errors?.length) {
+        toast.error(`Falha no envio: ${data.errors[0]}`);
+      } else {
+        toast.warning(data?.message || 'Nenhum push enviado');
+      }
+      if (data?.errors?.length) {
+        console.warn('Push errors:', data.errors);
+      }
       setTestMessage('');
     } catch (err: any) {
       toast.error('Erro ao enviar notificação');
