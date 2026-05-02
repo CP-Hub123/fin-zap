@@ -40,6 +40,16 @@
     --finzap-red: 0 84% 60%;
     --finzap-blue: 217 91% 60%;
 
+    /* Brand gradients & motion (logo: zap + crescimento + transformação) */
+    --finzap-blue-glow: 199 89% 56%;
+    --gradient-zap: linear-gradient(135deg, hsl(var(--finzap-blue)) 0%, hsl(var(--finzap-blue-glow)) 45%, hsl(var(--finzap-green)) 100%);
+    --gradient-rise: linear-gradient(180deg, hsl(var(--finzap-blue) / 0.08) 0%, hsl(var(--finzap-green) / 0.04) 100%);
+    --gradient-positive: linear-gradient(135deg, hsl(var(--finzap-green) / 0.18), hsl(var(--finzap-blue) / 0.08));
+    --shadow-zap: 0 10px 30px -12px hsl(var(--finzap-blue) / 0.35), 0 4px 12px -6px hsl(var(--finzap-green) / 0.2);
+    --shadow-lift: 0 6px 20px -8px hsl(var(--finzap-blue) / 0.25);
+    --tilt: -1.2deg;
+    --ease-zap: cubic-bezier(0.16, 1, 0.3, 1);
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
