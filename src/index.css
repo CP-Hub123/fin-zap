@@ -40,6 +40,16 @@
     --finzap-red: 0 84% 60%;
     --finzap-blue: 217 91% 60%;
 
+    /* Brand gradients & motion (logo: zap + crescimento + transformação) */
+    --finzap-blue-glow: 199 89% 56%;
+    --gradient-zap: linear-gradient(135deg, hsl(var(--finzap-blue)) 0%, hsl(var(--finzap-blue-glow)) 45%, hsl(var(--finzap-green)) 100%);
+    --gradient-rise: linear-gradient(180deg, hsl(var(--finzap-blue) / 0.08) 0%, hsl(var(--finzap-green) / 0.04) 100%);
+    --gradient-positive: linear-gradient(135deg, hsl(var(--finzap-green) / 0.18), hsl(var(--finzap-blue) / 0.08));
+    --shadow-zap: 0 10px 30px -12px hsl(var(--finzap-blue) / 0.35), 0 4px 12px -6px hsl(var(--finzap-green) / 0.2);
+    --shadow-lift: 0 6px 20px -8px hsl(var(--finzap-blue) / 0.25);
+    --tilt: -1.2deg;
+    --ease-zap: cubic-bezier(0.16, 1, 0.3, 1);
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -90,4 +100,95 @@
     @apply bg-background text-foreground font-sans;
     font-family: 'Inter', sans-serif;
   }
+}
+
+/* === FinZap Motion & Identity === */
+@layer utilities {
+  .bg-gradient-zap { background-image: var(--gradient-zap); }
+  .bg-gradient-rise { background-image: var(--gradient-rise); }
+  .bg-gradient-positive { background-image: var(--gradient-positive); }
+  .text-gradient-zap {
+    background-image: var(--gradient-zap);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .shadow-zap { box-shadow: var(--shadow-zap); }
+  .shadow-lift { box-shadow: var(--shadow-lift); }
+
+  /* Diagonal accent strip — evokes the lightning cut of the logo */
+  .zap-accent {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .zap-accent::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-zap);
+    clip-path: polygon(0 0, 6px 0, 0 100%, 0 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Hover lift with subtle tilt — sense of upward motion */
+  .hover-lift {
+    transition: transform 280ms var(--ease-zap), box-shadow 280ms var(--ease-zap);
+    will-change: transform;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px) rotate(var(--tilt));
+    box-shadow: var(--shadow-zap);
+  }
+
+  /* Button "impulse" feedback */
+  .btn-impulse {
+    transition: transform 180ms var(--ease-zap), box-shadow 180ms var(--ease-zap), filter 180ms var(--ease-zap);
+  }
+  .btn-impulse:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  .btn-impulse:active { transform: translateY(1px) scale(0.98); }
+
+  /* Healthy / unhealthy decision states */
+  .decision-healthy {
+    background-image: var(--gradient-positive);
+    border: 1px solid hsl(var(--finzap-green) / 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -10px hsl(var(--finzap-green) / 0.45);
+    transition: all 260ms var(--ease-zap);
+  }
+  .decision-neutral {
+    background: hsl(var(--muted) / 0.5);
+    border: 1px solid hsl(var(--border));
+    transform: translateY(2px);
+    opacity: 0.85;
+    transition: all 260ms var(--ease-zap);
+  }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes zap-grow {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
+}
+@keyframes spark {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.15); }
+}
+
+.animate-rise-in { animation: rise-in 0.5s var(--ease-zap) both; }
+.animate-zap-grow { animation: zap-grow 0.7s var(--ease-zap) both; }
+.animate-spark { animation: spark 2.4s ease-in-out infinite; }
+
+/* Recharts: progressive growth animation reinforced */
+.recharts-bar-rectangle, .recharts-area-area, .recharts-line-curve {
+  transition: opacity 0.4s var(--ease-zap);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift, .btn-impulse, .decision-healthy, .decision-neutral { transition: none; }
+  .animate-rise-in, .animate-zap-grow, .animate-spark { animation: none; }
 }

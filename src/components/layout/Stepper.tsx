@@ -26,9 +26,9 @@ export const Stepper = ({ currentStep, onStepChange }: StepperProps) => {
             key={step.label}
             onClick={() => onStepChange(i)}
             className={cn(
-              'flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none justify-center sm:justify-start min-h-[40px]',
+              'btn-impulse flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-1 sm:flex-none justify-center sm:justify-start min-h-[40px]',
               isActive
-                ? 'bg-primary text-primary-foreground shadow-sm'
+                ? 'bg-gradient-zap text-primary-foreground shadow-lift -translate-y-0.5'
                 : isCompleted
                 ? 'bg-primary/10 text-primary hover:bg-primary/20'
                 : 'text-muted-foreground hover:bg-muted'
