@@ -180,10 +180,10 @@ const Onboarding = () => {
         <p className="text-muted-foreground">Cadastre pelo menos uma receita ou despesa para começar</p>
       </div>
       <div className="flex gap-2">
-        <Button variant={txType === 'income' ? 'default' : 'outline'} className="flex-1" onClick={() => { setTxType('income'); setTxCategory(''); }}>
+        <Button variant={txType === 'income' ? 'default' : 'outline'} className="flex-1" onClick={() => setTxType('income')}>
           Receita
         </Button>
-        <Button variant={txType === 'expense' ? 'default' : 'outline'} className="flex-1" onClick={() => { setTxType('expense'); setTxCategory(''); }}>
+        <Button variant={txType === 'expense' ? 'default' : 'outline'} className="flex-1" onClick={() => setTxType('expense')}>
           Despesa
         </Button>
       </div>
@@ -197,15 +197,9 @@ const Onboarding = () => {
           <Input type="number" step="0.01" placeholder="0,00" value={txAmount} onChange={e => setTxAmount(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Categoria</Label>
-          <Select value={txCategory} onValueChange={setTxCategory}>
-            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-            <SelectContent>
-              {cats.map(c => (
-                <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label>Cofrinho</Label>
+          <Input placeholder="Ex: Geral, Alimentação..." value={cofrinhoNome} onChange={e => setCofrinhoNome(e.target.value)} />
+          <p className="text-[11px] text-muted-foreground">Toda transação fica vinculada a um cofrinho. Você pode criar mais depois.</p>
         </div>
       </div>
       <Button className="w-full" onClick={handleFirstTransaction} disabled={addTransaction.isPending}>
