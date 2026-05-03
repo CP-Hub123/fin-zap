@@ -78,7 +78,8 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
   const pieData = useMemo(() => {
     const categoryMap: Record<string, number> = {};
     transactions.filter(t => t.type === 'expense').forEach(t => {
-      categoryMap[t.category] = (categoryMap[t.category] || 0) + Number(t.amount);
+      const key = (t as any).cofrinho_id || t.category || 'Sem cofrinho';
+      categoryMap[key] = (categoryMap[key] || 0) + Number(t.amount);
     });
     const entries = Object.entries(categoryMap)
       .map(([name, value]) => ({ name, value }))
@@ -95,7 +96,8 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
   const barData = useMemo(() => {
     const realizedMap: Record<string, number> = {};
     transactions.filter(t => t.type === 'expense' && t.status === 'realized').forEach(t => {
-      realizedMap[t.category] = (realizedMap[t.category] || 0) + Number(t.amount);
+      const key = (t as any).cofrinho_id || t.category || 'Sem cofrinho';
+      realizedMap[key] = (realizedMap[key] || 0) + Number(t.amount);
     });
     const categories = new Set([
       ...budgetPlans.map(b => b.category),
