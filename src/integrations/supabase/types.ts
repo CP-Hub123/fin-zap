@@ -88,6 +88,92 @@ export type Database = {
         }
         Relationships: []
       }
+      cofrinho_closures: {
+        Row: {
+          ano: number
+          closed_at: string
+          cofrinho_id: string
+          gasto_mes: number
+          id: string
+          mes: number
+          orcamento_mensal: number
+          saldo_final: number
+          user_id: string
+        }
+        Insert: {
+          ano: number
+          closed_at?: string
+          cofrinho_id: string
+          gasto_mes: number
+          id?: string
+          mes: number
+          orcamento_mensal: number
+          saldo_final: number
+          user_id: string
+        }
+        Update: {
+          ano?: number
+          closed_at?: string
+          cofrinho_id?: string
+          gasto_mes?: number
+          id?: string
+          mes?: number
+          orcamento_mensal?: number
+          saldo_final?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cofrinho_closures_cofrinho_id_fkey"
+            columns: ["cofrinho_id"]
+            isOneToOne: false
+            referencedRelation: "cofrinhos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cofrinhos: {
+        Row: {
+          ano_ref: number
+          cor: string
+          created_at: string
+          gasto_mes: number
+          id: string
+          mes_ref: number
+          nome: string
+          orcamento_mensal: number
+          saldo: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ano_ref?: number
+          cor?: string
+          created_at?: string
+          gasto_mes?: number
+          id?: string
+          mes_ref?: number
+          nome: string
+          orcamento_mensal?: number
+          saldo?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ano_ref?: number
+          cor?: string
+          created_at?: string
+          gasto_mes?: number
+          id?: string
+          mes_ref?: number
+          nome?: string
+          orcamento_mensal?: number
+          saldo?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       monthly_closures: {
         Row: {
           closed_at: string
@@ -303,44 +389,66 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
-          category: string
+          category: string | null
+          cofrinho_id: string
           created_at: string
           date: string
+          descricao: string | null
           id: string
+          impacta_saldo: boolean
           is_fixed: boolean
-          month_id: string
+          month_id: string | null
           name: string
+          origem: string
           recurrence: Database["public"]["Enums"]["recurrence_type"]
           status: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
         }
         Insert: {
           amount: number
-          category: string
+          category?: string | null
+          cofrinho_id: string
           created_at?: string
           date: string
+          descricao?: string | null
           id?: string
+          impacta_saldo?: boolean
           is_fixed?: boolean
-          month_id: string
+          month_id?: string | null
           name: string
+          origem?: string
           recurrence?: Database["public"]["Enums"]["recurrence_type"]
           status?: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
         }
         Update: {
           amount?: number
-          category?: string
+          category?: string | null
+          cofrinho_id?: string
           created_at?: string
           date?: string
+          descricao?: string | null
           id?: string
+          impacta_saldo?: boolean
           is_fixed?: boolean
-          month_id?: string
+          month_id?: string | null
           name?: string
+          origem?: string
           recurrence?: Database["public"]["Enums"]["recurrence_type"]
           status?: Database["public"]["Enums"]["transaction_status"]
           type?: Database["public"]["Enums"]["transaction_type"]
+          user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_cofrinho_id_fkey"
+            columns: ["cofrinho_id"]
+            isOneToOne: false
+            referencedRelation: "cofrinhos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_month_id_fkey"
             columns: ["month_id"]
@@ -385,6 +493,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      fechar_mes_cofrinhos: { Args: { _user_id: string }; Returns: number }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {

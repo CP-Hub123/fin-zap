@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
 export type Transaction = Tables<'transactions'>;
 
 export const useTransactions = (monthId: string | undefined) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const transactionsQuery = useQuery({
     queryKey: ['transactions', monthId],
@@ -22,16 +24,23 @@ export const useTransactions = (monthId: string | undefined) => {
   });
 
   const addTransaction = useMutation({
-    mutationFn: async (data: TablesInsert<'transactions'>) => {
+    mutationFn: async (data: Omit<TablesInsert<'transactions'>, 'user_id'> & { user_id?: string }) => {
+      const payload: TablesInsert<'transactions'> = {
+        ...data,
+        user_id: data.user_id ?? user!.id,
+      };
       const { data: result, error } = await supabase
         .from('transactions')
-        .insert(data)
+        .insert(payload)
         .select()
         .single();
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transactions', monthId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', monthId] });
+      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+    },
   });
 
   const updateTransaction = useMutation({
@@ -39,7 +48,10 @@ export const useTransactions = (monthId: string | undefined) => {
       const { error } = await supabase.from('transactions').update(data).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transactions', monthId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', monthId] });
+      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+    },
   });
 
   const deleteTransaction = useMutation({
@@ -47,7 +59,10 @@ export const useTransactions = (monthId: string | undefined) => {
       const { error } = await supabase.from('transactions').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transactions', monthId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions', monthId] });
+      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+    },
   });
 
   const transactions = transactionsQuery.data ?? [];

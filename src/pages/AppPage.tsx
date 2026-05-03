@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMonths } from '@/hooks/useMonths';
 import { useTransactions } from '@/hooks/useTransactions';
-import { useCategories } from '@/hooks/useCategories';
-import { useBudget } from '@/hooks/useBudget';
+import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useSubscription } from '@/hooks/useSubscription';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
@@ -12,7 +11,7 @@ import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
 import { TransactionsView } from '@/components/app/TransactionsView';
-import { BudgetView } from '@/components/app/BudgetView';
+import { CofrinhosView } from '@/components/app/CofrinhosView';
 import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
@@ -42,18 +41,23 @@ const AppPage = () => {
   const { months, isLoading: monthsLoading, createMonth, updateMonthStatus } = useMonths();
   const selectedMonth = months.find(m => m.id === selectedMonthId);
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
-  const { categories, expenseCategories } = useCategories();
-  const { budgetPlans, upsertBudget } = useBudget(selectedMonthId);
+  const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, fecharMes } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
 
   // Automatic notification triggers
   useNotificationTriggers({
     transactions,
-    budgetPlans,
+    budgetPlans: [],
     subscription: subscription ?? null,
     monthId: selectedMonthId,
   });
+
+  // Run automatic monthly closure on app load
+  useEffect(() => {
+    if (user) fecharMes.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Prompt for push permission after first load
   useEffect(() => {
@@ -183,7 +187,7 @@ const AppPage = () => {
         {selectedMonth && <NudgeBanner month={selectedMonth} transactions={transactions} />}
 
         {selectedMonth && currentStep === 0 && (
-          <SummaryView month={selectedMonth} totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} transactions={transactions} budgetPlans={budgetPlans} />
+          <SummaryView month={selectedMonth} totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} transactions={transactions} budgetPlans={[]} />
         )}
 
         {selectedMonth && currentStep === 1 && (
@@ -191,7 +195,7 @@ const AppPage = () => {
             transactions={transactions}
             monthId={selectedMonth.id}
             isClosed={isBlocked}
-            categories={categories}
+            cofrinhos={cofrinhos}
             onAdd={guardedAction(data => addTransaction.mutateAsync(data))}
             onUpdate={guardedAction(data => updateTransaction.mutateAsync(data))}
             onDelete={guardedAction(id => deleteTransaction.mutateAsync(id))}
@@ -200,13 +204,12 @@ const AppPage = () => {
 
 
         {selectedMonth && currentStep === 2 && (
-          <BudgetView
-            transactions={transactions}
-            budgetPlans={budgetPlans}
-            monthId={selectedMonth.id}
+          <CofrinhosView
+            cofrinhos={cofrinhos}
             isClosed={isBlocked}
-            expenseCategories={expenseCategories.map(c => c.name)}
-            onUpsertBudget={guardedAction(data => upsertBudget.mutateAsync(data))}
+            onCreate={guardedAction(data => createCofrinho.mutateAsync(data))}
+            onUpdate={guardedAction(data => updateCofrinho.mutateAsync(data))}
+            onDelete={guardedAction(id => deleteCofrinho.mutateAsync(id))}
           />
         )}
 

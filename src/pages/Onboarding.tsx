@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMonths } from '@/hooks/useMonths';
 import { useTransactions } from '@/hooks/useTransactions';
-import { useCategories } from '@/hooks/useCategories';
+import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,15 +20,16 @@ const Onboarding = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [initialBalance, setInitialBalance] = useState('');
   const [createdMonthId, setCreatedMonthId] = useState<string | null>(null);
+  const [createdCofrinhoId, setCreatedCofrinhoId] = useState<string | null>(null);
   const [txName, setTxName] = useState('');
   const [txAmount, setTxAmount] = useState('');
   const [txType, setTxType] = useState<'income' | 'expense'>('income');
-  const [txCategory, setTxCategory] = useState('');
+  const [cofrinhoNome, setCofrinhoNome] = useState('Geral');
 
   const { user } = useAuth();
   const { createMonth } = useMonths();
   const { addTransaction } = useTransactions(createdMonthId ?? undefined);
-  const { incomeCategories, expenseCategories } = useCategories();
+  const { createCofrinho } = useCofrinhos();
   const navigate = useNavigate();
 
   const handleCreateMonth = async () => {
@@ -45,30 +46,34 @@ const Onboarding = () => {
   };
 
   const handleFirstTransaction = async () => {
-    if (!createdMonthId || !txName || !txAmount || !txCategory) {
+    if (!createdMonthId || !txName || !txAmount || !cofrinhoNome.trim()) {
       toast.error('Preencha todos os campos');
       return;
     }
     try {
+      let cofrinhoId = createdCofrinhoId;
+      if (!cofrinhoId) {
+        const c = await createCofrinho.mutateAsync({ nome: cofrinhoNome.trim() });
+        cofrinhoId = c.id;
+        setCreatedCofrinhoId(c.id);
+      }
       await addTransaction.mutateAsync({
         month_id: createdMonthId,
+        cofrinho_id: cofrinhoId!,
         type: txType,
         name: txName,
         amount: parseFloat(txAmount),
-        category: txCategory,
         date: new Date().toISOString().split('T')[0],
         status: 'realized',
         is_fixed: false,
         recurrence: 'none',
-      });
+      } as any);
       toast.success('Transação criada! Vamos começar!');
       navigate('/app');
     } catch {
       toast.error('Erro ao criar transação');
     }
   };
-
-  const cats = txType === 'income' ? incomeCategories : expenseCategories;
 
   const steps = [
     // Step 0: Welcome
@@ -175,10 +180,10 @@ const Onboarding = () => {
         <p className="text-muted-foreground">Cadastre pelo menos uma receita ou despesa para começar</p>
       </div>
       <div className="flex gap-2">
-        <Button variant={txType === 'income' ? 'default' : 'outline'} className="flex-1" onClick={() => { setTxType('income'); setTxCategory(''); }}>
+        <Button variant={txType === 'income' ? 'default' : 'outline'} className="flex-1" onClick={() => setTxType('income')}>
           Receita
         </Button>
-        <Button variant={txType === 'expense' ? 'default' : 'outline'} className="flex-1" onClick={() => { setTxType('expense'); setTxCategory(''); }}>
+        <Button variant={txType === 'expense' ? 'default' : 'outline'} className="flex-1" onClick={() => setTxType('expense')}>
           Despesa
         </Button>
       </div>
@@ -192,15 +197,9 @@ const Onboarding = () => {
           <Input type="number" step="0.01" placeholder="0,00" value={txAmount} onChange={e => setTxAmount(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Categoria</Label>
-          <Select value={txCategory} onValueChange={setTxCategory}>
-            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-            <SelectContent>
-              {cats.map(c => (
-                <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label>Cofrinho</Label>
+          <Input placeholder="Ex: Geral, Alimentação..." value={cofrinhoNome} onChange={e => setCofrinhoNome(e.target.value)} />
+          <p className="text-[11px] text-muted-foreground">Toda transação fica vinculada a um cofrinho. Você pode criar mais depois.</p>
         </div>
       </div>
       <Button className="w-full" onClick={handleFirstTransaction} disabled={addTransaction.isPending}>
