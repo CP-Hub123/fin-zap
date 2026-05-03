@@ -10,22 +10,22 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/constants';
 import { Plus, Pencil, Copy, Trash2 } from 'lucide-react';
 import type { Transaction } from '@/hooks/useTransactions';
-import type { Category } from '@/hooks/useCategories';
+import type { Cofrinho } from '@/hooks/useCofrinhos';
 import type { TablesInsert } from '@/integrations/supabase/types';
 
 interface TransactionsViewProps {
   transactions: Transaction[];
   monthId: string;
   isClosed: boolean;
-  categories: Category[];
+  cofrinhos: Cofrinho[];
   onAdd: (data: TablesInsert<'transactions'>) => Promise<any>;
   onUpdate: (data: Partial<Transaction> & { id: string }) => Promise<any>;
   onDelete: (id: string) => Promise<any>;
 }
 
-const emptyForm = { name: '', amount: '', category: '', date: new Date().toISOString().split('T')[0], status: 'realized' as 'planned' | 'realized', is_fixed: false, recurrence: 'none' as 'none' | 'monthly' };
+const emptyForm = { name: '', amount: '', cofrinho_id: '', date: new Date().toISOString().split('T')[0], status: 'realized' as 'planned' | 'realized', is_fixed: false, recurrence: 'none' as 'none' | 'monthly' };
 
-export const TransactionsView = ({ transactions, monthId, isClosed, categories, onAdd, onUpdate, onDelete }: TransactionsViewProps) => {
+export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, onAdd, onUpdate, onDelete }: TransactionsViewProps) => {
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -34,34 +34,37 @@ export const TransactionsView = ({ transactions, monthId, isClosed, categories, 
   const [saving, setSaving] = useState(false);
 
   const filtered = transactions.filter(t => t.type === activeTab);
-  const tabCategories = categories.filter(c => c.type === activeTab);
+  const cofrinhoById = (id: string) => cofrinhos.find(c => c.id === id);
 
   const openNew = () => { setEditingId(null); setForm(emptyForm); setDialogOpen(true); };
   const openEdit = (t: Transaction) => {
     setEditingId(t.id);
-    setForm({ name: t.name, amount: String(t.amount), category: t.category, date: t.date, status: t.status, is_fixed: t.is_fixed, recurrence: t.recurrence });
+    setForm({ name: t.name, amount: String(t.amount), cofrinho_id: (t as any).cofrinho_id ?? '', date: t.date, status: t.status, is_fixed: t.is_fixed, recurrence: t.recurrence });
     setDialogOpen(true);
   };
 
   const handleDuplicate = async (t: Transaction) => {
     await onAdd({
-      month_id: monthId, type: t.type, name: `${t.name} (cópia)`, amount: t.amount,
-      category: t.category, date: t.date, status: t.status, is_fixed: t.is_fixed, recurrence: t.recurrence,
-    });
+      month_id: monthId, type: t.type, name: `${t.name} (cópia)`, amount: Number(t.amount),
+      date: t.date, status: t.status, is_fixed: t.is_fixed, recurrence: t.recurrence,
+      cofrinho_id: (t as any).cofrinho_id,
+    } as any);
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.amount || !form.category) return;
+    if (!form.name || !form.amount || !form.cofrinho_id) return;
     setSaving(true);
     try {
       if (editingId) {
-        await onUpdate({ id: editingId, name: form.name, amount: parseFloat(form.amount), category: form.category, date: form.date, status: form.status as any, is_fixed: form.is_fixed, recurrence: form.recurrence as any });
+        await onUpdate({ id: editingId, name: form.name, amount: parseFloat(form.amount), cofrinho_id: form.cofrinho_id, date: form.date, status: form.status as any, is_fixed: form.is_fixed, recurrence: form.recurrence as any } as any);
       } else {
-        await onAdd({ month_id: monthId, type: activeTab, name: form.name, amount: parseFloat(form.amount), category: form.category, date: form.date, status: form.status as any, is_fixed: form.is_fixed, recurrence: form.recurrence as any });
+        await onAdd({ month_id: monthId, type: activeTab, name: form.name, amount: parseFloat(form.amount), cofrinho_id: form.cofrinho_id, date: form.date, status: form.status as any, is_fixed: form.is_fixed, recurrence: form.recurrence as any } as any);
       }
       setDialogOpen(false);
     } catch {} finally { setSaving(false); }
   };
+
+  const noCofrinhos = cofrinhos.length === 0;
 
   return (
     <div className="space-y-4">
@@ -74,11 +77,17 @@ export const TransactionsView = ({ transactions, monthId, isClosed, categories, 
           Despesas ({transactions.filter(t => t.type === 'expense').length})
         </Button>
         {!isClosed && (
-          <Button onClick={openNew} size="sm" className="w-full sm:w-auto sm:ml-auto min-h-[44px] sm:min-h-0">
+          <Button onClick={openNew} size="sm" className="w-full sm:w-auto sm:ml-auto min-h-[44px] sm:min-h-0" disabled={noCofrinhos}>
             <Plus className="h-4 w-4 mr-1" /> Adicionar
           </Button>
         )}
       </div>
+
+      {noCofrinhos && !isClosed && (
+        <div className="p-3 rounded-lg bg-primary/10 text-sm text-primary">
+          Crie um cofrinho na etapa <strong>Planejamento</strong> antes de adicionar transações.
+        </div>
+      )}
 
       {isClosed && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
@@ -101,7 +110,12 @@ export const TransactionsView = ({ transactions, monthId, isClosed, categories, 
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{t.name}</p>
                     <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                      <Badge variant="outline" className="text-xs">{t.category}</Badge>
+                      <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        {(t as any).cofrinho_id && cofrinhoById((t as any).cofrinho_id) && (
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cofrinhoById((t as any).cofrinho_id)!.cor }} />
+                        )}
+                        {cofrinhoById((t as any).cofrinho_id)?.nome ?? '—'}
+                      </Badge>
                       <Badge variant={t.status === 'realized' ? 'default' : 'secondary'} className="text-xs">
                         {t.status === 'realized' ? 'Realizado' : 'Previsto'}
                       </Badge>
@@ -158,11 +172,18 @@ export const TransactionsView = ({ transactions, monthId, isClosed, categories, 
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
-                <SelectTrigger className="min-h-[44px]"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <Label>Cofrinho *</Label>
+              <Select value={form.cofrinho_id} onValueChange={v => setForm(f => ({ ...f, cofrinho_id: v }))}>
+                <SelectTrigger className="min-h-[44px]"><SelectValue placeholder="Selecione um cofrinho..." /></SelectTrigger>
                 <SelectContent>
-                  {tabCategories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                  {cofrinhos.map(c => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.cor }} />
+                        {c.nome}
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
