@@ -11,6 +11,7 @@ import {
 import type { Month } from '@/hooks/useMonths';
 import type { Transaction } from '@/hooks/useTransactions';
 import type { BudgetPlan } from '@/hooks/useBudget';
+import { useCofrinhos } from '@/hooks/useCofrinhos';
 
 interface SummaryViewProps {
   month: Month;
@@ -61,6 +62,15 @@ const PieTooltip = ({ active, payload }: any) => {
 };
 
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
+  const { cofrinhos } = useCofrinhos();
+  const cofrinhoMap = useMemo(() => {
+    const map: Record<string, { nome: string; cor: string; orcamento: number }> = {};
+    cofrinhos.forEach(c => {
+      map[c.id] = { nome: c.nome, cor: c.cor || 'hsl(217, 91%, 60%)', orcamento: Number(c.orcamento_mensal) };
+    });
+    return map;
+  }, [cofrinhos]);
+
   const now = new Date();
   const daysInMonth = new Date(month.year, month.month, 0).getDate();
   const currentDay = month.year === now.getFullYear() && month.month === now.getMonth() + 1
@@ -69,46 +79,60 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
   const finalBalance = balance + Number(month.initial_balance);
   const isPositive = finalBalance >= 0;
 
-  // Budget usage
-  const totalPlanned = budgetPlans.reduce((s, b) => s + Number(b.planned_amount), 0);
+  // Budget usage — based on cofrinhos
+  const totalPlanned = cofrinhos.reduce((s, c) => s + Number(c.orcamento_mensal), 0);
   const budgetUsage = totalPlanned > 0 ? Math.round((totalExpense / totalPlanned) * 100) : 0;
   const overBudget = budgetUsage > 100;
 
-  // Pie chart data — expense distribution by category
+  // Pie chart data — expense distribution by cofrinho
   const pieData = useMemo(() => {
-    const categoryMap: Record<string, number> = {};
+    const map: Record<string, number> = {};
     transactions.filter(t => t.type === 'expense').forEach(t => {
-      const key = (t as any).cofrinho_id || t.category || 'Sem cofrinho';
-      categoryMap[key] = (categoryMap[key] || 0) + Number(t.amount);
+      const key = (t as any).cofrinho_id || '__none__';
+      map[key] = (map[key] || 0) + Number(t.amount);
     });
-    const entries = Object.entries(categoryMap)
-      .map(([name, value]) => ({ name, value }))
+    const entries = Object.entries(map)
+      .map(([id, value]) => {
+        const c = cofrinhoMap[id];
+        return {
+          id,
+          name: c?.nome ?? 'Sem cofrinho',
+          color: c?.cor ?? 'hsl(var(--muted-foreground))',
+          value,
+        };
+      })
       .sort((a, b) => b.value - a.value);
     const total = entries.reduce((s, e) => s + e.value, 0);
-    return entries.map((e, i) => ({
+    return entries.map((e) => ({
       ...e,
-      fill: CHART_COLORS[i % CHART_COLORS.length],
+      fill: e.color,
       percent: total > 0 ? Math.round((e.value / total) * 100) : 0,
     }));
-  }, [transactions]);
+  }, [transactions, cofrinhoMap]);
 
-  // Bar chart data — budget vs realized by category
+  // Bar chart data — budget vs realized by cofrinho
   const barData = useMemo(() => {
     const realizedMap: Record<string, number> = {};
     transactions.filter(t => t.type === 'expense' && t.status === 'realized').forEach(t => {
-      const key = (t as any).cofrinho_id || t.category || 'Sem cofrinho';
+      const key = (t as any).cofrinho_id || '__none__';
       realizedMap[key] = (realizedMap[key] || 0) + Number(t.amount);
     });
-    const categories = new Set([
-      ...budgetPlans.map(b => b.category),
+    const ids = new Set<string>([
+      ...cofrinhos.map(c => c.id),
       ...Object.keys(realizedMap),
     ]);
-    return Array.from(categories).map(cat => ({
-      category: cat.length > 12 ? cat.slice(0, 12) + '…' : cat,
-      Orçado: Number(budgetPlans.find(b => b.category === cat)?.planned_amount || 0),
-      Realizado: realizedMap[cat] || 0,
-    })).sort((a, b) => b.Realizado - a.Realizado);
-  }, [transactions, budgetPlans]);
+    return Array.from(ids).map(id => {
+      const c = cofrinhoMap[id];
+      const nome = c?.nome ?? 'Sem cofrinho';
+      return {
+        id,
+        category: nome.length > 12 ? nome.slice(0, 12) + '…' : nome,
+        cor: c?.cor ?? 'hsl(var(--muted-foreground))',
+        Orçado: Number(c?.orcamento ?? 0),
+        Realizado: realizedMap[id] || 0,
+      };
+    }).sort((a, b) => b.Realizado - a.Realizado);
+  }, [transactions, cofrinhos, cofrinhoMap]);
 
   // Line chart data — daily cumulative balance evolution
   const lineData = useMemo(() => {
@@ -143,6 +167,7 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
   const hasExpenses = pieData.length > 0;
   const hasBudget = barData.length > 0;
   const hasLineData = lineData.length > 0;
+  const hasCofrinhos = cofrinhos.length > 0;
 
   return (
     <div className="space-y-6">
@@ -266,8 +291,9 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
                 </div>
               </div>
             ) : (
-              <div className="h-[220px] flex items-center justify-center text-sm text-muted-foreground">
-                Nenhuma despesa registrada
+              <div className="h-[220px] flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                <PieIcon className="h-8 w-8 opacity-30" />
+                <span>{hasCofrinhos ? 'Nenhuma despesa registrada nos cofrinhos' : 'Crie cofrinhos para visualizar a distribuição'}</span>
               </div>
             )}
           </CardContent>
@@ -290,13 +316,22 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
                   <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="Orçado" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} barSize={20} />
-                  <Bar dataKey="Realizado" fill="hsl(var(--finzap-red))" radius={[4, 4, 0, 0]} barSize={20} />
+                  <Bar dataKey="Orçado" radius={[4, 4, 0, 0]} barSize={20} fillOpacity={0.35}>
+                    {barData.map((entry, i) => (
+                      <Cell key={`o-${i}`} fill={entry.cor} />
+                    ))}
+                  </Bar>
+                  <Bar dataKey="Realizado" radius={[4, 4, 0, 0]} barSize={20}>
+                    {barData.map((entry, i) => (
+                      <Cell key={`r-${i}`} fill={entry.cor} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[280px] flex items-center justify-center text-sm text-muted-foreground">
-                Nenhum dado de orçamento disponível
+              <div className="h-[280px] flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                <BarChart3 className="h-8 w-8 opacity-30" />
+                <span>{hasCofrinhos ? 'Defina orçamentos nos cofrinhos para comparar' : 'Crie cofrinhos para acompanhar orçamento vs realizado'}</span>
               </div>
             )}
           </CardContent>
