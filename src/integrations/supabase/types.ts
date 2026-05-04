@@ -283,16 +283,19 @@ export type Database = {
           created_at: string
           id: string
           name: string | null
+          reserva_emergencia: number
         }
         Insert: {
           created_at?: string
           id: string
           name?: string | null
+          reserva_emergencia?: number
         }
         Update: {
           created_at?: string
           id?: string
           name?: string | null
+          reserva_emergencia?: number
         }
         Relationships: []
       }
@@ -394,14 +397,18 @@ export type Database = {
           created_at: string
           date: string
           descricao: string | null
+          external_id: string | null
           id: string
           impacta_saldo: boolean
           is_fixed: boolean
           month_id: string | null
           name: string
           origem: string
+          provider: string | null
           recurrence: Database["public"]["Enums"]["recurrence_type"]
+          source: Database["public"]["Enums"]["transaction_source"]
           status: Database["public"]["Enums"]["transaction_status"]
+          sync_status: Database["public"]["Enums"]["sync_status_type"] | null
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -412,14 +419,18 @@ export type Database = {
           created_at?: string
           date: string
           descricao?: string | null
+          external_id?: string | null
           id?: string
           impacta_saldo?: boolean
           is_fixed?: boolean
           month_id?: string | null
           name: string
           origem?: string
+          provider?: string | null
           recurrence?: Database["public"]["Enums"]["recurrence_type"]
+          source?: Database["public"]["Enums"]["transaction_source"]
           status?: Database["public"]["Enums"]["transaction_status"]
+          sync_status?: Database["public"]["Enums"]["sync_status_type"] | null
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -430,14 +441,18 @@ export type Database = {
           created_at?: string
           date?: string
           descricao?: string | null
+          external_id?: string | null
           id?: string
           impacta_saldo?: boolean
           is_fixed?: boolean
           month_id?: string | null
           name?: string
           origem?: string
+          provider?: string | null
           recurrence?: Database["public"]["Enums"]["recurrence_type"]
+          source?: Database["public"]["Enums"]["transaction_source"]
           status?: Database["public"]["Enums"]["transaction_status"]
+          sync_status?: Database["public"]["Enums"]["sync_status_type"] | null
           type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string
         }
@@ -502,6 +517,8 @@ export type Database = {
       recurrence_type: "none" | "monthly"
       subscription_plan: "trial" | "premium"
       subscription_status: "active" | "expired"
+      sync_status_type: "pending" | "synced" | "error"
+      transaction_source: "manual" | "external"
       transaction_status: "planned" | "realized"
       transaction_type: "income" | "expense"
     }
@@ -636,6 +653,8 @@ export const Constants = {
       recurrence_type: ["none", "monthly"],
       subscription_plan: ["trial", "premium"],
       subscription_status: ["active", "expired"],
+      sync_status_type: ["pending", "synced", "error"],
+      transaction_source: ["manual", "external"],
       transaction_status: ["planned", "realized"],
       transaction_type: ["income", "expense"],
     },

@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { formatCurrency } from '@/lib/constants';
 import { Plus, Pencil, Trash2, PiggyBank } from 'lucide-react';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
+import { ConnectedAccountsCard } from './ConnectedAccountsCard';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
 
@@ -131,6 +132,8 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
           })}
         </div>
       )}
+
+      <ConnectedAccountsCard />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg mx-4 sm:mx-auto">

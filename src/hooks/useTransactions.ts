@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
+import { FinancialDataService } from '@/services/FinancialDataService';
 
 export type Transaction = Tables<'transactions'>;
 
@@ -12,30 +13,17 @@ export const useTransactions = (monthId: string | undefined) => {
   const transactionsQuery = useQuery({
     queryKey: ['transactions', monthId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('month_id', monthId!)
-        .order('date', { ascending: false });
-      if (error) throw error;
-      return data as Transaction[];
+      return FinancialDataService.getTransactionsByMonth(monthId!);
     },
     enabled: !!monthId,
   });
 
   const addTransaction = useMutation({
     mutationFn: async (data: Omit<TablesInsert<'transactions'>, 'user_id'> & { user_id?: string }) => {
-      const payload: TablesInsert<'transactions'> = {
+      return FinancialDataService.createManualTransaction({
         ...data,
         user_id: data.user_id ?? user!.id,
-      };
-      const { data: result, error } = await supabase
-        .from('transactions')
-        .insert(payload)
-        .select()
-        .single();
-      if (error) throw error;
-      return result;
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions', monthId] });
