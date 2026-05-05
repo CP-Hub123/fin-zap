@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/app/Logo';
 import {
@@ -25,14 +26,20 @@ import {
 
 const Index = () => {
   const { user, isLoading } = useAuth();
+  const { isMaintenanceMode, isLoading: statusLoading } = useSystemStatus();
   const navigate = useNavigate();
   const [showUrgency, setShowUrgency] = useState(true);
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (statusLoading || isLoading) return;
+    if (isMaintenanceMode) {
+      navigate('/maintenance', { replace: true });
+      return;
+    }
+    if (user) {
       navigate('/app');
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, isMaintenanceMode, statusLoading, navigate]);
 
   const scrollToHow = () => {
     document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' });
