@@ -7,6 +7,7 @@ import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useSubscription } from '@/hooks/useSubscription';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
+import { useAutoExecutarRecorrencias } from '@/hooks/useRecurringTransactions';
 import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
@@ -44,6 +45,9 @@ const AppPage = () => {
   const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, fecharMes } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
+
+  // Executa recorrências mensais automaticamente ao carregar o app
+  useAutoExecutarRecorrencias();
 
   // Automatic notification triggers
   useNotificationTriggers({
