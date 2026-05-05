@@ -120,6 +120,9 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
                         {t.status === 'realized' ? 'Realizado' : 'Previsto'}
                       </Badge>
                       {t.is_fixed && <Badge variant="secondary" className="text-xs">Fixa</Badge>}
+                      {(t as any).source === 'recurring' && (
+                        <Badge variant="secondary" className="text-xs">🔁 Recorrente</Badge>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1.5">
                       {new Date(t.date + 'T12:00:00').toLocaleDateString('pt-BR')}
