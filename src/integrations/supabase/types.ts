@@ -550,6 +550,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      executar_recorrencias_usuario: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       fechar_mes_cofrinhos: { Args: { _user_id: string }; Returns: number }
       is_admin: { Args: never; Returns: boolean }
     }
