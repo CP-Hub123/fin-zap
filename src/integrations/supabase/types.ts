@@ -326,6 +326,48 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_transactions: {
+        Row: {
+          ativo: boolean
+          cofrinho_id: string
+          created_at: string
+          dia_do_mes: number
+          id: string
+          nome: string
+          tipo: string
+          ultima_execucao: string | null
+          updated_at: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean
+          cofrinho_id: string
+          created_at?: string
+          dia_do_mes?: number
+          id?: string
+          nome: string
+          tipo: string
+          ultima_execucao?: string | null
+          updated_at?: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          ativo?: boolean
+          cofrinho_id?: string
+          created_at?: string
+          dia_do_mes?: number
+          id?: string
+          nome?: string
+          tipo?: string
+          ultima_execucao?: string | null
+          updated_at?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -518,7 +560,7 @@ export type Database = {
       subscription_plan: "trial" | "premium"
       subscription_status: "active" | "expired"
       sync_status_type: "pending" | "synced" | "error"
-      transaction_source: "manual" | "external"
+      transaction_source: "manual" | "external" | "recurring"
       transaction_status: "planned" | "realized"
       transaction_type: "income" | "expense"
     }
@@ -654,7 +696,7 @@ export const Constants = {
       subscription_plan: ["trial", "premium"],
       subscription_status: ["active", "expired"],
       sync_status_type: ["pending", "synced", "error"],
-      transaction_source: ["manual", "external"],
+      transaction_source: ["manual", "external", "recurring"],
       transaction_status: ["planned", "realized"],
       transaction_type: ["income", "expense"],
     },
