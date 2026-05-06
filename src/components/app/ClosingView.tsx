@@ -154,7 +154,7 @@ export const ClosingView = ({ month, totalIncome, totalExpense, balance, incomeC
       </AlertDialog>
 
       {/* Reopen step 1 */}
-      <AlertDialog open={reopenStep === 1} onOpenChange={() => setReopenStep(0)}>
+      <AlertDialog open={reopenStep === 1} onOpenChange={(open) => { if (!open) setReopenStep((s) => (s === 1 ? 0 : s)); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reabrir mês?</AlertDialogTitle>
@@ -162,13 +162,13 @@ export const ClosingView = ({ month, totalIncome, totalExpense, balance, incomeC
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setReopenStep(2)}>Sim, continuar</AlertDialogAction>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); setReopenStep(2); }}>Sim, continuar</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* Reopen step 2 */}
-      <AlertDialog open={reopenStep === 2} onOpenChange={() => setReopenStep(0)}>
+      <AlertDialog open={reopenStep === 2} onOpenChange={(open) => { if (!open) setReopenStep((s) => (s === 2 ? 0 : s)); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmação final</AlertDialogTitle>
