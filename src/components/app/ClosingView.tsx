@@ -51,8 +51,16 @@ export const ClosingView = ({ month, totalIncome, totalExpense, balance, incomeC
   const handleReopen = async () => {
     setLoading(true);
     try {
-      await supabase.from('monthly_closures').delete().eq('month_id', month.id);
-      await onUpdateStatus({ id: month.id, status: 'in_progress', closed_at: null });
+      // Preserva snapshot (imutável). Apenas marca o mês como reaberto.
+      await supabase
+        .from('months')
+        .update({
+          status: 'in_progress' as any,
+          closed_at: null,
+          reopened_at: new Date().toISOString(),
+          reopened_count: (month as any).reopened_count != null ? (month as any).reopened_count + 1 : 1,
+        } as any)
+        .eq('id', month.id);
       toast.success('Mês reaberto!');
       setReopenStep(0);
     } catch {
