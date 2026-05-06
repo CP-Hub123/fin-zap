@@ -224,6 +224,25 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
                 </div>
               </div>
             </div>
+            {!editing && (() => {
+              const hoje = new Date().getDate();
+              const dia = parseInt(form.dia_do_mes) || 1;
+              if (dia >= hoje) return null;
+              return (
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border">
+                  <Switch
+                    checked={form.lancar_se_dia_passou}
+                    onCheckedChange={v => setForm(f => ({ ...f, lancar_se_dia_passou: v }))}
+                  />
+                  <div className="text-sm">
+                    <p className="font-medium">Lançar este mês mesmo assim?</p>
+                    <p className="text-xs text-muted-foreground">
+                      O dia {dia} já passou. Se ativado, lança hoje. Caso contrário, só no próximo mês.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>
