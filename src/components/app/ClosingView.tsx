@@ -77,6 +77,12 @@ export const ClosingView = ({ month, totalIncome, totalExpense, balance, incomeC
           <span className="font-medium">Mês fechado em {month.closed_at ? new Date(month.closed_at).toLocaleDateString('pt-BR') : ''}</span>
         </div>
       )}
+      {!isClosed && (month as any).reopened_count > 0 && (
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10 text-primary text-sm">
+          <Unlock className="h-4 w-4" />
+          <span>Mês reaberto ({(month as any).reopened_count}x). Snapshot original preservado.</span>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
