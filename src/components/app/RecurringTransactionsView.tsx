@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { formatCurrency } from '@/lib/constants';
-import { Plus, Pencil, Trash2, Repeat } from 'lucide-react';
+import { Plus, Pencil, Trash2, Repeat, CalendarClock } from 'lucide-react';
 import { useRecurringTransactions, type RecurringTransaction } from '@/hooks/useRecurringTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 
@@ -25,6 +25,7 @@ const empty = {
   cofrinho_id: '',
   dia_do_mes: '1',
   ativo: true,
+  lancar_se_dia_passou: false,
 };
 
 export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
@@ -48,6 +49,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
       cofrinho_id: r.cofrinho_id,
       dia_do_mes: String(r.dia_do_mes),
       ativo: r.ativo,
+      lancar_se_dia_passou: (r as any).lancar_se_dia_passou ?? false,
     });
     setOpen(true);
   };
@@ -63,6 +65,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
         cofrinho_id: form.cofrinho_id,
         dia_do_mes: Math.max(1, Math.min(31, parseInt(form.dia_do_mes) || 1)),
         ativo: form.ativo,
+        lancar_se_dia_passou: form.lancar_se_dia_passou,
       };
       if (editing) await update.mutateAsync({ id: editing.id, ...payload });
       else await create.mutateAsync(payload);
@@ -72,6 +75,14 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
 
   const toggleAtivo = async (r: RecurringTransaction) => {
     await update.mutateAsync({ id: r.id, ativo: !r.ativo });
+  };
+
+  const diasParaProxima = (proxima: string | null | undefined) => {
+    if (!proxima) return null;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const next = new Date(proxima + 'T00:00:00');
+    const diff = Math.round((next.getTime() - today.getTime()) / 86400000);
+    return diff;
   };
 
   return (
@@ -106,6 +117,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
         <div className="space-y-3">
           {recorrencias.map(r => {
             const cof = cofrinhoById(r.cofrinho_id);
+            const dias = diasParaProxima((r as any).proxima_execucao);
             return (
               <Card key={r.id} className="border-0 shadow-sm">
                 <CardContent className="p-4 space-y-3">
@@ -122,6 +134,12 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
                           {r.ativo ? 'Ativa' : 'Pausada'}
                         </Badge>
                       </div>
+                      {r.ativo && dias !== null && (
+                        <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                          <CalendarClock className="h-3 w-3" />
+                          {dias <= 0 ? 'Lança hoje' : dias === 1 ? 'Próxima cobrança amanhã' : `Próxima cobrança em ${dias} dias`}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-bold text-base" style={{ color: r.tipo === 'receita' ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
@@ -206,6 +224,25 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
                 </div>
               </div>
             </div>
+            {!editing && (() => {
+              const hoje = new Date().getDate();
+              const dia = parseInt(form.dia_do_mes) || 1;
+              if (dia >= hoje) return null;
+              return (
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border">
+                  <Switch
+                    checked={form.lancar_se_dia_passou}
+                    onCheckedChange={v => setForm(f => ({ ...f, lancar_se_dia_passou: v }))}
+                  />
+                  <div className="text-sm">
+                    <p className="font-medium">Lançar este mês mesmo assim?</p>
+                    <p className="text-xs text-muted-foreground">
+                      O dia {dia} já passou. Se ativado, lança hoje. Caso contrário, só no próximo mês.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>

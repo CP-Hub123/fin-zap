@@ -222,6 +222,8 @@ export type Database = {
           id: string
           initial_balance: number
           month: number
+          reopened_at: string | null
+          reopened_count: number
           status: Database["public"]["Enums"]["month_status"]
           user_id: string
           year: number
@@ -232,6 +234,8 @@ export type Database = {
           id?: string
           initial_balance?: number
           month: number
+          reopened_at?: string | null
+          reopened_count?: number
           status?: Database["public"]["Enums"]["month_status"]
           user_id: string
           year: number
@@ -242,6 +246,8 @@ export type Database = {
           id?: string
           initial_balance?: number
           month?: number
+          reopened_at?: string | null
+          reopened_count?: number
           status?: Database["public"]["Enums"]["month_status"]
           user_id?: string
           year?: number
@@ -333,7 +339,9 @@ export type Database = {
           created_at: string
           dia_do_mes: number
           id: string
+          lancar_se_dia_passou: boolean
           nome: string
+          proxima_execucao: string | null
           tipo: string
           ultima_execucao: string | null
           updated_at: string
@@ -346,7 +354,9 @@ export type Database = {
           created_at?: string
           dia_do_mes?: number
           id?: string
+          lancar_se_dia_passou?: boolean
           nome: string
+          proxima_execucao?: string | null
           tipo: string
           ultima_execucao?: string | null
           updated_at?: string
@@ -359,7 +369,9 @@ export type Database = {
           created_at?: string
           dia_do_mes?: number
           id?: string
+          lancar_se_dia_passou?: boolean
           nome?: string
+          proxima_execucao?: string | null
           tipo?: string
           ultima_execucao?: string | null
           updated_at?: string
@@ -550,6 +562,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calc_proxima_execucao: {
+        Args: { _dia: number; _from: string }
+        Returns: string
+      }
       executar_recorrencias_usuario: {
         Args: { _user_id: string }
         Returns: number
