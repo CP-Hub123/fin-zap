@@ -1,40 +1,62 @@
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/constants';
-import { Plus, Pencil, Trash2, PiggyBank } from 'lucide-react';
+import { Plus, Pencil, Trash2, PiggyBank, ShieldCheck, Target, Wallet } from 'lucide-react';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import { ConnectedAccountsCard } from './ConnectedAccountsCard';
 import { RecurringTransactionsView } from './RecurringTransactionsView';
+import { CofrinhoCard } from './CofrinhoCard';
+import { CofrinhoDetailSheet } from './CofrinhoDetailSheet';
+import { COVER_PRESETS, getPreset } from '@/lib/cofrinhoPresets';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
+type TipoCofrinho = 'reserva' | 'mensal' | 'meta';
 
 interface Props {
   cofrinhos: Cofrinho[];
   isClosed: boolean;
-  onCreate: (data: { nome: string; cor?: string; orcamento_mensal?: number; saldo?: number }) => Promise<any>;
+  onCreate: (data: any) => Promise<any>;
   onUpdate: (data: Partial<Cofrinho> & { id: string }) => Promise<any>;
   onDelete: (id: string) => Promise<any>;
+  onTransfer?: (data: { origem_id: string; destino_id: string; valor: number; descricao?: string }) => Promise<any>;
 }
 
-const empty = { nome: '', cor: COLORS[0], orcamento_mensal: '', saldo: '' };
+const empty = {
+  nome: '',
+  tipo: 'mensal' as TipoCofrinho,
+  cover_preset: 'default',
+  orcamento_mensal: '',
+  saldo: '',
+  meta_valor: '',
+  custo_mensal: '',
+  meses_protegidos: '6',
+};
 
-export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelete }: Props) => {
+export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelete, onTransfer }: Props) => {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Cofrinho | null>(null);
   const [form, setForm] = useState(empty);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (c: Cofrinho) => {
     setEditing(c);
-    setForm({ nome: c.nome, cor: c.cor, orcamento_mensal: String(c.orcamento_mensal), saldo: String(c.saldo) });
+    setForm({
+      nome: c.nome,
+      tipo: (c.tipo as TipoCofrinho) ?? 'mensal',
+      cover_preset: c.cover_preset ?? 'default',
+      orcamento_mensal: String(c.orcamento_mensal),
+      saldo: String(c.saldo),
+      meta_valor: String(c.meta_valor ?? 0),
+      custo_mensal: String(c.custo_mensal ?? 0),
+      meses_protegidos: String(c.meses_protegidos ?? 6),
+    });
     setOpen(true);
   };
 
@@ -42,25 +64,29 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
     if (!form.nome.trim()) return;
     setSaving(true);
     try {
+      const preset = getPreset(form.cover_preset);
+      const base: any = {
+        nome: form.nome,
+        tipo: form.tipo,
+        cover_preset: form.cover_preset,
+        icon: form.cover_preset,
+        cor: preset.color,
+        orcamento_mensal: form.tipo === 'mensal' ? (parseFloat(form.orcamento_mensal) || 0) : 0,
+        meta_valor: form.tipo === 'meta' ? (parseFloat(form.meta_valor) || 0) : 0,
+        custo_mensal: form.tipo === 'reserva' ? (parseFloat(form.custo_mensal) || 0) : 0,
+        meses_protegidos: form.tipo === 'reserva' ? (parseFloat(form.meses_protegidos) || 6) : 6,
+      };
       if (editing) {
-        await onUpdate({
-          id: editing.id,
-          nome: form.nome,
-          cor: form.cor,
-          orcamento_mensal: parseFloat(form.orcamento_mensal) || 0,
-          saldo: parseFloat(form.saldo) || 0,
-        });
+        await onUpdate({ id: editing.id, ...base });
       } else {
-        await onCreate({
-          nome: form.nome,
-          cor: form.cor,
-          orcamento_mensal: parseFloat(form.orcamento_mensal) || 0,
-          saldo: parseFloat(form.saldo) || 0,
-        });
+        await onCreate({ ...base, saldo: parseFloat(form.saldo) || 0 });
       }
       setOpen(false);
     } finally { setSaving(false); }
   };
+
+  const totalGuardado = cofrinhos.reduce((s, c) => s + Number(c.saldo), 0);
+  const detail = cofrinhos.find(c => c.id === detailId) ?? null;
 
   return (
     <div className="space-y-4">
@@ -69,7 +95,7 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
           <h2 className="text-lg font-bold flex items-center gap-2">
             <PiggyBank className="h-5 w-5 text-primary" /> Cofrinhos
           </h2>
-          <p className="text-xs text-muted-foreground">Toda transação precisa estar vinculada a um cofrinho.</p>
+          <p className="text-xs text-muted-foreground">Separe seu dinheiro por propósito.</p>
         </div>
         {!isClosed && (
           <Button size="sm" onClick={openNew} className="min-h-[40px]">
@@ -78,59 +104,38 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
         )}
       </div>
 
+      {cofrinhos.length > 0 && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-zap p-5 text-white shadow-zap">
+          <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative z-10 space-y-1">
+            <p className="text-xs uppercase tracking-wide opacity-80">Total guardado</p>
+            <p className="text-3xl font-bold tabular-nums">{formatCurrency(totalGuardado)}</p>
+            <p className="text-xs opacity-80">distribuído em {cofrinhos.length} {cofrinhos.length === 1 ? 'cofrinho' : 'cofrinhos'}</p>
+          </div>
+        </div>
+      )}
+
       {cofrinhos.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground text-sm">
           Crie seu primeiro cofrinho para começar a registrar transações.
         </div>
       ) : (
-        <div className="space-y-3">
-          {cofrinhos.map(c => {
-            const orc = Number(c.orcamento_mensal);
-            const gasto = Number(c.gasto_mes);
-            const pct = orc > 0 ? Math.min(100, Math.round((gasto / orc) * 100)) : 0;
-            const over = orc > 0 && gasto > orc;
-            return (
-              <Card key={c.id} className="border-0 shadow-sm">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: c.cor }} />
-                      <p className="font-medium truncate">{c.nome}</p>
-                    </div>
-                    {!isClosed && (
-                      <div className="flex gap-0.5">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteId(c.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <p className="text-[10px] uppercase text-muted-foreground">Saldo</p>
-                      <p className="text-sm font-bold">{formatCurrency(Number(c.saldo))}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase text-muted-foreground">Gasto mês</p>
-                      <p className="text-sm font-bold" style={{ color: over ? 'hsl(var(--finzap-red))' : undefined }}>
-                        {formatCurrency(gasto)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase text-muted-foreground">Orçamento</p>
-                      <p className="text-sm font-bold">{formatCurrency(orc)}</p>
-                    </div>
-                  </div>
-                  {orc > 0 && (
-                    <Progress value={pct} className={`h-2 ${over ? '[&>div]:bg-[hsl(var(--finzap-red))]' : ''}`} />
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {cofrinhos.map(c => (
+            <div key={c.id} className="relative group">
+              <CofrinhoCard cofrinho={c} onClick={() => setDetailId(c.id)} />
+              {!isClosed && (
+                <div className="absolute top-2 right-8 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="secondary" size="icon" className="h-7 w-7 bg-white/80 backdrop-blur" onClick={(e) => { e.stopPropagation(); openEdit(c); }}>
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button variant="secondary" size="icon" className="h-7 w-7 bg-white/80 backdrop-blur text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteId(c.id); }}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -140,41 +145,133 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
         <RecurringTransactionsView cofrinhos={cofrinhos} isClosed={isClosed} />
       </div>
 
+      {onTransfer && (
+        <CofrinhoDetailSheet
+          cofrinho={detail}
+          cofrinhos={cofrinhos}
+          open={!!detailId}
+          onOpenChange={(o) => !o && setDetailId(null)}
+          onTransfer={onTransfer}
+        />
+      )}
+
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+        <DialogContent className="max-w-lg mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar' : 'Novo'} cofrinho</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Tipo */}
+            <div className="space-y-2">
+              <Label>Tipo</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { v: 'mensal' as const, label: 'Mensal', icon: Wallet, desc: 'Gastos do mês' },
+                  { v: 'meta' as const, label: 'Meta', icon: Target, desc: 'Objetivo' },
+                  { v: 'reserva' as const, label: 'Reserva', icon: ShieldCheck, desc: 'Emergência' },
+                ]).map(t => {
+                  const Icon = t.icon;
+                  const active = form.tipo === t.v;
+                  return (
+                    <button
+                      key={t.v}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, tipo: t.v }))}
+                      className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition ${active ? 'border-primary bg-primary/5' : 'border-border'}`}
+                    >
+                      <Icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <span className="text-xs font-medium">{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label>Nome</Label>
               <Input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} placeholder="Ex: Alimentação" className="min-h-[44px]" />
             </div>
+
+            {/* Capa preset */}
             <div className="space-y-2">
-              <Label>Cor</Label>
-              <div className="flex flex-wrap gap-2">
-                {COLORS.map(col => (
-                  <button
-                    key={col}
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, cor: col }))}
-                    className={`h-8 w-8 rounded-full border-2 transition ${form.cor === col ? 'border-foreground scale-110' : 'border-transparent'}`}
-                    style={{ backgroundColor: col }}
-                  />
-                ))}
+              <Label>Capa</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {COVER_PRESETS.map(p => {
+                  const Icon = p.icon;
+                  const active = form.cover_preset === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, cover_preset: p.id }))}
+                      className={`relative h-14 rounded-lg flex flex-col items-center justify-center text-white transition ${active ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''}`}
+                      style={{ backgroundImage: p.gradient }}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="text-[9px] mt-0.5">{p.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Saldo inicial (R$)</Label>
-                <Input type="number" step="0.01" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} className="min-h-[44px]" disabled={!!editing} />
-                {editing && <p className="text-[10px] text-muted-foreground">Saldo é ajustado automaticamente pelas transações.</p>}
+
+            {/* Campos por tipo */}
+            {form.tipo === 'mensal' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Saldo inicial (R$)</Label>
+                  <Input type="number" step="0.01" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} className="min-h-[44px]" disabled={!!editing} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Orçamento mensal (R$)</Label>
+                  <Input type="number" step="0.01" value={form.orcamento_mensal} onChange={e => setForm(f => ({ ...f, orcamento_mensal: e.target.value }))} className="min-h-[44px]" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Orçamento mensal (R$)</Label>
-                <Input type="number" step="0.01" value={form.orcamento_mensal} onChange={e => setForm(f => ({ ...f, orcamento_mensal: e.target.value }))} className="min-h-[44px]" />
+            )}
+
+            {form.tipo === 'meta' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Saldo atual (R$)</Label>
+                  <Input type="number" step="0.01" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} className="min-h-[44px]" disabled={!!editing} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Meta (R$)</Label>
+                  <Input type="number" step="0.01" value={form.meta_valor} onChange={e => setForm(f => ({ ...f, meta_valor: e.target.value }))} className="min-h-[44px]" placeholder="Ex: 7000" />
+                </div>
               </div>
-            </div>
+            )}
+
+            {form.tipo === 'reserva' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Saldo atual (R$)</Label>
+                    <Input type="number" step="0.01" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} className="min-h-[44px]" disabled={!!editing} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Custo mensal (R$)</Label>
+                    <Input type="number" step="0.01" value={form.custo_mensal} onChange={e => setForm(f => ({ ...f, custo_mensal: e.target.value }))} className="min-h-[44px]" placeholder="Seus gastos fixos" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Meses de proteção desejados</Label>
+                  <Select value={form.meses_protegidos} onValueChange={v => setForm(f => ({ ...f, meses_protegidos: v }))}>
+                    <SelectTrigger className="min-h-[44px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[3, 6, 9, 12].map(n => <SelectItem key={n} value={String(n)}>{n} meses</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {form.custo_mensal && (
+                    <p className="text-xs text-muted-foreground">
+                      Meta calculada: <strong>{formatCurrency((parseFloat(form.custo_mensal) || 0) * (parseFloat(form.meses_protegidos) || 6))}</strong>
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {editing && <p className="text-[10px] text-muted-foreground">Saldo é ajustado automaticamente pelas transações.</p>}
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>
