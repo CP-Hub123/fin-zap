@@ -57,6 +57,24 @@ export const useCofrinhos = () => {
     },
   });
 
+  const transferir = useMutation({
+    mutationFn: async (data: { origem_id: string; destino_id: string; valor: number; descricao?: string }) => {
+      if (!user) throw new Error('Sem usuário');
+      const { error } = await supabase.rpc('transferir_entre_cofrinhos', {
+        _user_id: user.id,
+        _origem_id: data.origem_id,
+        _destino_id: data.destino_id,
+        _valor: data.valor,
+        _descricao: data.descricao ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cofrinhos'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+
   // Trigger automatic monthly closure
   const fecharMes = useMutation({
     mutationFn: async () => {
@@ -77,5 +95,6 @@ export const useCofrinhos = () => {
     updateCofrinho,
     deleteCofrinho,
     fecharMes,
+    transferir,
   };
 };
