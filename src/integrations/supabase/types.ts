@@ -136,39 +136,63 @@ export type Database = {
         Row: {
           ano_ref: number
           cor: string
+          cover_preset: string
           created_at: string
+          custo_mensal: number
           gasto_mes: number
+          icon: string
           id: string
           mes_ref: number
+          meses_protegidos: number
+          meta_valor: number
           nome: string
           orcamento_mensal: number
+          ordem: number
+          prioridade: number
           saldo: number
+          tipo: Database["public"]["Enums"]["cofrinho_tipo"]
           updated_at: string
           user_id: string
         }
         Insert: {
           ano_ref?: number
           cor?: string
+          cover_preset?: string
           created_at?: string
+          custo_mensal?: number
           gasto_mes?: number
+          icon?: string
           id?: string
           mes_ref?: number
+          meses_protegidos?: number
+          meta_valor?: number
           nome: string
           orcamento_mensal?: number
+          ordem?: number
+          prioridade?: number
           saldo?: number
+          tipo?: Database["public"]["Enums"]["cofrinho_tipo"]
           updated_at?: string
           user_id: string
         }
         Update: {
           ano_ref?: number
           cor?: string
+          cover_preset?: string
           created_at?: string
+          custo_mensal?: number
           gasto_mes?: number
+          icon?: string
           id?: string
           mes_ref?: number
+          meses_protegidos?: number
+          meta_valor?: number
           nome?: string
           orcamento_mensal?: number
+          ordem?: number
+          prioridade?: number
           saldo?: number
+          tipo?: Database["public"]["Enums"]["cofrinho_tipo"]
           updated_at?: string
           user_id?: string
         }
@@ -572,9 +596,20 @@ export type Database = {
       }
       fechar_mes_cofrinhos: { Args: { _user_id: string }; Returns: number }
       is_admin: { Args: never; Returns: boolean }
+      transferir_entre_cofrinhos: {
+        Args: {
+          _descricao?: string
+          _destino_id: string
+          _origem_id: string
+          _user_id: string
+          _valor: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       category_type: "income" | "expense"
+      cofrinho_tipo: "reserva" | "mensal" | "meta"
       month_status: "draft" | "in_progress" | "ready_to_close" | "closed"
       recurrence_type: "none" | "monthly"
       subscription_plan: "trial" | "premium"
@@ -711,6 +746,7 @@ export const Constants = {
   public: {
     Enums: {
       category_type: ["income", "expense"],
+      cofrinho_tipo: ["reserva", "mensal", "meta"],
       month_status: ["draft", "in_progress", "ready_to_close", "closed"],
       recurrence_type: ["none", "monthly"],
       subscription_plan: ["trial", "premium"],
