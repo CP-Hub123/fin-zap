@@ -12,6 +12,7 @@ import { Plus, Pencil, Copy, Trash2 } from 'lucide-react';
 import type { Transaction } from '@/hooks/useTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import type { TablesInsert } from '@/integrations/supabase/types';
+import { getStatusLevel, STATUS_META } from '@/lib/cofrinhoPresets';
 
 interface TransactionsViewProps {
   transactions: Transaction[];
@@ -65,6 +66,45 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
   };
 
   const noCofrinhos = cofrinhos.length === 0;
+
+  // Preview de impacto financeiro (apenas para despesa em cofrinho selecionado)
+  const impactPreview = (() => {
+    if (activeTab !== 'expense' || !form.cofrinho_id || !form.amount) return null;
+    const valor = parseFloat(form.amount);
+    if (!valor || valor <= 0) return null;
+    const c = cofrinhoById(form.cofrinho_id);
+    if (!c) return null;
+
+    if (c.tipo === 'reserva' && Number(c.custo_mensal) > 0) {
+      const novoSaldo = Math.max(0, Number(c.saldo) - valor);
+      const meses = novoSaldo / Number(c.custo_mensal);
+      return {
+        text: `Sua reserva cairá para ${meses.toFixed(1)} ${meses === 1 ? 'mês' : 'meses'} de proteção.`,
+        level: meses < 3 ? 'critical' : meses < 6 ? 'attention' : 'safe',
+      } as const;
+    }
+
+    const orc = Number(c.orcamento_mensal);
+    if (c.tipo === 'mensal' && orc > 0) {
+      const novoGasto = Number(c.gasto_mes) + valor;
+      const pct = Math.round((novoGasto / orc) * 100);
+      const consumoTxt = `Esse gasto consumirá ${Math.round((valor / orc) * 100)}% do "${c.nome}".`;
+      const restante = orc - novoGasto;
+      const status = getStatusLevel(pct);
+      return {
+        text: `${consumoTxt} ${restante < 0 ? `Estouro de ${formatCurrency(Math.abs(restante))}.` : `Sobrarão ${formatCurrency(restante)}.`}`,
+        level: status,
+      } as const;
+    }
+
+    if (c.tipo === 'meta' && Number(c.meta_valor) > 0) {
+      return {
+        text: `O cofrinho "${c.nome}" ficará abaixo da meta ideal.`,
+        level: 'attention' as const,
+      };
+    }
+    return null;
+  })();
 
   return (
     <div className="space-y-4">
@@ -212,6 +252,18 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
                 </Select>
               </div>
             </div>
+
+            {impactPreview && (
+              <div className={`rounded-lg p-3 text-xs border-l-4 ${
+                impactPreview.level === 'safe' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300' :
+                impactPreview.level === 'attention' ? 'bg-yellow-500/10 border-yellow-500 text-yellow-700 dark:text-yellow-300' :
+                impactPreview.level === 'critical' ? 'bg-orange-500/10 border-orange-500 text-orange-700 dark:text-orange-300' :
+                'bg-red-500/10 border-red-500 text-red-700 dark:text-red-300'
+              }`}>
+                <p className="font-medium mb-0.5">💡 Impacto desta decisão</p>
+                <p>{impactPreview.text}</p>
+              </div>
+            )}
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>
