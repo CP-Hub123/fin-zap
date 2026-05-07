@@ -42,7 +42,7 @@ const AppPage = () => {
   const { months, isLoading: monthsLoading, createMonth, updateMonthStatus } = useMonths();
   const selectedMonth = months.find(m => m.id === selectedMonthId);
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
-  const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, fecharMes } = useCofrinhos();
+  const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, fecharMes, transferir } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
 
@@ -214,6 +214,7 @@ const AppPage = () => {
             onCreate={guardedAction(data => createCofrinho.mutateAsync(data))}
             onUpdate={guardedAction(data => updateCofrinho.mutateAsync(data))}
             onDelete={guardedAction(id => deleteCofrinho.mutateAsync(id))}
+            onTransfer={guardedAction(data => transferir.mutateAsync(data))}
           />
         )}
 
