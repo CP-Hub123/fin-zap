@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
 export type Cofrinho = Tables<'cofrinhos'>;
@@ -43,18 +44,25 @@ export const useCofrinhos = () => {
       const { error } = await supabase.from('cofrinhos').update(data).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['cofrinhos'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cofrinhos'] });
+      toast.success('Cofrinho atualizado');
+    },
+    onError: (e: any) => toast.error('Erro ao atualizar', { description: e?.message }),
   });
 
   const deleteCofrinho = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('cofrinhos').delete().eq('id', id);
+      const { error } = await supabase.rpc('delete_cofrinho_cascade', { _cofrinho_id: id });
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['cofrinhos'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      toast.success('Cofrinho removido');
     },
+    onError: (e: any) => toast.error('Erro ao excluir cofrinho', { description: e?.message }),
   });
 
   const transferir = useMutation({
