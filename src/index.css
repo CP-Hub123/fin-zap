@@ -6,32 +6,33 @@
 
 @layer base {
   :root {
-    --background: 210 17% 98%;
-    --foreground: 240 29% 14%;
+    /* Refined premium light — soft warm-cool tint, never clinical pure white */
+    --background: 220 24% 98%;
+    --foreground: 224 28% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 29% 14%;
+    --card-foreground: 224 28% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 29% 14%;
+    --popover-foreground: 224 28% 12%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 17% 95%;
-    --secondary-foreground: 240 29% 14%;
+    --secondary: 220 18% 95.5%;
+    --secondary-foreground: 224 28% 12%;
 
-    --muted: 210 17% 95%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 18% 95.5%;
+    --muted-foreground: 220 12% 46%;
 
-    --accent: 210 17% 95%;
-    --accent-foreground: 240 29% 14%;
+    --accent: 220 18% 95.5%;
+    --accent-foreground: 224 28% 12%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 220 16% 91%;
+    --input: 220 16% 91%;
     --ring: 217 91% 60%;
 
     --radius: 1rem;
@@ -42,14 +43,17 @@
 
     /* Brand gradients & motion (logo: zap + crescimento + transformação) */
     --finzap-blue-glow: 199 89% 56%;
-    --gradient-zap: linear-gradient(135deg, hsl(var(--finzap-blue)) 0%, hsl(var(--finzap-blue-glow)) 45%, hsl(var(--finzap-green)) 100%);
+    --gradient-zap: linear-gradient(135deg, hsl(var(--finzap-blue)) 0%, hsl(var(--finzap-blue-glow)) 55%, hsl(var(--finzap-green)) 100%);
+    /* Refined hero gradient — deep, calm, never overstimulating */
+    --gradient-hero: linear-gradient(135deg, hsl(224 32% 14%) 0%, hsl(220 38% 18%) 60%, hsl(217 60% 24%) 100%);
     --gradient-rise: linear-gradient(180deg, hsl(var(--finzap-blue) / 0.08) 0%, hsl(var(--finzap-green) / 0.04) 100%);
     --gradient-positive: linear-gradient(135deg, hsl(var(--finzap-green) / 0.18), hsl(var(--finzap-blue) / 0.08));
-    --shadow-zap: 0 10px 30px -12px hsl(var(--finzap-blue) / 0.35), 0 4px 12px -6px hsl(var(--finzap-green) / 0.2);
-    --shadow-lift: 0 6px 20px -8px hsl(var(--finzap-blue) / 0.25);
-    --shadow-card: 0 1px 2px hsl(240 29% 14% / 0.04), 0 4px 16px -6px hsl(240 29% 14% / 0.06);
-    --shadow-elevated: 0 8px 24px -8px hsl(240 29% 14% / 0.12), 0 2px 6px hsl(240 29% 14% / 0.04);
-    --shadow-glow-primary: 0 0 32px hsl(var(--finzap-blue) / 0.18);
+    /* Quieter shadows — less noise, more depth */
+    --shadow-zap: 0 8px 24px -14px hsl(var(--finzap-blue) / 0.28);
+    --shadow-lift: 0 4px 14px -8px hsl(220 30% 20% / 0.15);
+    --shadow-card: 0 1px 2px hsl(220 30% 20% / 0.03), 0 2px 8px -4px hsl(220 30% 20% / 0.04);
+    --shadow-elevated: 0 6px 20px -10px hsl(220 30% 20% / 0.10), 0 1px 3px hsl(220 30% 20% / 0.03);
+    --shadow-glow-primary: 0 0 28px hsl(var(--finzap-blue) / 0.12);
     --tilt: -1.2deg;
     --ease-zap: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -64,38 +68,44 @@
   }
 
   .dark {
-    /* Refined premium dark — softer than pure black, richer surfaces */
-    --background: 224 28% 7%;
-    --foreground: 210 20% 96%;
+    /* Refined premium dark — graphite/charcoal, Apple/Linear/Arc inspired */
+    --background: 222 20% 8%;
+    --foreground: 210 16% 94%;
 
-    --card: 224 24% 10%;
-    --card-foreground: 210 20% 96%;
+    --card: 222 18% 11%;
+    --card-foreground: 210 16% 94%;
 
-    --popover: 224 24% 11%;
-    --popover-foreground: 210 20% 96%;
+    --popover: 222 18% 12%;
+    --popover-foreground: 210 16% 94%;
 
-    --primary: 217 91% 62%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 217 88% 65%;
+    --primary-foreground: 222 20% 8%;
 
-    --secondary: 222 20% 14%;
-    --secondary-foreground: 210 20% 96%;
+    --secondary: 222 14% 15%;
+    --secondary-foreground: 210 16% 94%;
 
-    --muted: 222 20% 14%;
-    --muted-foreground: 215 16% 68%;
+    --muted: 222 14% 15%;
+    --muted-foreground: 218 12% 62%;
 
-    --accent: 222 20% 16%;
-    --accent-foreground: 210 20% 96%;
+    --accent: 222 14% 17%;
+    --accent-foreground: 210 16% 94%;
 
-    --destructive: 0 62% 31%;
-    --destructive-foreground: 210 17% 95%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 210 16% 94%;
 
-    --border: 222 16% 20%;
-    --input: 222 16% 20%;
-    --ring: 217 91% 62%;
+    --border: 222 12% 19%;
+    --input: 222 12% 19%;
+    --ring: 217 88% 65%;
 
-    --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.45), 0 6px 20px -10px hsl(0 0% 0% / 0.5);
-    --shadow-elevated: 0 16px 40px -12px hsl(0 0% 0% / 0.7), 0 2px 8px hsl(0 0% 0% / 0.4);
-    --shadow-glow-primary: 0 0 48px hsl(var(--finzap-blue) / 0.28);
+    /* Hero gradient calmer in dark — almost monochromatic with a hint of brand */
+    --gradient-hero: linear-gradient(135deg, hsl(222 22% 12%) 0%, hsl(220 28% 14%) 55%, hsl(217 50% 18%) 100%);
+    --gradient-positive: linear-gradient(135deg, hsl(var(--finzap-green) / 0.14), hsl(var(--finzap-blue) / 0.06));
+
+    --shadow-zap: 0 10px 28px -16px hsl(var(--finzap-blue) / 0.35);
+    --shadow-lift: 0 4px 14px -8px hsl(0 0% 0% / 0.5);
+    --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.4), 0 4px 14px -8px hsl(0 0% 0% / 0.35);
+    --shadow-elevated: 0 12px 32px -14px hsl(0 0% 0% / 0.6), 0 1px 4px hsl(0 0% 0% / 0.3);
+    --shadow-glow-primary: 0 0 36px hsl(var(--finzap-blue) / 0.18);
   }
 }
 
@@ -178,6 +188,7 @@
 /* === FinZap Motion & Identity === */
 @layer utilities {
   .bg-gradient-zap { background-image: var(--gradient-zap); }
+  .bg-gradient-hero { background-image: var(--gradient-hero); }
   .bg-gradient-rise { background-image: var(--gradient-rise); }
   .bg-gradient-positive { background-image: var(--gradient-positive); }
   .text-gradient-zap {
