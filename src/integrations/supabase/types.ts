@@ -595,6 +595,7 @@ export type Database = {
         Returns: number
       }
       fechar_mes_cofrinhos: { Args: { _user_id: string }; Returns: number }
+      has_active_subscription: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       transferir_entre_cofrinhos: {
         Args: {
