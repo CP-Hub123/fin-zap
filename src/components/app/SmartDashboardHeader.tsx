@@ -14,9 +14,9 @@ import type { Transaction } from '@/hooks/useTransactions';
 type SitStatus = 'safe' | 'attention' | 'critical';
 
 const STATUS = {
-  safe:      { label: 'Seguro',  emoji: '🟢', bg: 'bg-emerald-500/15', text: 'text-emerald-50', dot: 'bg-emerald-400' },
-  attention: { label: 'Atenção', emoji: '🟡', bg: 'bg-yellow-500/15',  text: 'text-yellow-50',  dot: 'bg-yellow-400' },
-  critical:  { label: 'Crítico', emoji: '🔴', bg: 'bg-red-500/15',     text: 'text-red-50',     dot: 'bg-red-400' },
+  safe:      { label: 'Seguro',  emoji: '🟢', bg: 'bg-white/8 border border-emerald-400/30',  text: 'text-emerald-50', dot: 'bg-emerald-400' },
+  attention: { label: 'Atenção', emoji: '🟡', bg: 'bg-white/8 border border-amber-300/30',    text: 'text-amber-50',   dot: 'bg-amber-300' },
+  critical:  { label: 'Crítico', emoji: '🔴', bg: 'bg-white/8 border border-rose-400/40',     text: 'text-rose-50',    dot: 'bg-rose-400' },
 };
 
 const INSIGHT_STYLE: Record<SitStatus | 'info', { bg: string; ring: string; text: string; icon: any; emoji: string }> = {
@@ -129,61 +129,58 @@ export const SmartDashboardHeader = ({ month, totalIncome, totalExpense, balance
 
   return (
     <div className="space-y-4">
-      {/* HERO: Saldo Disponível Real */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-zap text-white shadow-zap">
-        <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-16 -left-16 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
+      {/* HERO: Saldo Disponível Real — calm, premium, single accent */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-hero text-white shadow-elevated">
+        <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
         <div className="relative z-10 p-6 space-y-5">
           <div className="flex items-start justify-between gap-3 min-w-0">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] uppercase tracking-wider opacity-80">Saldo disponível real</p>
+              <p className="text-[11px] uppercase tracking-[0.14em] opacity-60 font-medium">Saldo disponível real</p>
               <p className="fluid-currency font-bold mt-1 max-w-full">
                 {formatCurrency(saldoDisponivelReal)}
               </p>
-              <p className="text-xs opacity-80 mt-1">
+              <p className="text-xs opacity-65 mt-1">
                 Após compromissos {isCurrentMonth ? 'do mês' : 'previstos'}
               </p>
             </div>
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 ${sStyle.bg} backdrop-blur-md`}>
-              <span className={`h-2 w-2 rounded-full ${sStyle.dot} animate-pulse`} />
-              <span className="text-xs font-semibold">{sStyle.label}</span>
+              <span className={`h-1.5 w-1.5 rounded-full ${sStyle.dot}`} />
+              <span className="text-[11px] font-medium tracking-wide">{sStyle.label}</span>
             </div>
           </div>
 
-          {/* Mini KPIs */}
-          <div className="grid grid-cols-3 gap-2 pt-1">
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 min-w-0">
-              <p className="text-[10px] uppercase tracking-wide opacity-80">Saldo atual</p>
-              <p className="fluid-currency-sm font-bold mt-0.5">{formatCurrency(saldoAtual)}</p>
+          {/* Mini KPIs — quieter, separated by hairlines */}
+          <div className="grid grid-cols-3 gap-px rounded-xl overflow-hidden bg-white/10">
+            <div className="bg-white/[0.04] p-3 min-w-0">
+              <p className="text-[10px] uppercase tracking-wide opacity-55">Atual</p>
+              <p className="fluid-currency-sm font-semibold mt-0.5">{formatCurrency(saldoAtual)}</p>
             </div>
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 min-w-0">
-              <p className="text-[10px] uppercase tracking-wide opacity-80">Comprometido</p>
-              <p className="fluid-currency-sm font-bold mt-0.5">{formatCurrency(compromissosFuturos)}</p>
+            <div className="bg-white/[0.04] p-3 min-w-0">
+              <p className="text-[10px] uppercase tracking-wide opacity-55">Comprometido</p>
+              <p className="fluid-currency-sm font-semibold mt-0.5">{formatCurrency(compromissosFuturos)}</p>
             </div>
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 min-w-0">
-              <p className="text-[10px] uppercase tracking-wide opacity-80">Projeção</p>
-              <p className="fluid-currency-sm font-bold mt-0.5">{formatCurrency(projecaoFimMes)}</p>
+            <div className="bg-white/[0.04] p-3 min-w-0">
+              <p className="text-[10px] uppercase tracking-wide opacity-55">Projeção</p>
+              <p className="fluid-currency-sm font-semibold mt-0.5">{formatCurrency(projecaoFimMes)}</p>
             </div>
           </div>
 
           {isCurrentMonth && (
-            <p className="text-xs opacity-90">
-              Faltam <strong>{daysRemaining}</strong> {daysRemaining === 1 ? 'dia' : 'dias'} para fechar o mês
+            <p className="text-[11px] opacity-65">
+              Faltam <span className="font-semibold opacity-90">{daysRemaining}</span> {daysRemaining === 1 ? 'dia' : 'dias'} para fechar o mês
             </p>
           )}
         </div>
       </div>
 
-      {/* Insight principal */}
-      <div className={`rounded-2xl p-4 ring-1 ${INSIGHT_STYLE[insightPrincipal.sev].bg} ${INSIGHT_STYLE[insightPrincipal.sev].ring} flex gap-3`}>
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${INSIGHT_STYLE[insightPrincipal.sev].bg}`}>
-          <InsightIcon className={`h-5 w-5 ${INSIGHT_STYLE[insightPrincipal.sev].text}`} />
+      {/* Insight principal — calmer, single accent on the left */}
+      <div className="rounded-2xl bg-card border border-border/60 p-4 flex gap-3 items-start">
+        <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${INSIGHT_STYLE[insightPrincipal.sev].bg}`}>
+          <InsightIcon className={`h-4 w-4 ${INSIGHT_STYLE[insightPrincipal.sev].text}`} strokeWidth={2.2} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className={`text-sm font-semibold ${INSIGHT_STYLE[insightPrincipal.sev].text}`}>
-            {insightPrincipal.title}
-          </p>
-          <p className="text-xs text-foreground/80 mt-0.5 leading-relaxed">{insightPrincipal.text}</p>
+          <p className="text-sm font-semibold text-foreground">{insightPrincipal.title}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{insightPrincipal.text}</p>
         </div>
       </div>
 
