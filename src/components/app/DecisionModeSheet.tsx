@@ -37,7 +37,7 @@ interface Props {
 export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
   const { transactions, balance } = useTransactions(monthId);
   const { cofrinhos } = useCofrinhos();
-  const { query: recurringQuery } = useRecurringTransactionsQueryShim();
+  const { recorrencias } = useRecurringTransactions();
 
   const today = new Date().toISOString().slice(0, 10);
   const [valorA, setValorA] = useState('');
@@ -50,9 +50,9 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
   const ctx = useMemo(() => ({
     transactions,
     cofrinhos,
-    recurring: recurringQuery.data ?? [],
+    recurring: recorrencias,
     monthBalance: balance,
-  }), [transactions, cofrinhos, recurringQuery.data, balance]);
+  }), [transactions, cofrinhos, recorrencias, balance]);
 
   const inputA: DecisionInput = {
     amount: parseFloat(valorA.replace(',', '.')) || 0,
@@ -254,11 +254,3 @@ const Metric = ({ label, value, negative }: { label: string; value: string; nega
   </div>
 );
 
-/** Lightweight shim to expose the inner query of useRecurringTransactions. */
-function useRecurringTransactionsQueryShim() {
-  const all = useRecurringTransactions();
-  // The hook returns named mutations + a derived query through `query` if available
-  // Fallback: re-query directly via the same key not necessary; the hook stores the data internally in TanStack cache.
-  // We expose a stable shape:
-  return { query: { data: (all as any).recurring ?? (all as any).data ?? (all as any).query?.data ?? [] } };
-}
