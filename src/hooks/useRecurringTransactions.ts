@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
 export type RecurringTransaction = Tables<'recurring_transactions'>;
@@ -30,7 +31,11 @@ export const useRecurringTransactions = () => {
         .insert({ ...data, user_id: user!.id });
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      toast.success('Recorrência criada');
+    },
+    onError: (e: any) => toast.error('Erro ao criar recorrência', { description: e?.message }),
   });
 
   const update = useMutation({
@@ -40,8 +45,17 @@ export const useRecurringTransactions = () => {
         .update(data)
         .eq('id', id);
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      if (data && 'ativo' in data) {
+        toast.success(data.ativo ? 'Recorrência ativada' : 'Recorrência pausada');
+      } else {
+        toast.success('Recorrência atualizada');
+      }
+    },
+    onError: (e: any) => toast.error('Erro ao atualizar', { description: e?.message }),
   });
 
   const remove = useMutation({
@@ -49,7 +63,11 @@ export const useRecurringTransactions = () => {
       const { error } = await supabase.from('recurring_transactions').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      toast.success('Recorrência removida');
+    },
+    onError: (e: any) => toast.error('Erro ao excluir', { description: e?.message }),
   });
 
   const executar = useMutation({
