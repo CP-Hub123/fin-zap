@@ -146,6 +146,32 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
   }
+  /* Fluid monetary value — never breaks card width */
+  .fluid-currency {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    font-size: clamp(1.5rem, 7vw, 2.5rem);
+    line-height: 1.05;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    display: inline-block;
+  }
+  .fluid-currency-sm {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    font-size: clamp(0.78rem, 3.2vw, 0.95rem);
+    line-height: 1.1;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    display: inline-block;
+  }
+  .safe-text {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
+  }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 }
 
