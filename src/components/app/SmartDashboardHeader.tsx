@@ -134,17 +134,17 @@ export const SmartDashboardHeader = ({ month, totalIncome, totalExpense, balance
         <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute -bottom-16 -left-16 h-44 w-44 rounded-full bg-white/5 blur-3xl" />
         <div className="relative z-10 p-6 space-y-5">
-          <div className="flex items-start justify-between">
-            <div>
+          <div className="flex items-start justify-between gap-3 min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-[11px] uppercase tracking-wider opacity-80">Saldo disponível real</p>
-              <p className="text-4xl font-bold tabular-nums tracking-tight mt-1">
+              <p className="fluid-currency font-bold mt-1 max-w-full">
                 {formatCurrency(saldoDisponivelReal)}
               </p>
               <p className="text-xs opacity-80 mt-1">
                 Após compromissos {isCurrentMonth ? 'do mês' : 'previstos'}
               </p>
             </div>
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${sStyle.bg} backdrop-blur-md`}>
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 ${sStyle.bg} backdrop-blur-md`}>
               <span className={`h-2 w-2 rounded-full ${sStyle.dot} animate-pulse`} />
               <span className="text-xs font-semibold">{sStyle.label}</span>
             </div>
@@ -152,17 +152,17 @@ export const SmartDashboardHeader = ({ month, totalIncome, totalExpense, balance
 
           {/* Mini KPIs */}
           <div className="grid grid-cols-3 gap-2 pt-1">
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3">
+            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 min-w-0">
               <p className="text-[10px] uppercase tracking-wide opacity-80">Saldo atual</p>
-              <p className="text-sm font-bold tabular-nums mt-0.5">{formatCurrency(saldoAtual)}</p>
+              <p className="fluid-currency-sm font-bold mt-0.5">{formatCurrency(saldoAtual)}</p>
             </div>
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3">
+            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 min-w-0">
               <p className="text-[10px] uppercase tracking-wide opacity-80">Comprometido</p>
-              <p className="text-sm font-bold tabular-nums mt-0.5">{formatCurrency(compromissosFuturos)}</p>
+              <p className="fluid-currency-sm font-bold mt-0.5">{formatCurrency(compromissosFuturos)}</p>
             </div>
-            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3">
+            <div className="rounded-xl bg-white/10 backdrop-blur-md p-3 min-w-0">
               <p className="text-[10px] uppercase tracking-wide opacity-80">Projeção</p>
-              <p className="text-sm font-bold tabular-nums mt-0.5">{formatCurrency(projecaoFimMes)}</p>
+              <p className="fluid-currency-sm font-bold mt-0.5">{formatCurrency(projecaoFimMes)}</p>
             </div>
           </div>
 
