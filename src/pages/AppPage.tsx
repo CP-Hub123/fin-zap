@@ -113,16 +113,12 @@ const AppPage = () => {
   return (
     <div className="min-h-screen bg-background pb-4">
       {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+      <header className="border-b border-border/60 bg-card/85 backdrop-blur-xl sticky top-0 z-20">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-w-0">
             <Logo />
 
           {/* Desktop actions */}
           <div className="hidden sm:flex items-center gap-2">
-            <MonthSelector months={months} selectedMonthId={selectedMonthId} onSelect={setSelectedMonthId} />
-            <Button variant="outline" size="icon" onClick={() => setNewMonthOpen(true)} title="Novo mês">
-              <Plus className="h-4 w-4" />
-            </Button>
             <NotificationBell />
             <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={() => navigate('/tutorials')} title="Tutoriais">
@@ -136,9 +132,8 @@ const AppPage = () => {
             </Button>
           </div>
 
-          {/* Mobile: month selector + hamburger */}
-          <div className="flex sm:hidden items-center gap-1.5">
-            <MonthSelector months={months} selectedMonthId={selectedMonthId} onSelect={setSelectedMonthId} />
+          {/* Mobile actions: ícones + hamburger (sem seletor de mês aqui) */}
+          <div className="flex sm:hidden items-center gap-1">
             <NotificationBell />
             <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -167,6 +162,27 @@ const AppPage = () => {
           </div>
         )}
       </header>
+
+      {/* Context bar — seletor de mês como filtro premium */}
+      <div className="border-b border-border/40 bg-background/60 backdrop-blur">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 min-w-0">
+          <MonthSelector
+            months={months}
+            selectedMonthId={selectedMonthId}
+            onSelect={setSelectedMonthId}
+            variant="pill"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setNewMonthOpen(true)}
+            className="h-9 rounded-full px-3 text-xs font-semibold text-primary hover:bg-primary/10"
+            title="Novo mês"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" /> Novo mês
+          </Button>
+        </div>
+      </div>
 
       {/* Stepper */}
       <div className="border-b bg-card">
