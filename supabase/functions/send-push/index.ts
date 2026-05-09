@@ -94,6 +94,26 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // --- Authentication: require valid JWT for any caller ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return respond({ error: "Unauthorized" }, 401);
+    }
+    const jwt = authHeader.replace("Bearer ", "");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userError } = await authClient.auth.getUser(jwt);
+    if (userError || !userData?.user) {
+      return respond({ error: "Unauthorized" }, 401);
+    }
+    const callerId = userData.user.id;
+    const callerEmail = userData.user.email ?? "";
+    const ADMIN_EMAIL = "christianpietromello079@gmail.com";
+    const isAdmin = callerEmail === ADMIN_EMAIL;
+
     const { user_id, title, body, type, broadcast = false } = await req.json() as SendPushBody;
 
     if (!title || !body) {
@@ -104,7 +124,14 @@ Deno.serve(async (req) => {
       return respond({ error: "Missing user_id for targeted push" }, 400);
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    // --- Authorization ---
+    if (broadcast && !isAdmin) {
+      return respond({ error: "Forbidden: broadcast requires admin" }, 403);
+    }
+    if (!broadcast && user_id && user_id !== callerId && !isAdmin) {
+      return respond({ error: "Forbidden: cannot push to other users" }, 403);
+    }
+
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
