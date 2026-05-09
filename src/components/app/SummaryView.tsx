@@ -12,6 +12,8 @@ import type { Month } from '@/hooks/useMonths';
 import type { Transaction } from '@/hooks/useTransactions';
 import type { BudgetPlan } from '@/hooks/useBudget';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
+import { useInsights } from '@/hooks/useInsights';
+import { InsightsPanel } from './InsightsPanel';
 
 interface SummaryViewProps {
   month: Month;
@@ -63,6 +65,7 @@ const PieTooltip = ({ active, payload }: any) => {
 
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
+  const { insights } = useInsights(month);
   const cofrinhoMap = useMemo(() => {
     const map: Record<string, { nome: string; cor: string; orcamento: number }> = {};
     cofrinhos.forEach(c => {
@@ -171,6 +174,8 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
 
   return (
     <div className="space-y-6">
+      <InsightsPanel insights={insights} />
+
       {/* Status banner */}
       <div className={`flex items-center gap-3 p-4 rounded-xl ${isPositive ? 'bg-[hsl(var(--finzap-green)/0.1)]' : 'bg-[hsl(var(--finzap-red)/0.1)]'}`}>
         {isPositive
