@@ -275,7 +275,7 @@ export const severityStyles: Record<
   },
   info: {
     ring: 'ring-1 ring-primary/20',
-    bg: 'bg-primary/8',
+    bg: 'bg-primary/10',
     text: 'text-primary',
     dot: 'bg-primary',
     label: 'Informativo',
