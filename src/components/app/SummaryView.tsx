@@ -12,8 +12,7 @@ import type { Month } from '@/hooks/useMonths';
 import type { Transaction } from '@/hooks/useTransactions';
 import type { BudgetPlan } from '@/hooks/useBudget';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
-import { useInsights } from '@/hooks/useInsights';
-import { InsightsPanel } from './InsightsPanel';
+import { SmartDashboardHeader } from './SmartDashboardHeader';
 
 interface SummaryViewProps {
   month: Month;
@@ -65,7 +64,6 @@ const PieTooltip = ({ active, payload }: any) => {
 
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
-  const { insights } = useInsights(month);
   const cofrinhoMap = useMemo(() => {
     const map: Record<string, { nome: string; cor: string; orcamento: number }> = {};
     cofrinhos.forEach(c => {
@@ -174,17 +172,20 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
 
   return (
     <div className="space-y-6">
-      <InsightsPanel insights={insights} />
+      {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
+      <SmartDashboardHeader
+        month={month}
+        totalIncome={totalIncome}
+        totalExpense={totalExpense}
+        balance={balance}
+        transactions={transactions}
+      />
 
-      {/* Status banner */}
-      <div className={`flex items-center gap-3 p-4 rounded-xl ${isPositive ? 'bg-[hsl(var(--finzap-green)/0.1)]' : 'bg-[hsl(var(--finzap-red)/0.1)]'}`}>
-        {isPositive
-          ? <CheckCircle className="h-5 w-5 shrink-0" style={{ color: 'hsl(var(--finzap-green))' }} />
-          : <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: 'hsl(var(--finzap-red))' }} />
-        }
-        <span className="font-medium" style={{ color: isPositive ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
-          {isPositive ? 'Você está no positivo ✓' : 'Você está no negativo ✗'}
-        </span>
+      {/* Análise detalhada */}
+      <div className="pt-2">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          Análise detalhada
+        </h2>
       </div>
 
       {/* KPI Cards */}
