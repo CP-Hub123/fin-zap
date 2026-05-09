@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, BookOpen, Plus, Menu, X, Sparkles } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
+import { ThemeToggle } from '@/components/app/ThemeToggle';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -123,6 +124,7 @@ const AppPage = () => {
               <Plus className="h-4 w-4" />
             </Button>
             <NotificationBell />
+            <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={() => navigate('/tutorials')} title="Tutoriais">
               <BookOpen className="h-4 w-4" />
             </Button>
@@ -138,6 +140,7 @@ const AppPage = () => {
           <div className="flex sm:hidden items-center gap-1.5">
             <MonthSelector months={months} selectedMonthId={selectedMonthId} onSelect={setSelectedMonthId} />
             <NotificationBell />
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
