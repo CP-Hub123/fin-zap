@@ -12,7 +12,7 @@ import { buildInsights, type Insight } from '@/lib/insightsEngine';
 export const useInsights = (month: Month | undefined) => {
   const { transactions, totalIncome, totalExpense, balance } = useTransactions(month?.id);
   const { cofrinhos } = useCofrinhos();
-  const { data: recurring = [] } = useRecurringTransactions();
+  const { recorrencias: recurring } = useRecurringTransactions();
 
   const insights: Insight[] = useMemo(
     () =>
