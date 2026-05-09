@@ -313,14 +313,18 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir cofrinho?</AlertDialogTitle>
             <AlertDialogDescription>
-              Não é possível excluir cofrinhos com transações vinculadas. Remova as transações primeiro.
+              Esta ação remove o cofrinho e todas as transações, recorrências e histórico vinculados a ele. Não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel className="min-h-[44px]">Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              className="min-h-[44px]"
-              onClick={async () => { if (deleteId) { try { await onDelete(deleteId); } catch {} setDeleteId(null); } }}
+              className="min-h-[44px] bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!deleteId) return;
+                try { await onDelete(deleteId); } finally { setDeleteId(null); }
+              }}
             >Excluir</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
