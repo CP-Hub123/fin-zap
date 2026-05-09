@@ -86,6 +86,14 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
   };
 
   const totalGuardado = cofrinhos.reduce((s, c) => s + Number(c.saldo), 0);
+  const totalMetas = cofrinhos.reduce((s, c) => {
+    if (c.tipo === 'meta') return s + Number(c.meta_valor);
+    if (c.tipo === 'reserva') return s + (Number(c.custo_mensal) * (Number(c.meses_protegidos) || 6));
+    return s;
+  }, 0);
+  const progressoGeral = totalMetas > 0
+    ? Math.min(100, Math.round((cofrinhos.filter(c => c.tipo !== 'mensal').reduce((s, c) => s + Number(c.saldo), 0) / totalMetas) * 100))
+    : 0;
   const detail = cofrinhos.find(c => c.id === detailId) ?? null;
 
   return (
@@ -105,12 +113,32 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
       </div>
 
       {cofrinhos.length > 0 && (
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-zap p-5 text-white shadow-zap">
-          <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-          <div className="relative z-10 space-y-1">
-            <p className="text-xs uppercase tracking-wide opacity-80">Total guardado</p>
-            <p className="text-3xl font-bold tabular-nums">{formatCurrency(totalGuardado)}</p>
-            <p className="text-xs opacity-80">distribuído em {cofrinhos.length} {cofrinhos.length === 1 ? 'cofrinho' : 'cofrinhos'}</p>
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-zap p-6 text-white shadow-zap">
+          <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-12 -left-12 h-36 w-36 rounded-full bg-white/5 blur-3xl" />
+          <div className="relative z-10 space-y-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-wider opacity-80">Total guardado</p>
+              <p className="text-4xl font-bold tabular-nums tracking-tight">{formatCurrency(totalGuardado)}</p>
+              <p className="text-xs opacity-80 mt-0.5">
+                em {cofrinhos.length} {cofrinhos.length === 1 ? 'cofrinho' : 'cofrinhos'}
+              </p>
+            </div>
+            {totalMetas > 0 && (
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs opacity-90">
+                  <span>Progresso geral das metas</span>
+                  <span className="font-semibold">{progressoGeral}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+                  <div
+                    className="h-full bg-white transition-all duration-700"
+                    style={{ width: `${progressoGeral}%` }}
+                  />
+                </div>
+                <p className="text-[11px] opacity-80">Meta total: {formatCurrency(totalMetas)}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
