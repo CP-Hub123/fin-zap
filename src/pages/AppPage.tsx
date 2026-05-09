@@ -16,8 +16,9 @@ import { CofrinhosView } from '@/components/app/CofrinhosView';
 import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
+import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { Button } from '@/components/ui/button';
-import { LogOut, BookOpen, Plus, Menu, X } from 'lucide-react';
+import { LogOut, BookOpen, Plus, Menu, X, Sparkles } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -36,6 +37,7 @@ const AppPage = () => {
   const [newBalance, setNewBalance] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [decisionOpen, setDecisionOpen] = useState(false);
 
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -271,6 +273,21 @@ const AppPage = () => {
       </Dialog>
 
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+
+      {/* Floating Decision Mode trigger */}
+      <button
+        type="button"
+        onClick={() => setDecisionOpen(true)}
+        className="fixed bottom-5 right-5 z-30 inline-flex items-center gap-2 rounded-full bg-gradient-zap px-4 py-3 text-sm font-semibold text-primary-foreground shadow-zap transition-all hover:scale-[1.03] active:scale-95 sm:bottom-6 sm:right-6"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        aria-label="Abrir Modo Decisão"
+      >
+        <Sparkles className="h-4 w-4" strokeWidth={2.5} />
+        <span className="hidden sm:inline">Modo Decisão</span>
+        <span className="sm:hidden">Decidir</span>
+      </button>
+
+      <DecisionModeSheet open={decisionOpen} onOpenChange={setDecisionOpen} monthId={selectedMonthId} />
     </div>
   );
 };
