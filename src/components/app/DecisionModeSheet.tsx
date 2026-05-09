@@ -77,7 +77,7 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
         <SheetHeader>
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-zap text-primary-foreground shadow-lift">
-              <Sparkles className="h-4.5 w-4.5" strokeWidth={2.25} />
+              <Sparkles className="h-4 w-4" strokeWidth={2.25} />
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Modo Decisão</span>
           </div>
@@ -201,7 +201,7 @@ const ResultCard = ({ input, result, compact, label, highlight }: ResultCardProp
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className={cn('inline-flex h-9 w-9 items-center justify-center rounded-full ring-2', s.ring, s.bg)}>
-            <Icon className={cn('h-4.5 w-4.5', s.text)} strokeWidth={2.25} />
+            <Icon className={cn('h-4 w-4', s.text)} strokeWidth={2.25} />
           </div>
           <div>
             {label && <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>}
