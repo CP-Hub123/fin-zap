@@ -39,9 +39,10 @@ const DialogContent = React.forwardRef<
         // Mobile: bottom-sheet premium. Desktop (sm+): centered card.
         "fixed z-50 flex flex-col overflow-hidden border bg-card text-card-foreground shadow-elevated duration-300",
         "inset-x-0 bottom-0 w-full max-h-[92dvh] rounded-t-3xl border-x-0 border-b-0",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
         "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:bottom-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-[calc(100vw-2rem)] sm:max-w-lg sm:max-h-[88dvh] sm:rounded-2xl sm:border",
-        "sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
+        "sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
         className,
       )}
       {...props}
