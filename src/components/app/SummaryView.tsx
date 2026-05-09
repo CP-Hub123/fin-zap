@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/constants';
-import { TrendingUp, TrendingDown, Wallet, CheckCircle, AlertTriangle, PieChart as PieIcon, BarChart3, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
@@ -64,6 +65,7 @@ const PieTooltip = ({ active, payload }: any) => {
 
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const cofrinhoMap = useMemo(() => {
     const map: Record<string, { nome: string; cor: string; orcamento: number }> = {};
     cofrinhos.forEach(c => {
@@ -182,11 +184,19 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       />
 
       {/* Análise detalhada */}
-      <div className="pt-2">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Análise detalhada
-        </h2>
-      </div>
+      <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
+        <CollapsibleTrigger className="group w-full flex items-center justify-between pt-2 pb-1 text-left">
+          <div>
+            <h2 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.14em]">
+              Análise detalhada
+            </h2>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">
+              {analyticsOpen ? 'Toque para ocultar gráficos' : 'Receitas, despesas, orçamento e evolução'}
+            </p>
+          </div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${analyticsOpen ? 'rotate-180' : ''}`} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-4 data-[state=open]:animate-fade-in">
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -381,7 +391,7 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       </Card>
 
       {/* Month progress */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border border-border/60 shadow-none">
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm font-medium">Progresso do mês</span>
@@ -391,6 +401,8 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
           <p className="text-xs text-muted-foreground mt-2">{monthProgress}% do mês concluído</p>
         </CardContent>
       </Card>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };
