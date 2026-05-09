@@ -590,6 +590,10 @@ export type Database = {
         Args: { _dia: number; _from: string }
         Returns: string
       }
+      delete_cofrinho_cascade: {
+        Args: { _cofrinho_id: string }
+        Returns: undefined
+      }
       executar_recorrencias_usuario: {
         Args: { _user_id: string }
         Returns: number
