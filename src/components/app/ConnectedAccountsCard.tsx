@@ -7,6 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { PluggyConnect } from 'react-pluggy-connect';
 import { useQueryClient } from '@tanstack/react-query';
+import openFinanceLogo from '@/assets/openfinance-logo.png';
+import finzapLogo from '@/assets/logo.png';
 
 const fmtBRL = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
@@ -38,8 +40,14 @@ export const ConnectedAccountsCard = () => {
         <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
           <div className="relative">
             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-            <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
-              <Sparkles className="h-6 w-6 text-primary-foreground" />
+            <div className="relative h-20 w-20 flex items-center justify-center">
+              <img src={openFinanceLogo} alt="Open Finance" className="h-full w-full object-contain" />
+              <img
+                src={finzapLogo}
+                alt="FinZap"
+                className="absolute h-7 w-7 object-contain"
+                style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+              />
             </div>
           </div>
           <div className="space-y-1.5 max-w-xs">
