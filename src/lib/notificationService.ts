@@ -48,49 +48,76 @@ const templates: Record<NotificationType, (data?: Record<string, any>) => Notifi
  * Central function: creates a notification in the database and optionally sends push.
  * Deduplicates by checking if the same type was sent in the last hour.
  */
+const TYPE_TO_CATEGORY: Record<NotificationType, string> = {
+  budget_50: 'insight',
+  budget_80: 'alerta',
+  budget_100: 'alerta',
+  subscription_due: 'vencimento',
+  invisible_spending: 'insight',
+  general: 'general',
+};
+
+const TYPE_TO_PRIORITY: Record<NotificationType, 'low' | 'normal' | 'high' | 'critical'> = {
+  budget_50: 'normal',
+  budget_80: 'high',
+  budget_100: 'critical',
+  subscription_due: 'high',
+  invisible_spending: 'normal',
+  general: 'normal',
+};
+
 export async function createNotification(
   userId: string,
   type: NotificationType,
   data?: Record<string, any>,
-  sendPush = true
+  sendPush = true,
+  options?: { dedupe_key?: string; action_url?: string }
 ): Promise<boolean> {
   const template = templates[type](data);
+  const category = TYPE_TO_CATEGORY[type];
+  const priority = TYPE_TO_PRIORITY[type];
+  const dedupe_key = options?.dedupe_key;
 
-  // Dedup: check if same type sent in last hour
-  const oneHourAgo = new Date(Date.now() - 3600_000).toISOString();
-  const { data: recent } = await supabase
-    .from('notifications_log')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('type', type)
-    .gte('sent_at', oneHourAgo)
-    .limit(1);
+  // Backend dedupe + log handled by send-push when used; for direct insert we still dedupe locally.
+  if (sendPush) {
+    try {
+      await supabase.functions.invoke('send-push', {
+        body: {
+          user_id: userId,
+          title: template.title,
+          body: template.body,
+          type,
+          category,
+          priority,
+          url: options?.action_url,
+          dedupe_key,
+        },
+      });
+      return true;
+    } catch (e) {
+      console.warn('Push send failed:', e);
+    }
+  }
 
-  if (recent && recent.length > 0) return false; // Already sent recently
-
-  // Save to database
+  // Fallback: direct log insert with dedupe
+  if (dedupe_key) {
+    const { data: existing } = await supabase
+      .from('notifications_log')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('dedupe_key', dedupe_key)
+      .limit(1);
+    if (existing && existing.length > 0) return false;
+  }
   const { error } = await supabase.from('notifications_log').insert({
     user_id: userId,
     type,
     title: template.title,
     message: template.body,
+    category,
+    priority,
+    dedupe_key: dedupe_key ?? null,
+    action_url: options?.action_url ?? null,
   });
-
-  if (error) {
-    console.error('Failed to create notification:', error);
-    return false;
-  }
-
-  // Try sending push (fire-and-forget, never blocks)
-  if (sendPush) {
-    try {
-      await supabase.functions.invoke('send-push', {
-        body: { user_id: userId, title: template.title, body: template.body, type },
-      });
-    } catch (e) {
-      console.warn('Push send failed (non-blocking):', e);
-    }
-  }
-
-  return true;
+  return !error;
 }
