@@ -415,10 +415,65 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          alertas_criticos: boolean
+          created_at: string
+          insights: boolean
+          lembrete_diario: boolean
+          metas_cofrinhos: boolean
+          quiet_hours_end: number
+          quiet_hours_start: number
+          recorrencias: boolean
+          resumo_semanal: boolean
+          timezone: string
+          updated_at: string
+          user_id: string
+          vencimentos: boolean
+        }
+        Insert: {
+          alertas_criticos?: boolean
+          created_at?: string
+          insights?: boolean
+          lembrete_diario?: boolean
+          metas_cofrinhos?: boolean
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          recorrencias?: boolean
+          resumo_semanal?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id: string
+          vencimentos?: boolean
+        }
+        Update: {
+          alertas_criticos?: boolean
+          created_at?: string
+          insights?: boolean
+          lembrete_diario?: boolean
+          metas_cofrinhos?: boolean
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          recorrencias?: boolean
+          resumo_semanal?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+          vencimentos?: boolean
+        }
+        Relationships: []
+      }
       notifications_log: {
         Row: {
+          action_url: string | null
+          category: string | null
+          clicked_at: string | null
+          dedupe_key: string | null
+          delivered_at: string | null
+          error: string | null
           id: string
           message: string
+          priority: string
           read: boolean
           sent_at: string
           title: string
@@ -426,8 +481,15 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          action_url?: string | null
+          category?: string | null
+          clicked_at?: string | null
+          dedupe_key?: string | null
+          delivered_at?: string | null
+          error?: string | null
           id?: string
           message: string
+          priority?: string
           read?: boolean
           sent_at?: string
           title: string
@@ -435,8 +497,15 @@ export type Database = {
           user_id: string
         }
         Update: {
+          action_url?: string | null
+          category?: string | null
+          clicked_at?: string | null
+          dedupe_key?: string | null
+          delivered_at?: string | null
+          error?: string | null
           id?: string
           message?: string
+          priority?: string
           read?: boolean
           sent_at?: string
           title?: string
@@ -470,25 +539,40 @@ export type Database = {
         Row: {
           auth: string
           created_at: string
+          device_info: Json | null
           endpoint: string
+          failure_count: number
           id: string
+          last_error: string | null
+          last_seen_at: string
           p256dh: string
+          user_agent: string | null
           user_id: string
         }
         Insert: {
           auth: string
           created_at?: string
+          device_info?: Json | null
           endpoint: string
+          failure_count?: number
           id?: string
+          last_error?: string | null
+          last_seen_at?: string
           p256dh: string
+          user_agent?: string | null
           user_id: string
         }
         Update: {
           auth?: string
           created_at?: string
+          device_info?: Json | null
           endpoint?: string
+          failure_count?: number
           id?: string
+          last_error?: string | null
+          last_seen_at?: string
           p256dh?: string
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
