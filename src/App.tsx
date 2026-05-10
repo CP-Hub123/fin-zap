@@ -15,7 +15,6 @@ import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import Upgrade from "./pages/Upgrade";
 import Maintenance from "./pages/Maintenance";
-import { BugReportFAB } from "@/components/bug-report/BugReportFAB";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +37,6 @@ const App = () => (
             <Route path="/admin/*" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <BugReportFAB />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
