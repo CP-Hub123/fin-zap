@@ -24,6 +24,41 @@ const fmtRelative = (iso: string | null) => {
 };
 
 export const ConnectedAccountsCard = () => {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+            <Landmark className="h-4 w-4 text-primary" />
+          </div>
+          Contas conectadas
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+            <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg">
+              <Sparkles className="h-6 w-6 text-primary-foreground" />
+            </div>
+          </div>
+          <div className="space-y-1.5 max-w-xs">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
+              Em breve
+            </div>
+            <p className="text-sm font-semibold">Open Finance chegando</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Em breve você poderá conectar seu banco e importar contas e transações automaticamente, com a segurança regulamentada pelo Banco Central.
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Legacy implementation kept for future re-enable
+const _LegacyConnectedAccountsCard = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [accounts, setAccounts] = useState<ConnectedAccountRow[]>([]);
