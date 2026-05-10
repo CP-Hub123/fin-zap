@@ -18,7 +18,7 @@ import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { Button } from '@/components/ui/button';
-import { LogOut, BookOpen, Plus, Menu, X, Sparkles } from 'lucide-react';
+import { LogOut, BookOpen, Plus, Menu, X, Sparkles, Bug } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MONTH_NAMES } from '@/lib/constants';
 import { toast } from 'sonner';
+import { BugReportModal } from '@/components/bug-report/BugReportModal';
 
 const AppPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -39,6 +40,7 @@ const AppPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [decisionOpen, setDecisionOpen] = useState(false);
+  const [bugReportOpen, setBugReportOpen] = useState(false);
 
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -150,6 +152,9 @@ const AppPage = () => {
             </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/tutorials'); setMobileMenuOpen(false); }}>
               <BookOpen className="h-4 w-4 mr-2" /> Tutoriais
+            </Button>
+            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setBugReportOpen(true); setMobileMenuOpen(false); }}>
+              <Bug className="h-4 w-4 mr-2" /> Reportar bug
             </Button>
             {isAdmin && (
               <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/admin'); setMobileMenuOpen(false); }}>
@@ -307,6 +312,7 @@ const AppPage = () => {
       </button>
 
       <DecisionModeSheet open={decisionOpen} onOpenChange={setDecisionOpen} monthId={selectedMonthId} />
+      <BugReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} />
     </div>
   );
 };
