@@ -68,13 +68,22 @@ const AppPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Prompt for push permission after first load
+  // Contextual permission prompt: only after the user already has a month created
+  // and only once we've loaded data — never interrupt the onboarding/first 3s.
   useEffect(() => {
-    if (permission === 'default') {
-      const timer = setTimeout(() => subscribePush(), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [permission, subscribePush]);
+    if (permission !== 'default') return;
+    if (monthsLoading || months.length === 0) return;
+    const dismissedAt = Number(localStorage.getItem('push_prompt_dismissed') || '0');
+    if (Date.now() - dismissedAt < 1000 * 60 * 60 * 24 * 7) return;
+    const timer = setTimeout(() => {
+      const shouldAsk = window.confirm(
+        'Quer receber alertas importantes do FinZap (vencimentos, metas e gastos acima do orçamento)?'
+      );
+      if (shouldAsk) subscribePush();
+      else localStorage.setItem('push_prompt_dismissed', String(Date.now()));
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [permission, subscribePush, monthsLoading, months.length]);
 
   const isClosed = selectedMonth?.status === 'closed';
   const isBlocked = isClosed || !canAct;
