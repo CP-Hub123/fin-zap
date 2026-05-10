@@ -608,7 +608,7 @@ export type Database = {
         Row: {
           amount: number
           category: string | null
-          cofrinho_id: string
+          cofrinho_id: string | null
           created_at: string
           date: string
           descricao: string | null
@@ -630,7 +630,7 @@ export type Database = {
         Insert: {
           amount: number
           category?: string | null
-          cofrinho_id: string
+          cofrinho_id?: string | null
           created_at?: string
           date: string
           descricao?: string | null
@@ -652,7 +652,7 @@ export type Database = {
         Update: {
           amount?: number
           category?: string | null
-          cofrinho_id?: string
+          cofrinho_id?: string | null
           created_at?: string
           date?: string
           descricao?: string | null
