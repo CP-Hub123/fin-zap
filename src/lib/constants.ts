@@ -14,3 +14,5 @@ export const DEFAULT_CATEGORIES = {
   income: ['Salário', 'Freelance', 'Investimentos', 'Outros (Receita)'],
   expense: ['Alimentação', 'Transporte', 'Moradia', 'Lazer', 'Saúde', 'Educação', 'Outros (Despesa)'],
 } as const;
+
+export const APP_VERSION = '1.0.0';
