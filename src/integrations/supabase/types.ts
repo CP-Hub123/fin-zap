@@ -64,6 +64,95 @@ export type Database = {
           },
         ]
       }
+      bug_report_screenshots: {
+        Row: {
+          bug_report_id: string
+          created_at: string
+          id: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          bug_report_id: string
+          created_at?: string
+          id?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          bug_report_id?: string
+          created_at?: string
+          id?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bug_report_screenshots_bug_report_id_fkey"
+            columns: ["bug_report_id"]
+            isOneToOne: false
+            referencedRelation: "bug_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bug_reports: {
+        Row: {
+          admin_notes: string | null
+          app_version: string | null
+          browser_info: Json | null
+          category: Database["public"]["Enums"]["bug_category"]
+          created_at: string
+          description: string
+          device_info: Json | null
+          id: string
+          priority: Database["public"]["Enums"]["bug_priority"]
+          route: string | null
+          screen_size: string | null
+          status: Database["public"]["Enums"]["bug_status"]
+          theme: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          app_version?: string | null
+          browser_info?: Json | null
+          category?: Database["public"]["Enums"]["bug_category"]
+          created_at?: string
+          description: string
+          device_info?: Json | null
+          id?: string
+          priority?: Database["public"]["Enums"]["bug_priority"]
+          route?: string | null
+          screen_size?: string | null
+          status?: Database["public"]["Enums"]["bug_status"]
+          theme?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          app_version?: string | null
+          browser_info?: Json | null
+          category?: Database["public"]["Enums"]["bug_category"]
+          created_at?: string
+          description?: string
+          device_info?: Json | null
+          id?: string
+          priority?: Database["public"]["Enums"]["bug_priority"]
+          route?: string | null
+          screen_size?: string | null
+          status?: Database["public"]["Enums"]["bug_status"]
+          theme?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -613,6 +702,17 @@ export type Database = {
       }
     }
     Enums: {
+      bug_category:
+        | "visual"
+        | "financial"
+        | "recurring"
+        | "cofrinhos"
+        | "dashboard"
+        | "open_finance"
+        | "performance"
+        | "other"
+      bug_priority: "low" | "medium" | "high" | "critical"
+      bug_status: "new" | "analyzing" | "fixing" | "resolved" | "ignored"
       category_type: "income" | "expense"
       cofrinho_tipo: "reserva" | "mensal" | "meta"
       month_status: "draft" | "in_progress" | "ready_to_close" | "closed"
@@ -750,6 +850,18 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      bug_category: [
+        "visual",
+        "financial",
+        "recurring",
+        "cofrinhos",
+        "dashboard",
+        "open_finance",
+        "performance",
+        "other",
+      ],
+      bug_priority: ["low", "medium", "high", "critical"],
+      bug_status: ["new", "analyzing", "fixing", "resolved", "ignored"],
       category_type: ["income", "expense"],
       cofrinho_tipo: ["reserva", "mensal", "meta"],
       month_status: ["draft", "in_progress", "ready_to_close", "closed"],

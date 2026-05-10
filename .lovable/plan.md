@@ -1,83 +1,116 @@
-## Objetivo
-Elevar o FinZap a um padrão visual fintech premium (Nubank/Linear/Apple Wallet) sem tocar em lógica financeira, recorrências, cofrinhos backend, dashboard de cálculos ou fechamento mensal. Mudanças apenas em camada de apresentação (tokens, componentes UI, layouts, classes Tailwind).
 
-## Escopo do que **NÃO** será alterado
-- `src/hooks/*` (useTransactions, useCofrinhos, useMonths, useRecurringTransactions, useSubscription)
-- `supabase/*` (migrations, edge functions, policies)
-- Lógica de cálculos em `SummaryView`, `ClosingView`, `useNotificationTriggers`
-- Estrutura de rotas em `App.tsx`
+# Plano: Sistema de Bug Reports + Admin Premium
 
-## Plano em 4 etapas
+Este é um projeto grande, dividido em duas frentes principais. Implementação em fases bem definidas para garantir qualidade.
 
-### Etapa 1 — Fundação (tokens + Dialog/Sheet primitives)
-**Arquivos:** `src/index.css`, `tailwind.config.ts`, `src/components/ui/dialog.tsx`, `src/components/ui/sheet.tsx`
+## PARTE 1 — Sistema de Reporte de Bugs
 
-- Refinar paleta HSL semântica em `index.css`:
-  - `--surface`, `--surface-elevated`, `--surface-glass` para níveis de profundidade
-  - `--gradient-primary`, `--gradient-success`, `--gradient-danger`
-  - `--shadow-card`, `--shadow-elevated`, `--shadow-glow-primary`
-  - Refinar `--ring`, `--border` para contraste mais limpo no dark mode
-- Adicionar utilitárias `.card-premium`, `.glass-panel`, `.number-display` em `@layer components`
-- **DialogContent**: forçar `max-h-[90dvh]`, `overflow-y-auto`, `w-[calc(100vw-2rem)]`, `safe-area` (`pb-[env(safe-area-inset-bottom)]`), close button `top-3 right-3 z-10` sempre visível
-- **SheetContent**: mesma proteção mobile + `overscroll-contain`
+### 1.1 Backend (banco de dados + storage)
+- Migration criando tabela `bug_reports` com campos:
+  - `id`, `user_id`, `title`, `description`
+  - `category` (enum: visual, financial, recurring, cofrinhos, dashboard, open_finance, performance, other)
+  - `priority` (enum: low, medium, high, critical)
+  - `status` (enum: new, analyzing, fixing, resolved, ignored) — default `new`
+  - `route`, `device_info` (jsonb), `browser_info` (jsonb), `screen_size`, `theme`, `app_version`
+  - `admin_notes`, `created_at`, `updated_at`
+- Tabela auxiliar `bug_report_screenshots` com `bug_report_id`, `image_url`, `created_at`
+- Bucket privado `bug-screenshots` com policies:
+  - Usuário faz upload em pasta `{user_id}/...`
+  - Apenas admin lê todos
+- RLS:
+  - Usuário insere/lê próprios bug_reports
+  - Admin lê/atualiza todos (status, admin_notes)
+  - Trigger updated_at
 
-### Etapa 2 — Cards e microinterações
-**Arquivos:** `src/components/ui/card.tsx`, `src/components/app/CofrinhoCard.tsx`, `src/components/app/SummaryView.tsx` (apenas JSX/classes)
+### 1.2 Componente flutuante de reportar bug
+- Novo componente `BugReportFAB.tsx`:
+  - Desktop: FAB pequeno (40px) bottom-right, ícone Bug, glass/blur, hover suave, opacidade 70% → 100%
+  - Mobile: integrar item no menu de perfil/config (não FAB extra para não poluir)
+- Renderizar globalmente em `ProtectedRoute` (apenas para usuários logados, exceto rota /admin onde já existe outro contexto)
 
-- Card base: sombra suave em camadas, hover com `translate-y-[-1px]` + glow sutil, `transition-all duration-200`
-- Hierarquia tipográfica: títulos `font-semibold tracking-tight`, números grandes `tabular-nums font-bold`
-- CofrinhoCard: profundidade refinada, ring de progresso com gradient stroke, badge de status com `backdrop-blur`
-- SummaryView (apenas visual): hero card de saldo com gradient + glow, números de receitas/despesas/saldo com tipografia premium
+### 1.3 Modal premium `BugReportModal.tsx`
+- Campos:
+  - Título (input)
+  - Descrição (textarea)
+  - Categoria (select com ícones)
+  - Prioridade (4 chips visuais com cores semânticas)
+  - Upload de até 3 screenshots (drag-drop desktop, input file mobile)
+  - Preview de imagens com remoção individual
+- Captura automática silenciosa: `window.location.pathname`, `navigator.userAgent`, `screen.width x screen.height`, tema atual (do localStorage), `import.meta.env.VITE_APP_VERSION` ou hardcoded
+- Submit:
+  - Cria bug_report
+  - Faz upload das imagens em `{user_id}/{bug_report_id}/{index}.ext`
+  - Insere em `bug_report_screenshots`
+- Loading com spinner refinado, sucesso com animação check + toast elegante
+- Validação com zod (título 3-120 chars, descrição 10-2000 chars)
 
-### Etapa 3 — Modais e formulários
-**Arquivos:** `RecurringTransactionsView.tsx`, `CofrinhosView.tsx`, `TransactionsView.tsx`, `ClosingView.tsx`, `AppPage.tsx`, `CofrinhoDetailSheet.tsx`
+## PARTE 2 — Refatoração Completa do Admin
 
-- Aplicar layout estrutural em **todos** os Dialogs:
-  ```
-  DialogContent
-    ├── DialogHeader (sticky top, bg-card/95 backdrop-blur)
-    ├── div com overflow-y-auto, max-h responsive, padding seguro
-    └── DialogFooter (sticky bottom, gap-2, botões min-h-11)
-  ```
-- Inputs com `min-h-12 text-base` (evita zoom iOS), labels mais respiráveis
-- Botões CTA: `h-12`, gradient sutil no primário
-- Confirmações destructive com `AlertDialog` padronizado
+### 2.1 Novo layout `AdminLayout.tsx`
+- Sidebar fixa esquerda (desktop, w-64) usando shadcn sidebar:
+  - Itens: Dashboard, Usuários, Bugs, Cofrinhos, Recorrências, Assinaturas, Tutoriais, Configurações
+  - Logo FinZap topo + chip "Admin"
+  - Footer: perfil admin
+- Mobile: sidebar offcanvas com SidebarTrigger no header
+- Header superior:
+  - SidebarTrigger (mobile)
+  - Busca global (placeholder por enquanto, foco no usuário)
+  - Status do sistema (badge ativo/manutenção)
+  - Sino notificações (placeholder)
+  - Avatar admin
 
-### Etapa 4 — Header, Stepper e mobile shell
-**Arquivos:** `AppPage.tsx`, `Stepper.tsx`, `MonthSelector.tsx`, `NotificationBell.tsx`
+### 2.2 Refatoração das páginas admin existentes
+- `AdminDashboard`: 4 KPI cards limpos (usuários totais, ativos, bugs abertos, manutenção status), grid responsivo
+- `AdminUsers`: tabela mais clean, busca por nome, paginação visual
+- `AdminTutorials`, `AdminSettings`, `AdminSubscriptions`: aplicar mesma linguagem visual (cards com `border` sutil, mais padding, tipografia hierárquica)
+- Remover excesso de cards-em-cards e bordas duplicadas
 
-- Header: glass com `backdrop-blur-xl` + `border-b border-border/40`
-- Stepper: pill ativa com gradient + glow, inativas com `text-muted-foreground/60`
-- Conteúdo principal com `pb-[env(safe-area-inset-bottom)]`
-- Touch targets ≥44px em tudo que é tocável
+### 2.3 Nova página `/admin/bugs` (`AdminBugs.tsx`)
+- Lista com tabela responsiva:
+  - Colunas: prioridade (chip colorido), título, categoria, usuário, rota, data, status (chip)
+  - Mobile: cards
+- Filtros topo:
+  - Status (tabs)
+  - Prioridade (select)
+  - Categoria (select)
+  - Busca textual
+- Click em bug abre Sheet/Dialog com:
+  - Descrição completa
+  - Carrossel de screenshots (clique amplia em lightbox)
+  - Metadados (device, browser, screen, theme, rota, hora)
+  - Select de status + textarea de admin_notes + botão salvar
 
-## Detalhes técnicos
+### 2.4 Design tokens / dark mode refinement
+- Revisar `index.css`: garantir backgrounds não 100% pretos (usar `222 20% 6%` em vez de puro), bordas suaves, sombras leves
+- Tokens admin específicos: `--admin-surface`, `--admin-sidebar`
+- Light mode: backgrounds `0 0% 99%`, bordas `0 0% 92%`
 
-**Tokens principais (HSL) — preservar identidade azul/verde:**
-```css
---primary: 217 91% 60%        (azul FinZap atual mantido)
---success: 142 76% 45%        (verde refinado)
---surface-elevated: 222 47% 13%
---gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 65%))
---shadow-card: 0 1px 3px hsl(0 0% 0% / 0.08), 0 4px 12px hsl(0 0% 0% / 0.04)
---shadow-glow-primary: 0 0 24px hsl(217 91% 60% / 0.15)
-```
+### 2.5 Responsividade
+- Sidebar collapse para icon-only abaixo de lg
+- Tabelas viram cards no mobile
+- Modais com max-h-screen e scroll interno
 
-**Padrão Dialog (aplicado uma vez no primitive):**
-```tsx
-<DialogPrimitive.Content
-  className="fixed left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2
-             w-[calc(100vw-2rem)] max-w-lg
-             max-h-[90dvh] overflow-hidden
-             flex flex-col
-             rounded-2xl border bg-card shadow-elevated
-             pb-[env(safe-area-inset-bottom)]"
-/>
-```
+## Detalhes técnicos (referência)
 
-**Critério de pronto:**
-- Nenhum modal corta conteúdo em 320px-1920px
-- Botão fechar visível em todos os modais
-- Saldo principal lido em <1s
-- Touch targets ≥44px
-- Sem mudanças em hooks/types/migrations/edge functions
+- Stack: React + Vite + Tailwind + Supabase (já configurado)
+- Validação: zod
+- Forms: react-hook-form (já no projeto)
+- Storage: bucket privado, signed URLs para preview no admin (`createSignedUrl(path, 3600)`)
+- Versão app: constante em `src/lib/constants.ts` (ex.: `APP_VERSION = "1.0.0"`)
+- Helper: `src/lib/deviceInfo.ts` para coletar contexto
+- Hook: `src/hooks/useBugReports.ts` (lista admin com filtros via react-query)
+
+## Ordem de execução
+1. Migration (tabela + bucket + policies + trigger)
+2. Helpers: deviceInfo, constants, hook
+3. BugReportModal + BugReportFAB + integração global
+4. AdminLayout (sidebar + header)
+5. Refatorar páginas admin existentes para novo layout
+6. Página AdminBugs (lista + filtros + detalhe)
+7. Ajustes de tema (dark/light refinement)
+8. QA visual responsivo
+
+## Fora de escopo (explícito)
+- Replay de sessão, Sentry, LogRocket — apenas preparar arquitetura, não integrar
+- Busca global funcional — apenas placeholder UI por enquanto
+- Notificações no header admin — apenas ícone placeholder
