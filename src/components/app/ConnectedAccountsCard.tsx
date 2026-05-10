@@ -40,15 +40,11 @@ export const ConnectedAccountsCard = () => {
         <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
           <div className="relative">
             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-            <div className="relative h-20 w-20 flex items-center justify-center">
-              <img src={openFinanceLogo} alt="Open Finance" className="h-full w-full object-contain" />
-              <img
-                src={finzapLogo}
-                alt="FinZap"
-                className="absolute h-7 w-7 object-contain"
-                style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-              />
-            </div>
+            <img
+              src={openFinanceLogo}
+              alt="Open Finance"
+              className="relative h-20 w-20 object-contain"
+            />
           </div>
           <div className="space-y-1.5 max-w-xs">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
