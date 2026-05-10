@@ -1,120 +1,148 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 const VAPID_PUBLIC_KEY = 'BFkJUOVv4zqJ66952R07dAL9LFzYfunNlPnOvTzN8jVd5c0ZWOWkNn4fcpL3Zca_BO3f1rFJXDAvzEdNr2wf3z0';
 
+const VALID_HOST = /\.(googleapis\.com|mozilla\.com|windows\.com|apple\.com|push\.services)/i;
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
+  const raw = window.atob(base64);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; ++i) out[i] = raw.charCodeAt(i);
+  return out;
 }
 
-function isValidPushEndpoint(endpoint?: string | null) {
+function isValidEndpoint(endpoint?: string | null) {
   if (!endpoint || endpoint.includes('permanently-removed.invalid')) return false;
-
   try {
-    return new URL(endpoint).protocol === 'https:';
-  } catch {
-    return false;
-  }
+    const u = new URL(endpoint);
+    if (u.protocol !== 'https:') return false;
+    return VALID_HOST.test(u.hostname) || u.hostname.includes('push');
+  } catch { return false; }
+}
+
+function deviceInfo() {
+  const ua = navigator.userAgent;
+  const platform = /iPad|iPhone|iPod/.test(ua) ? 'iOS' :
+                   /Android/.test(ua) ? 'Android' :
+                   /Windows/.test(ua) ? 'Windows' :
+                   /Mac OS/.test(ua) ? 'macOS' :
+                   /Linux/.test(ua) ? 'Linux' : 'Unknown';
+  return { platform, language: navigator.language };
 }
 
 export const usePushNotifications = () => {
   const { user } = useAuth();
+  const supported = typeof window !== 'undefined' &&
+    'serviceWorker' in navigator && 'PushManager' in window && typeof Notification !== 'undefined';
   const [permission, setPermission] = useState<NotificationPermission>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+    supported ? Notification.permission : 'default'
   );
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const subscribingRef = useRef(false);
 
-  const subscribe = useCallback(async () => {
-    if (!user || typeof Notification === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  const persist = useCallback(async (sub: PushSubscription) => {
+    if (!user) return;
+    const json = sub.toJSON();
+    if (!isValidEndpoint(json.endpoint) || !json.keys?.p256dh || !json.keys?.auth) {
+      await sub.unsubscribe().catch(() => undefined);
+      throw new Error('Invalid push subscription');
+    }
+    await supabase
+      .from('push_subscriptions')
+      .delete()
+      .eq('user_id', user.id)
+      .like('endpoint', '%permanently-removed.invalid%');
 
+    await supabase.from('push_subscriptions').upsert(
+      {
+        user_id: user.id,
+        endpoint: json.endpoint!,
+        p256dh: json.keys.p256dh,
+        auth: json.keys.auth,
+        device_info: deviceInfo(),
+        user_agent: navigator.userAgent,
+        last_seen_at: new Date().toISOString(),
+        failure_count: 0,
+      },
+      { onConflict: 'endpoint' }
+    );
+    setIsSubscribed(true);
+  }, [user]);
+
+  const subscribeInternal = useCallback(async () => {
+    if (!user || !supported || subscribingRef.current) return false;
+    subscribingRef.current = true;
     try {
       const result = Notification.permission === 'granted'
         ? 'granted'
         : await Notification.requestPermission();
-
       setPermission(result);
-      if (result !== 'granted') {
-        setIsSubscribed(false);
-        return;
-      }
+      if (result !== 'granted') { setIsSubscribed(false); return false; }
 
       await navigator.serviceWorker.register('/sw.js');
-      const registration = await navigator.serviceWorker.ready;
-
-      let subscription = await registration.pushManager.getSubscription();
-      const existingJson = subscription?.toJSON();
-      const shouldRecreate =
-        !subscription ||
-        !isValidPushEndpoint(existingJson?.endpoint) ||
-        !existingJson?.keys?.p256dh ||
-        !existingJson?.keys?.auth;
-
-      if (subscription && shouldRecreate) {
-        console.warn('Invalid push subscription detected, recreating', {
-          endpoint: existingJson?.endpoint ?? null,
-        });
-        await subscription.unsubscribe().catch(() => undefined);
-        subscription = null;
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      const existing = sub?.toJSON();
+      const bad = !sub ||
+        !isValidEndpoint(existing?.endpoint) ||
+        !existing?.keys?.p256dh ||
+        !existing?.keys?.auth;
+      if (sub && bad) {
+        await sub.unsubscribe().catch(() => undefined);
+        sub = null;
       }
-
-      if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
       }
-
-      const subJson = subscription.toJSON();
-      if (!isValidPushEndpoint(subJson.endpoint) || !subJson.keys?.p256dh || !subJson.keys?.auth) {
-        await subscription.unsubscribe().catch(() => undefined);
-        throw new Error(`Invalid push subscription endpoint: ${subJson.endpoint ?? 'missing'}`);
-      }
-
-      console.info('Push subscription ready', { endpoint: subJson.endpoint });
-
-      await supabase
-        .from('push_subscriptions')
-        .delete()
-        .eq('user_id', user.id)
-        .like('endpoint', '%permanently-removed.invalid%');
-
-      const { error } = await supabase.from('push_subscriptions').upsert(
-        {
-          user_id: user.id,
-          endpoint: subJson.endpoint,
-          p256dh: subJson.keys.p256dh,
-          auth: subJson.keys.auth,
-        },
-        { onConflict: 'user_id,endpoint' }
-      );
-
-      if (error) throw error;
-      setIsSubscribed(true);
+      await persist(sub);
+      return true;
     } catch (err) {
       console.error('Push subscription failed:', err);
       setIsSubscribed(false);
+      return false;
+    } finally {
+      subscribingRef.current = false;
     }
-  }, [user]);
+  }, [user, supported, persist]);
 
+  // Public: explicit user-driven request
+  const subscribe = useCallback(() => subscribeInternal(), [subscribeInternal]);
+
+  // On mount: if already granted, refresh subscription quietly.
   useEffect(() => {
-    if (!user || typeof Notification === 'undefined') return;
-
+    if (!user || !supported) return;
     setPermission(Notification.permission);
-
     if (Notification.permission === 'granted') {
-      subscribe();
+      subscribeInternal();
     } else {
       setIsSubscribed(false);
     }
-  }, [user, subscribe]);
+  }, [user, supported, subscribeInternal]);
 
-  return { permission, isSubscribed, subscribe };
+  // Listen for SW messages (subscription changed, click tracking)
+  useEffect(() => {
+    if (!supported) return;
+    const handler = async (e: MessageEvent) => {
+      const data = e.data || {};
+      if (data.type === 'pushsubscriptionchange') {
+        await subscribeInternal();
+      } else if (data.type === 'notification-clicked' && data.id) {
+        await supabase
+          .from('notifications_log')
+          .update({ clicked_at: new Date().toISOString(), read: true })
+          .eq('id', data.id);
+      }
+    };
+    navigator.serviceWorker?.addEventListener('message', handler);
+    return () => navigator.serviceWorker?.removeEventListener('message', handler);
+  }, [supported, subscribeInternal]);
+
+  return { permission, isSubscribed, supported, subscribe };
 };

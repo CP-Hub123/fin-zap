@@ -12,12 +12,79 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Users as UsersIcon, Bug as BugIcon, Activity, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users as UsersIcon, Bug as BugIcon, Activity, AlertCircle, Bell, Send as SendIcon, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AdminSubscriptions } from '@/components/admin/AdminSubscriptions';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminBugs } from '@/pages/admin/AdminBugs';
+
+// ============ Notifications Admin ============
+const AdminNotifications = () => {
+  const since7 = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+  const { data: stats } = useQuery({
+    queryKey: ['admin-notif-stats'],
+    queryFn: async () => {
+      const [{ count: sent }, { count: delivered }, { count: failed }, { count: clicked }, { count: subs }] = await Promise.all([
+        supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7),
+        supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7).not('delivered_at', 'is', null),
+        supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7).not('error', 'is', null),
+        supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7).not('clicked_at', 'is', null),
+        supabase.from('push_subscriptions').select('*', { count: 'exact', head: true }),
+      ]);
+      return { sent: sent ?? 0, delivered: delivered ?? 0, failed: failed ?? 0, clicked: clicked ?? 0, subs: subs ?? 0 };
+    },
+  });
+  const { data: recent = [] } = useQuery({
+    queryKey: ['admin-notif-recent'],
+    queryFn: async () => (await supabase
+      .from('notifications_log')
+      .select('id, title, type, category, priority, sent_at, delivered_at, clicked_at, error')
+      .order('sent_at', { ascending: false })
+      .limit(50)).data ?? [],
+  });
+  const ctr = stats && stats.delivered > 0 ? Math.round((stats.clicked / stats.delivered) * 100) : 0;
+
+  return (
+    <div>
+      <PageHeader title="Notificações" description="Métricas dos últimos 7 dias." />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <KpiCard label="Enviadas" value={stats?.sent ?? '—'} icon={SendIcon} />
+        <KpiCard label="Entregues" value={stats?.delivered ?? '—'} icon={CheckCircle2} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
+        <KpiCard label="Falhas" value={stats?.failed ?? '—'} icon={XCircle} accent="bg-destructive/10 text-destructive" />
+        <KpiCard label="Cliques" value={`${ctr}%`} icon={Activity} accent="bg-violet-500/10 text-violet-500" />
+        <KpiCard label="Inscrições" value={stats?.subs ?? '—'} icon={Bell} accent="bg-blue-500/10 text-blue-500" />
+      </div>
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Título</TableHead>
+              <TableHead className="hidden md:table-cell">Categoria</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right hidden md:table-cell">Quando</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {recent.map((n: any) => (
+              <TableRow key={n.id}>
+                <TableCell className="font-medium">{n.title}</TableCell>
+                <TableCell className="hidden md:table-cell text-xs text-muted-foreground">{n.category || n.type}</TableCell>
+                <TableCell>
+                  {n.error ? <Badge variant="destructive">falha</Badge>
+                    : n.clicked_at ? <Badge>clicada</Badge>
+                    : n.delivered_at ? <Badge variant="secondary">entregue</Badge>
+                    : <Badge variant="outline">pendente</Badge>}
+                </TableCell>
+                <TableCell className="text-right hidden md:table-cell text-xs text-muted-foreground">{new Date(n.sent_at).toLocaleString('pt-BR')}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
 
 // ============ Page header helper ============
 const PageHeader = ({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) => (
@@ -355,6 +422,7 @@ const Admin = () => (
       <Route path="tutorials" element={<AdminTutorials />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+      <Route path="notifications" element={<AdminNotifications />} />
     </Routes>
   </AdminLayout>
 );

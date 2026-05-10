@@ -10,6 +10,9 @@ export interface InAppNotification {
   type: string;
   read: boolean;
   sent_at: string;
+  action_url?: string | null;
+  category?: string | null;
+  priority?: string | null;
 }
 
 const POLL_INTERVAL = 30_000; // 30 seconds

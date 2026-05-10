@@ -11,7 +11,7 @@ import {
   SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarFooter, SidebarHeader,
 } from '@/components/ui/sidebar';
 import {
-  LayoutDashboard, Users, Bug, CreditCard, BookOpen, Settings, ArrowLeft, Search, Bell, LogOut,
+  LayoutDashboard, Users, Bug, CreditCard, BookOpen, Settings, ArrowLeft, Search, Bell, LogOut, BellRing,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -21,6 +21,7 @@ const navItems = [
   { path: '/admin/bugs', label: 'Bugs', icon: Bug },
   { path: '/admin/subscriptions', label: 'Assinaturas', icon: CreditCard },
   { path: '/admin/tutorials', label: 'Tutoriais', icon: BookOpen },
+  { path: '/admin/notifications', label: 'Notificações', icon: BellRing },
   { path: '/admin/settings', label: 'Configurações', icon: Settings },
 ];
 
