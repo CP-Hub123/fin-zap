@@ -111,7 +111,7 @@ export const BugReportModal = ({ open, onOpenChange }: Props) => {
     setSubmitting(true);
     try {
       const ctx = captureContext();
-      const { data: report, error } = await supabase
+      const { data: report, error } = await (supabase as any)
         .from('bug_reports')
         .insert({
           user_id: user.id,
@@ -133,7 +133,7 @@ export const BugReportModal = ({ open, onOpenChange }: Props) => {
           .from('bug-screenshots')
           .upload(path, file, { contentType: file.type, upsert: false });
         if (upErr) throw upErr;
-        await supabase.from('bug_report_screenshots').insert({
+        await (supabase as any).from('bug_report_screenshots').insert({
           bug_report_id: report.id,
           user_id: user.id,
           storage_path: path,
