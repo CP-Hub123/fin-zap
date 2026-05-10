@@ -1,116 +1,106 @@
+## Reestruturação completa do sistema de notificações
 
-# Plano: Sistema de Bug Reports + Admin Premium
+Vou reconstruir o sistema de notificações do FinZap em camadas: banco, service worker, edge functions, hooks, UI de configurações e gatilhos inteligentes. O foco é confiabilidade, limpeza automática de subscriptions inválidas, permissão pedida no momento certo e mensagens contextuais úteis.
 
-Este é um projeto grande, dividido em duas frentes principais. Implementação em fases bem definidas para garantir qualidade.
+### 1. Banco de dados (migration)
 
-## PARTE 1 — Sistema de Reporte de Bugs
+Atualizar o schema para suportar preferências, agendamento e telemetria:
 
-### 1.1 Backend (banco de dados + storage)
-- Migration criando tabela `bug_reports` com campos:
-  - `id`, `user_id`, `title`, `description`
-  - `category` (enum: visual, financial, recurring, cofrinhos, dashboard, open_finance, performance, other)
-  - `priority` (enum: low, medium, high, critical)
-  - `status` (enum: new, analyzing, fixing, resolved, ignored) — default `new`
-  - `route`, `device_info` (jsonb), `browser_info` (jsonb), `screen_size`, `theme`, `app_version`
-  - `admin_notes`, `created_at`, `updated_at`
-- Tabela auxiliar `bug_report_screenshots` com `bug_report_id`, `image_url`, `created_at`
-- Bucket privado `bug-screenshots` com policies:
-  - Usuário faz upload em pasta `{user_id}/...`
-  - Apenas admin lê todos
-- RLS:
-  - Usuário insere/lê próprios bug_reports
-  - Admin lê/atualiza todos (status, admin_notes)
-  - Trigger updated_at
+- `push_subscriptions`: adicionar `device_info jsonb`, `user_agent text`, `last_seen_at timestamptz`, `last_error text`, `failure_count int default 0`. Índice único em `(endpoint)`.
+- `notification_preferences` (nova): `user_id` (PK), flags `vencimentos`, `recorrencias`, `metas_cofrinhos`, `insights`, `alertas_criticos`, `lembrete_diario`, `resumo_semanal`, `quiet_hours_start`, `quiet_hours_end`, `timezone`. Default: tudo ativo, quiet 22:00–07:00.
+- `notifications_log`: adicionar `clicked_at timestamptz`, `delivered_at timestamptz`, `error text`, `dedupe_key text`, `action_url text`. Índice em `(user_id, type, sent_at)` para dedupe.
+- Trigger para criar `notification_preferences` automaticamente em novo usuário (junto com `handle_new_user`).
+- RLS: usuário gerencia próprias preferências; admin lê tudo.
 
-### 1.2 Componente flutuante de reportar bug
-- Novo componente `BugReportFAB.tsx`:
-  - Desktop: FAB pequeno (40px) bottom-right, ícone Bug, glass/blur, hover suave, opacidade 70% → 100%
-  - Mobile: integrar item no menu de perfil/config (não FAB extra para não poluir)
-- Renderizar globalmente em `ProtectedRoute` (apenas para usuários logados, exceto rota /admin onde já existe outro contexto)
+### 2. Service Worker (`public/sw.js`)
 
-### 1.3 Modal premium `BugReportModal.tsx`
-- Campos:
-  - Título (input)
-  - Descrição (textarea)
-  - Categoria (select com ícones)
-  - Prioridade (4 chips visuais com cores semânticas)
-  - Upload de até 3 screenshots (drag-drop desktop, input file mobile)
-  - Preview de imagens com remoção individual
-- Captura automática silenciosa: `window.location.pathname`, `navigator.userAgent`, `screen.width x screen.height`, tema atual (do localStorage), `import.meta.env.VITE_APP_VERSION` ou hardcoded
-- Submit:
-  - Cria bug_report
-  - Faz upload das imagens em `{user_id}/{bug_report_id}/{index}.ext`
-  - Insere em `bug_report_screenshots`
-- Loading com spinner refinado, sucesso com animação check + toast elegante
-- Validação com zod (título 3-120 chars, descrição 10-2000 chars)
+Reescrever com:
 
-## PARTE 2 — Refatoração Completa do Admin
+- `install` → `self.skipWaiting()`.
+- `activate` → `clients.claim()` + limpeza de caches antigos.
+- `push` → parse seguro, suporta `actions`, `tag` (dedupe visual), `renotify`, `requireInteraction` para alertas críticos, `data.url` para roteamento.
+- `notificationclick` → fecha notificação, foca janela existente ou abre `data.url`. Trata botões de ação ("Ver", "Dispensar").
+- `pushsubscriptionchange` → reenvia subscription para o backend.
 
-### 2.1 Novo layout `AdminLayout.tsx`
-- Sidebar fixa esquerda (desktop, w-64) usando shadcn sidebar:
-  - Itens: Dashboard, Usuários, Bugs, Cofrinhos, Recorrências, Assinaturas, Tutoriais, Configurações
-  - Logo FinZap topo + chip "Admin"
-  - Footer: perfil admin
-- Mobile: sidebar offcanvas com SidebarTrigger no header
-- Header superior:
-  - SidebarTrigger (mobile)
-  - Busca global (placeholder por enquanto, foco no usuário)
-  - Status do sistema (badge ativo/manutenção)
-  - Sino notificações (placeholder)
-  - Avatar admin
+### 3. Edge functions
 
-### 2.2 Refatoração das páginas admin existentes
-- `AdminDashboard`: 4 KPI cards limpos (usuários totais, ativos, bugs abertos, manutenção status), grid responsivo
-- `AdminUsers`: tabela mais clean, busca por nome, paginação visual
-- `AdminTutorials`, `AdminSettings`, `AdminSubscriptions`: aplicar mesma linguagem visual (cards com `border` sutil, mais padding, tipografia hierárquica)
-- Remover excesso de cards-em-cards e bordas duplicadas
+`send-push` (refatorar): já existe e está bom; melhorias:
 
-### 2.3 Nova página `/admin/bugs` (`AdminBugs.tsx`)
-- Lista com tabela responsiva:
-  - Colunas: prioridade (chip colorido), título, categoria, usuário, rota, data, status (chip)
-  - Mobile: cards
-- Filtros topo:
-  - Status (tabs)
-  - Prioridade (select)
-  - Categoria (select)
-  - Busca textual
-- Click em bug abre Sheet/Dialog com:
-  - Descrição completa
-  - Carrossel de screenshots (clique amplia em lightbox)
-  - Metadados (device, browser, screen, theme, rota, hora)
-  - Select de status + textarea de admin_notes + botão salvar
+- Respeitar `notification_preferences` do destinatário (skip se categoria desativada ou em quiet hours, exceto `alertas_criticos`).
+- Incrementar `failure_count` e remover subscription após 3 falhas consecutivas ou erro 404/410.
+- Persistir `delivered_at`, `error`, `dedupe_key`, `action_url` no log.
+- Suportar `actions`, `url`, `tag`, `priority` no body.
 
-### 2.4 Design tokens / dark mode refinement
-- Revisar `index.css`: garantir backgrounds não 100% pretos (usar `222 20% 6%` em vez de puro), bordas suaves, sombras leves
-- Tokens admin específicos: `--admin-surface`, `--admin-sidebar`
-- Light mode: backgrounds `0 0% 99%`, bordas `0 0% 92%`
+`notifications-scheduler` (nova, cron): roda a cada 15 min e dispara:
 
-### 2.5 Responsividade
-- Sidebar collapse para icon-only abaixo de lg
-- Tabelas viram cards no mobile
-- Modais com max-h-screen e scroll interno
+- Vencimentos de recorrências (1 dia antes, no dia).
+- Alertas de orçamento (50/80/100%) por categoria.
+- Progresso de cofrinhos (a cada marco de 25%).
+- Resumo semanal (domingo 19h no fuso do usuário).
+- Lembrete de fechamento (último dia útil do mês 19h).
+- Lembrete diário opcional (8h).
+- Cada envio usa `dedupe_key` (ex.: `budget_80:{cat}:{yyyy-mm}`) para nunca repetir.
 
-## Detalhes técnicos (referência)
+Cron: `pg_cron` + `pg_net` chamando a função a cada 15min.
 
-- Stack: React + Vite + Tailwind + Supabase (já configurado)
-- Validação: zod
-- Forms: react-hook-form (já no projeto)
-- Storage: bucket privado, signed URLs para preview no admin (`createSignedUrl(path, 3600)`)
-- Versão app: constante em `src/lib/constants.ts` (ex.: `APP_VERSION = "1.0.0"`)
-- Helper: `src/lib/deviceInfo.ts` para coletar contexto
-- Hook: `src/hooks/useBugReports.ts` (lista admin com filtros via react-query)
+### 4. Frontend
 
-## Ordem de execução
-1. Migration (tabela + bucket + policies + trigger)
-2. Helpers: deviceInfo, constants, hook
-3. BugReportModal + BugReportFAB + integração global
-4. AdminLayout (sidebar + header)
-5. Refatorar páginas admin existentes para novo layout
-6. Página AdminBugs (lista + filtros + detalhe)
-7. Ajustes de tema (dark/light refinement)
-8. QA visual responsivo
+`usePushNotifications` (refatorar): validação rigorosa de endpoint (regex `https://(fcm|updates|web).push…`), `pushsubscriptionchange` listener, recriação automática se inválido, persiste `device_info` + `user_agent`.
 
-## Fora de escopo (explícito)
-- Replay de sessão, Sentry, LogRocket — apenas preparar arquitetura, não integrar
-- Busca global funcional — apenas placeholder UI por enquanto
-- Notificações no header admin — apenas ícone placeholder
+`useNotificationPermission` (novo): expõe `requestWithContext(reason)` que mostra um sheet explicativo antes de chamar `Notification.requestPermission()`. Usado em momentos estratégicos: após 1º fechamento de mês, ao criar 1ª recorrência, ao criar 1º cofrinho. Nunca no onboarding.
+
+`NotificationSettingsSheet` (novo): central premium em `/app` (acessível pelo sino → engrenagem). Toggles para cada categoria, quiet hours, e botão "Enviar teste". Visual coerente com design system (HSL tokens).
+
+`NotificationBell`: adicionar engrenagem para abrir a central, mostrar `delivered_at`/categoria com ícone, click route via `action_url`.
+
+`createNotification` (`src/lib/notificationService.ts`): aceitar `dedupe_key`, `action_url`, `priority`, `category`. Backend faz dedupe definitivo.
+
+### 5. Painel admin
+
+Em `src/pages/Admin.tsx` adicionar aba "Notificações" mostrando:
+
+- Total enviadas / entregues / falhas (últimos 7d e 30d) via query agregada em `notifications_log`.
+- Subscriptions ativas (count) e por plataforma (parse `user_agent`).
+- Taxa de clique (`clicked_at IS NOT NULL` / `delivered_at`).
+- Tabela das últimas 50 notificações com status.
+
+### 6. Limpeza e segurança
+
+- `send-push` já rejeita endpoints inválidos; agora também limpa após N falhas.
+- Migration faz `DELETE` único de subscriptions com `endpoint LIKE '%permanently-removed.invalid%'`.
+- Todas as RLS revisadas (preferences, log update para `clicked_at`).
+- VAPID keys já estão em secrets; manter.
+
+### 7. Detalhes técnicos
+
+```text
+Cron (pg_cron, a cada 15min)
+   ↓
+notifications-scheduler (edge)
+   ├─ lê months/recurring/cofrinhos/budget_plans
+   ├─ calcula gatilhos com dedupe_key
+   └─ chama send-push para cada usuário elegível
+        ├─ checa notification_preferences + quiet hours
+        ├─ insere notifications_log (com dedupe)
+        ├─ envia via web-push (VAPID)
+        └─ cleanup automático de subs inválidas
+```
+
+### Validação final
+
+- Subscription cria endpoint válido (`fcm.googleapis.com/...` ou similar).
+- SW responde push, click roteia para `action_url`.
+- Preferências silenciam categorias.
+- Dedup impede repetição (`dedupe_key` único por janela).
+- Endpoints inválidos somem do banco automaticamente.
+- Admin vê métricas reais.
+- UI premium em dark/light, mobile-first.
+- Sistema de prioridade + cooldown de notificações para evitar spam e múltiplos envios simultâneos.
+- Central interna/inbox de notificações dentro do app (ícone sino + histórico), sem depender apenas de push notifications.
+- Quiet hours / silenciamento inteligente para evitar notificações em horários inadequados.
+- Estruturar notificações comportamentais/inteligentes baseadas em contexto financeiro real do usuário, e não apenas eventos simples.
+  ___
+
+Objetivo:
+
+transformar notificações em sistema inteligente de retenção e ação financeira, e não apenas mensagens automáticas.
