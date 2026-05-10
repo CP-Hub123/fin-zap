@@ -1,0 +1,1 @@
+ALTER TABLE public.transactions ALTER COLUMN cofrinho_id DROP NOT NULL;

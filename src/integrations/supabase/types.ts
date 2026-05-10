@@ -287,6 +287,54 @@ export type Database = {
         }
         Relationships: []
       }
+      connected_accounts: {
+        Row: {
+          account_number: string | null
+          account_type: string | null
+          balance: number
+          bank_logo: string | null
+          bank_name: string | null
+          created_at: string
+          id: string
+          last_sync: string | null
+          pluggy_account_id: string | null
+          pluggy_item_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_number?: string | null
+          account_type?: string | null
+          balance?: number
+          bank_logo?: string | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          pluggy_account_id?: string | null
+          pluggy_item_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string | null
+          account_type?: string | null
+          balance?: number
+          bank_logo?: string | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          pluggy_account_id?: string | null
+          pluggy_item_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       monthly_closures: {
         Row: {
           closed_at: string
@@ -560,7 +608,7 @@ export type Database = {
         Row: {
           amount: number
           category: string | null
-          cofrinho_id: string
+          cofrinho_id: string | null
           created_at: string
           date: string
           descricao: string | null
@@ -582,7 +630,7 @@ export type Database = {
         Insert: {
           amount: number
           category?: string | null
-          cofrinho_id: string
+          cofrinho_id?: string | null
           created_at?: string
           date: string
           descricao?: string | null
@@ -604,7 +652,7 @@ export type Database = {
         Update: {
           amount?: number
           category?: string | null
-          cofrinho_id?: string
+          cofrinho_id?: string | null
           created_at?: string
           date?: string
           descricao?: string | null

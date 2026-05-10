@@ -1,35 +1,57 @@
-import type { ConnectedAccount, ExternalTransaction, OpenFinanceProvider } from './OpenFinanceProvider';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface ConnectedAccountRow {
+  id: string;
+  user_id: string;
+  pluggy_item_id: string;
+  pluggy_account_id: string | null;
+  bank_name: string | null;
+  bank_logo: string | null;
+  account_type: string | null;
+  account_number: string | null;
+  balance: number;
+  status: string;
+  last_sync: string | null;
+}
 
 /**
- * OpenFinanceService — fachada agnóstica de provedor.
- * Hoje todos os métodos são placeholders. Quando integrarmos um provedor
- * real, basta registrá-lo via `registerProvider()`.
+ * OpenFinanceService — integração Pluggy via Edge Functions seguras.
+ * Todas chaves ficam no backend. Frontend recebe apenas connect tokens efêmeros.
  */
-
-let activeProvider: OpenFinanceProvider | null = null;
-
 export const OpenFinanceService = {
-  registerProvider(provider: OpenFinanceProvider) {
-    activeProvider = provider;
+  isAvailable() {
+    return true;
   },
 
-  isAvailable(): boolean {
-    return activeProvider !== null;
+  async createConnectToken(itemId?: string): Promise<string> {
+    const { data, error } = await supabase.functions.invoke('pluggy-connect-token', {
+      body: itemId ? { itemId } : {},
+    });
+    if (error) throw error;
+    if (!data?.accessToken) throw new Error('Token inválido');
+    return data.accessToken as string;
   },
 
-  async connectAccount(_userId: string): Promise<ConnectedAccount> {
-    throw new Error('Open Finance ainda não está disponível.');
+  async syncItem(itemId: string): Promise<{ imported: number; accounts: number }> {
+    const { data, error } = await supabase.functions.invoke('pluggy-sync', {
+      body: { itemId },
+    });
+    if (error) throw error;
+    return { imported: data?.imported ?? 0, accounts: data?.accounts ?? 0 };
   },
 
-  async fetchTransactions(_accountId: string): Promise<ExternalTransaction[]> {
-    throw new Error('Open Finance ainda não está disponível.');
+  async listConnectedAccounts(userId: string): Promise<ConnectedAccountRow[]> {
+    const { data, error } = await supabase
+      .from('connected_accounts' as any)
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as unknown as ConnectedAccountRow[];
   },
 
-  async disconnect(_accountId: string): Promise<void> {
-    throw new Error('Open Finance ainda não está disponível.');
-  },
-
-  async listConnectedAccounts(_userId: string): Promise<ConnectedAccount[]> {
-    return [];
+  async disconnect(accountId: string): Promise<void> {
+    const { error } = await supabase.from('connected_accounts' as any).delete().eq('id', accountId);
+    if (error) throw error;
   },
 };
