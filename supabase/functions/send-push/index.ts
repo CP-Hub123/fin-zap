@@ -152,10 +152,9 @@ Deno.serve(async (req) => {
     let callerId: string | null = null;
     const authHeader = req.headers.get("Authorization");
 
-    // Internal call: scheduler/cron uses service role + internal flag
-    const cronSecret = req.headers.get("x-internal-secret");
-    const expectedSecret = Deno.env.get("INTERNAL_PUSH_SECRET");
-    const isInternalCall = internal && expectedSecret && cronSecret === expectedSecret;
+    // Internal call: scheduler uses service role bearer + internal flag
+    const bearer = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    const isInternalCall = internal && bearer && bearer === serviceKey;
 
     if (!isInternalCall) {
       if (!authHeader?.startsWith("Bearer ")) return respond({ error: "Unauthorized" }, 401);
