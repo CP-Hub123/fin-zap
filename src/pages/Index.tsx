@@ -516,21 +516,3 @@ const Index = () => {
 
 export default Index;
 
-/* ===== FAQ Accordion Item ===== */
-const FaqItem = ({ question, answer }: { question: string; answer: string }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <button
-      onClick={() => setOpen(!open)}
-      className="w-full text-left p-4 rounded-xl bg-background border shadow-sm"
-    >
-      <div className="flex items-center justify-between gap-4">
-        <span className="font-medium text-sm">{question}</span>
-        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`} />
-      </div>
-      {open && <p className="mt-3 text-sm text-muted-foreground">{answer}</p>}
-    </button>
-  );
-};
-
-export default Index;
