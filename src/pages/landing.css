@@ -4,7 +4,7 @@
    ============================================================ */
 
 /* ——— Reset & Base ——— */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.finzap-landing, .finzap-landing *, .finzap-landing *::before, .finzap-landing *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --blue: #3A7BFF;
@@ -34,25 +34,26 @@
   --shadow-glow-green: 0 0 40px rgba(34, 197, 94, 0.2);
 }
 
-html { scroll-behavior: smooth; }
+.finzap-landing { scroll-behavior: smooth; }
 
-body {
+.finzap-landing {
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
-a { color: inherit; text-decoration: none; }
+.finzap-landing a { color: inherit; text-decoration: none; }
 
 /* ——— Typography ——— */
-h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; }
-h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
-h3 { font-size: 1.25rem; font-weight: 700; }
-h4 { font-size: 1.1rem; font-weight: 700; }
-h5 { font-size: 0.875rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; }
-p { color: var(--text-secondary); }
+.finzap-landing h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; }
+.finzap-landing h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
+.finzap-landing h3 { font-size: 1.25rem; font-weight: 700; }
+.finzap-landing h4 { font-size: 1.1rem; font-weight: 700; }
+.finzap-landing h5 { font-size: 0.875rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; }
+.finzap-landing p { color: var(--text-secondary); }
 
 .gradient-text {
   background: linear-gradient(135deg, var(--blue), var(--green));
