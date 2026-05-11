@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import {
-  Zap, ArrowRight, ShieldCheck, Lock, Clock, CheckCircle2, XCircle,
+  ArrowRight, ShieldCheck, Lock, Clock, CheckCircle2, XCircle,
   Wallet, Scale, Brain, Sparkles, TrendingUp, Eye, AlertTriangle,
   Repeat, Target, Calendar, Smartphone, Shield, Bell, Plus, Check,
   ShoppingBag, Film, Banknote, Plane, Monitor, GraduationCap,
   PiggyBank, Home, Lightbulb, ChevronRight, CircleAlert,
+  Zap,
 } from 'lucide-react';
+import finzapLogo from '@/assets/finzap-logo-icon.png';
 import './landing.css';
 
 type Tab = 'visao-geral' | 'cofrinhos' | 'cartoes' | 'decisao';
@@ -95,9 +97,14 @@ const Index = () => {
   };
 
   const LogoMark = ({ size = 28 }: { size?: number }) => (
-    <span className="logo-mark" style={{ width: size, height: size }}>
-      <Zap size={Math.round(size * 0.55)} fill="currentColor" strokeWidth={0} />
-    </span>
+    <img
+      src={finzapLogo}
+      alt="FinZap"
+      width={size}
+      height={size}
+      className="logo-mark-img"
+      style={{ width: size, height: size }}
+    />
   );
 
   return (
