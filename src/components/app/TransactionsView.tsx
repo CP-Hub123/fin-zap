@@ -13,6 +13,7 @@ import type { Transaction } from '@/hooks/useTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import type { TablesInsert } from '@/integrations/supabase/types';
 import { getStatusLevel, STATUS_META } from '@/lib/cofrinhoPresets';
+import { EmptyState } from './EmptyState';
 
 interface TransactionsViewProps {
   transactions: Transaction[];
@@ -138,9 +139,19 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
 
       {/* Mobile cards / empty state */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground text-sm">
-          Nenhuma {activeTab === 'income' ? 'receita' : 'despesa'} cadastrada
-        </div>
+        <EmptyState
+          icon={activeTab === 'income' ? ArrowUpRight : ArrowDownRight}
+          eyebrow={activeTab === 'income' ? 'Suas entradas' : 'Seus gastos'}
+          title={activeTab === 'income' ? 'Registre sua primeira receita' : 'Registre sua primeira despesa'}
+          description={
+            activeTab === 'income'
+              ? 'Salário, freelas, vendas — toda entrada conta para o FinZap projetar seu mês com precisão.'
+              : 'Lance um gasto para começar a entender seu padrão e ver o impacto direto em cada cofrinho.'
+          }
+          primaryAction={!isClosed && !noCofrinhos ? { label: 'Adicionar agora', onClick: openNew, icon: Plus } : undefined}
+          tone={activeTab === 'income' ? 'success' : 'primary'}
+          compact
+        />
       ) : (
         <div className="space-y-3">
           {filtered.map(t => (
