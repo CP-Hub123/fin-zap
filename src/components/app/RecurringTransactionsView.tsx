@@ -314,13 +314,20 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
           <Loader2 className="h-4 w-4 animate-spin" /> Carregando...
         </div>
       ) : recorrencias.length === 0 ? (
-        <div className="text-center py-10 px-6 rounded-2xl border border-dashed border-border/60">
-          <div className="mx-auto h-10 w-10 rounded-xl bg-muted flex items-center justify-center mb-3">
-            <Repeat className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <p className="text-sm font-medium">Nenhuma automação ainda</p>
-          <p className="text-xs text-muted-foreground mt-1">Cadastre lançamentos que se repetem todo mês para ganhar previsibilidade.</p>
-        </div>
+        <EmptyState
+          icon={Repeat}
+          eyebrow="Automatize o que repete"
+          title="Pare de lançar tudo manualmente"
+          description="Cadastre receitas e despesas que se repetem todo mês — salário, aluguel, assinaturas — e o FinZap faz o resto, todo início de mês."
+          hints={[
+            'Lançamentos automáticos no dia certo',
+            'Previsibilidade real para os próximos meses',
+            'Você ainda pode pausar ou ajustar a qualquer momento',
+          ]}
+          primaryAction={!isClosed && !noCofrinhos ? { label: 'Criar primeira automação', onClick: openNew, icon: Plus } : undefined}
+          tone="primary"
+          compact
+        />
       ) : (
         <div className="space-y-5">
           <Section title="Hoje" items={grupos.hoje} />
