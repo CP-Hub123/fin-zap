@@ -16,6 +16,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Upgrade from "./pages/Upgrade";
 import Maintenance from "./pages/Maintenance";
 import CreditCards from "./pages/CreditCards";
+import Account from "./pages/Account";
 import Privacy from "./pages/legal/Privacy";
 import Terms from "./pages/legal/Terms";
 import Consent from "./pages/legal/Consent";
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
             <Route path="/cartoes" element={<ProtectedRoute><CreditCards /></ProtectedRoute>} />
+            <Route path="/conta" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/tutorials" element={<ProtectedRoute><Tutorials /></ProtectedRoute>} />
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/admin/*" element={<AdminRoute><Admin /></AdminRoute>} />
