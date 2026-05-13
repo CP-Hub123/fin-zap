@@ -923,6 +923,15 @@ export type Database = {
         Args: { _dia: number; _from: string }
         Returns: string
       }
+      card_purchase_edit_impact: {
+        Args: { _purchase_id: string }
+        Returns: {
+          future_amount: number
+          future_count: number
+          locked_amount: number
+          locked_count: number
+        }[]
+      }
       delete_card_purchase_safe: {
         Args: { _purchase_id: string }
         Returns: undefined
@@ -949,6 +958,18 @@ export type Database = {
           _origem_id: string
           _user_id: string
           _valor: number
+        }
+        Returns: undefined
+      }
+      update_card_purchase_safe: {
+        Args: {
+          _card_id: string
+          _categoria?: string
+          _data_compra: string
+          _descricao: string
+          _parcelas: number
+          _purchase_id: string
+          _valor_total: number
         }
         Returns: undefined
       }

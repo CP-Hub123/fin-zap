@@ -146,6 +146,43 @@ export const useCreditCards = () => {
     onError: (e: any) => toast.error('Erro ao excluir', { description: e?.message }),
   });
 
+  const updatePurchase = useMutation({
+    mutationFn: async (input: {
+      id: string;
+      descricao: string;
+      valor_total: number;
+      parcelas: number;
+      card_id: string;
+      data_compra: string;
+      categoria: string | null;
+    }) => {
+      const { error } = await supabase.rpc('update_card_purchase_safe' as any, {
+        _purchase_id: input.id,
+        _descricao: input.descricao,
+        _valor_total: input.valor_total,
+        _parcelas: input.parcelas,
+        _card_id: input.card_id,
+        _data_compra: input.data_compra,
+        _categoria: input.categoria,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => { invalidateAll(); toast.success('Compra atualizada'); },
+    onError: (e: any) => toast.error('Erro ao atualizar', { description: e?.message }),
+  });
+
+  const fetchEditImpact = async (purchaseId: string) => {
+    const { data, error } = await supabase.rpc('card_purchase_edit_impact' as any, { _purchase_id: purchaseId });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      lockedCount: Number(row?.locked_count ?? 0),
+      lockedAmount: Number(row?.locked_amount ?? 0),
+      futureCount: Number(row?.future_count ?? 0),
+      futureAmount: Number(row?.future_amount ?? 0),
+    };
+  };
+
   return {
     cards: cardsQ.data ?? [],
     purchases: purchasesQ.data ?? [],
@@ -156,5 +193,7 @@ export const useCreditCards = () => {
     deleteCard,
     createPurchase,
     deletePurchase,
+    updatePurchase,
+    fetchEditImpact,
   };
 };
