@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
 import { useCreditCards, type CreditCard, type CardPurchase } from '@/hooks/useCreditCards';
 import { CardDetailSheet } from './CardDetailSheet';
+import { EditCardPurchaseDialog } from './EditCardPurchaseDialog';
 import {
   Plus, CreditCard as CreditCardIcon, Calendar, Trash2, Pencil, Wallet,
   TrendingDown, ChevronDown, Sparkles, ShoppingBag, Loader2, AlertCircle,
@@ -99,6 +100,7 @@ export function CreditCardsView() {
   const [confirmDeleteCard, setConfirmDeleteCard] = useState<string | null>(null);
   const [confirmDeletePurchase, setConfirmDeletePurchase] = useState<string | null>(null);
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
+  const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
 
   const [cardForm, setCardForm] = useState<typeof emptyCard>(emptyCard);
   const [purchaseForm, setPurchaseForm] = useState<typeof emptyPurchase>(emptyPurchase);
@@ -392,6 +394,14 @@ export function CreditCardsView() {
                           <p className="text-sm font-semibold tabular-nums">{formatCurrency(Number(p.valor_total))}</p>
                           <Button
                             variant="ghost" size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={() => setEditingPurchaseId(p.id)}
+                            aria-label="Editar compra"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost" size="icon"
                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             onClick={() => setConfirmDeletePurchase(p.id)}
                           >
@@ -679,6 +689,13 @@ export function CreditCardsView() {
         installments={installments}
         onAddPurchase={(cid) => { setDetailCardId(null); openNewPurchase(cid); }}
         onDeletePurchase={(pid) => setConfirmDeletePurchase(pid)}
+      />
+
+      <EditCardPurchaseDialog
+        open={!!editingPurchaseId}
+        onOpenChange={(o) => !o && setEditingPurchaseId(null)}
+        purchase={purchases.find(p => p.id === editingPurchaseId) ?? null}
+        cards={cards}
       />
     </div>
   );
