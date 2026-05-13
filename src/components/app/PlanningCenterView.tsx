@@ -17,6 +17,7 @@ import {
 } from '@/lib/planningEngine';
 import { CofrinhosView } from './CofrinhosView';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
+import { EmptyState } from './EmptyState';
 
 interface Props {
   month: Month;
