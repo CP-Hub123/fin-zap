@@ -12,6 +12,8 @@ import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
 import { useCreditCards, type CreditCard, type CardPurchase } from '@/hooks/useCreditCards';
 import { CardDetailSheet } from './CardDetailSheet';
 import { EditCardPurchaseDialog } from './EditCardPurchaseDialog';
+import { CreditInsightsPanel } from './CreditInsightsPanel';
+import { buildCreditInsights } from '@/lib/creditInsightsEngine';
 import {
   Plus, CreditCard as CreditCardIcon, Calendar, Trash2, Pencil, Wallet,
   TrendingDown, ChevronDown, Sparkles, ShoppingBag, Loader2, AlertCircle,
@@ -150,6 +152,12 @@ export function CreditCardsView() {
   }, [cards, installments, purchases, today]);
 
   const totalDisponivel = Math.max(0, stats.totalLimite - Array.from(stats.utilizadoPorCartao.values()).reduce((a, b) => a + b, 0));
+
+  // ============ Inteligência contextual de crédito ============
+  const creditInsights = useMemo(
+    () => buildCreditInsights({ cards, purchases, installments, today }),
+    [cards, purchases, installments, today],
+  );
 
   // ============ Próximas parcelas (próximos 90 dias) ============
   const proximasParcelas = useMemo(() => {
@@ -296,6 +304,9 @@ export function CreditCardsView() {
               tone="muted"
             />
           </section>
+
+          {/* Inteligência contextual de crédito */}
+          <CreditInsightsPanel insights={creditInsights} />
 
           {/* Lista de cartões */}
           <section className="space-y-3">
