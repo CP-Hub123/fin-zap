@@ -16,6 +16,8 @@ import {
 import { useRecurringTransactions, type RecurringTransaction } from '@/hooks/useRecurringTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import { EmptyState } from './EmptyState';
+import { UpgradeSheet } from './UpgradeSheet';
+import { usePlan } from '@/hooks/usePlan';
 
 interface Props {
   cofrinhos: Cofrinho[];
