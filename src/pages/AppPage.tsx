@@ -18,7 +18,7 @@ import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { Button } from '@/components/ui/button';
-import { LogOut, BookOpen, Plus, Menu, X, Sparkles, Bug } from 'lucide-react';
+import { LogOut, BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
@@ -132,6 +132,9 @@ const AppPage = () => {
           <div className="hidden sm:flex items-center gap-2">
             <NotificationBell />
             <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => navigate('/cartoes')} title="Cartões">
+              <CreditCard className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/tutorials')} title="Tutoriais">
               <BookOpen className="h-4 w-4" />
             </Button>
@@ -158,6 +161,9 @@ const AppPage = () => {
           <div className="sm:hidden border-t bg-card px-3 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setNewMonthOpen(true); setMobileMenuOpen(false); }}>
               <Plus className="h-4 w-4 mr-2" /> Novo mês
+            </Button>
+            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/cartoes'); setMobileMenuOpen(false); }}>
+              <CreditCard className="h-4 w-4 mr-2" /> Cartões
             </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/tutorials'); setMobileMenuOpen(false); }}>
               <BookOpen className="h-4 w-4 mr-2" /> Tutoriais

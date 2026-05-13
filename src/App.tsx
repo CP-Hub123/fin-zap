@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import Upgrade from "./pages/Upgrade";
 import Maintenance from "./pages/Maintenance";
+import CreditCards from "./pages/CreditCards";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/maintenance" element={<Maintenance />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
+            <Route path="/cartoes" element={<ProtectedRoute><CreditCards /></ProtectedRoute>} />
             <Route path="/tutorials" element={<ProtectedRoute><Tutorials /></ProtectedRoute>} />
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/admin/*" element={<AdminRoute><Admin /></AdminRoute>} />
