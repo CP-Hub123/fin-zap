@@ -88,11 +88,14 @@ export const PlanningCenterView = ({
               <Skeleton className="h-16 w-full" />
             </div>
           ) : insights.length === 0 ? (
-            <Card className="border-dashed border-0 shadow-none bg-muted/30">
-              <CardContent className="p-4 text-sm text-muted-foreground">
-                Conforme você registra transações, o FinZap começa a entender seu padrão e a sugerir leituras do mês aqui.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Sparkles}
+              eyebrow="Aprendendo seu padrão"
+              title="Em breve, leituras do seu mês"
+              description="Conforme você registra transações, o FinZap entende seu ritmo e começa a sugerir leituras inteligentes aqui."
+              tone="neutral"
+              compact
+            />
           ) : (
             <div className="space-y-2">
               {insights.slice(0, 5).map(i => {
@@ -153,11 +156,14 @@ export const PlanningCenterView = ({
               <Skeleton className="h-20 w-full" />
             </div>
           ) : stats.length === 0 ? (
-            <Card className="border-dashed border-0 shadow-none bg-muted/30">
-              <CardContent className="p-4 text-sm text-muted-foreground">
-                Ainda não há histórico suficiente para detectar padrões. Continue registrando — em poucos meses o FinZap começa a prever sua faixa habitual por categoria.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Activity}
+              eyebrow="Ainda construindo seu histórico"
+              title="Padrões aparecem com o tempo"
+              description="Em poucos meses, o FinZap começa a prever sua faixa habitual por categoria — mínimo, média e máximo."
+              tone="neutral"
+              compact
+            />
           ) : (
             <div className="space-y-2.5">
               {stats.slice(0, 8).map(s => (
