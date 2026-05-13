@@ -29,10 +29,29 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const schedulerSecret = Deno.env.get("SCHEDULER_SECRET");
+
+  // Authenticate caller: accept either the service-role key (cron) or a shared scheduler secret.
+  const authHeader = req.headers.get("authorization") ?? "";
+  const bearer = authHeader.toLowerCase().startsWith("bearer ")
+    ? authHeader.slice(7).trim()
+    : "";
+  const headerSecret = req.headers.get("x-scheduler-secret") ?? "";
+  const isAuthorized =
+    (bearer && bearer === serviceKey) ||
+    (schedulerSecret && headerSecret === schedulerSecret);
+
+  if (!isAuthorized) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = createClient(supabaseUrl, serviceKey);
 
-  const dispatched: string[] = [];
-  const errors: string[] = [];
+  let dispatchedCount = 0;
+  let errorCount = 0;
 
   async function dispatch(args: PushArgs) {
     try {
@@ -45,10 +64,12 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ ...args, internal: true }),
       });
       const json = await res.json().catch(() => ({}));
-      dispatched.push(`${args.dedupe_key}:${res.status}`);
+      if (res.ok) dispatchedCount++;
+      else errorCount++;
       return json;
     } catch (e) {
-      errors.push(`${args.dedupe_key}:${(e as Error).message}`);
+      errorCount++;
+      console.error(`[scheduler] dispatch failed: ${(e as Error).message}`);
     }
   }
 
@@ -338,14 +359,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ dispatched, errors }), {
+    return new Response(JSON.stringify({ dispatched: dispatchedCount, errors: errorCount }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[scheduler] error=${message}`);
-    return new Response(JSON.stringify({ error: message, dispatched, errors }), {
+    return new Response(JSON.stringify({ error: "Internal error", dispatched: dispatchedCount, errors: errorCount }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
