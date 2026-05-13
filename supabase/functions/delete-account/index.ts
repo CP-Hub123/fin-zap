@@ -45,6 +45,64 @@ Deno.serve(async (req) => {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
+  // ─────────────────────────────────────────────────────────────
+  // Stripe cancellation (preparatory architecture).
+  // Runs only when STRIPE_SECRET_KEY is configured AND the user
+  // has linked stripe ids on their subscription record. Until
+  // payments are enabled this block is a graceful no-op.
+  // ─────────────────────────────────────────────────────────────
+  const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+  let stripeCancelled = false;
+  let stripeCustomerDeleted = false;
+  try {
+    const { data: sub } = await admin
+      .from("subscriptions")
+      .select("stripe_subscription_id, stripe_customer_id")
+      .eq("user_id", uid)
+      .maybeSingle();
+
+    if (STRIPE_SECRET_KEY && sub) {
+      const stripeFetch = (path: string, init: RequestInit = {}) =>
+        fetch(`https://api.stripe.com/v1${path}`, {
+          ...init,
+          headers: {
+            Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+            ...(init.headers ?? {}),
+          },
+        });
+
+      // 1) Cancel active subscription immediately (no future charges)
+      if (sub.stripe_subscription_id) {
+        const r = await stripeFetch(
+          `/subscriptions/${sub.stripe_subscription_id}`,
+          { method: "DELETE" },
+        );
+        // 404 = already gone; treat as success. Other errors are non-fatal
+        // because we still want to wipe local data per LGPD.
+        stripeCancelled = r.ok || r.status === 404;
+        if (!stripeCancelled) {
+          console.warn("Stripe subscription cancel failed", r.status, await r.text());
+        }
+      }
+
+      // 2) Delete the customer (unlinks payment methods, prevents future invoices)
+      if (sub.stripe_customer_id) {
+        const r = await stripeFetch(
+          `/customers/${sub.stripe_customer_id}`,
+          { method: "DELETE" },
+        );
+        stripeCustomerDeleted = r.ok || r.status === 404;
+        if (!stripeCustomerDeleted) {
+          console.warn("Stripe customer delete failed", r.status, await r.text());
+        }
+      }
+    }
+  } catch (e) {
+    // Never block account deletion on Stripe errors.
+    console.warn("Stripe cleanup error (non-fatal)", e);
+  }
+
   // Delete user-owned rows. Order chosen to respect dependencies.
   // Each table is filtered by user_id (or via month_id for budget_plans/monthly_closures).
   try {
@@ -92,7 +150,10 @@ Deno.serve(async (req) => {
       return json({ error: "Falha ao remover conta" }, 500);
     }
 
-    return json({ success: true });
+    return json({
+      success: true,
+      stripe: { cancelled: stripeCancelled, customer_deleted: stripeCustomerDeleted },
+    });
   } catch (e) {
     console.error("delete-account error", e);
     return json({ error: "Erro ao excluir conta" }, 500);
