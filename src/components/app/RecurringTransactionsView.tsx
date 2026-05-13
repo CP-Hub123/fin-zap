@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { formatCurrency } from '@/lib/constants';
 import {
   Plus, Pencil, Trash2, Repeat, ArrowDownRight, ArrowUpRight,
-  Sparkles, Calendar as CalendarIcon, Wallet, Loader2, Pause, Play, Zap,
+  Sparkles, Calendar as CalendarIcon, Wallet, Loader2, Pause, Play, Zap, ChevronDown,
 } from 'lucide-react';
 import { useRecurringTransactions, type RecurringTransaction } from '@/hooks/useRecurringTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
@@ -426,16 +427,58 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
             {/* Frequência */}
             <div className="space-y-1.5">
               <Label className="flex items-center gap-1.5"><CalendarIcon className="h-3.5 w-3.5" /> Quando lançar</Label>
-              <Select value={form.dia_do_mes} onValueChange={v => setForm(f => ({ ...f, dia_do_mes: v }))}>
-                <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map(n => (
-                    <SelectItem key={n} value={String(n)}>
-                      {n >= 28 ? `Dia ${n} (ou último dia do mês)` : `Todo dia ${n} do mês`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-4 text-sm text-left transition-colors hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <span className="truncate">
+                      {(() => {
+                        const n = parseInt(form.dia_do_mes) || 1;
+                        return n >= 28 ? `Dia ${n} (ou último dia do mês)` : `Todo dia ${n} do mês`;
+                      })()}
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-60 shrink-0 ml-2" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  sideOffset={6}
+                  collisionPadding={12}
+                  className="w-[min(20rem,calc(100vw-2rem))] p-3 rounded-2xl shadow-elevated"
+                >
+                  <div className="mb-2 px-1 flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Selecione o dia do mês</span>
+                    <span className="text-[11px] text-muted-foreground">Dia {form.dia_do_mes}</span>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1.5">
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(n => {
+                      const active = String(n) === form.dia_do_mes;
+                      return (
+                        <button
+                          type="button"
+                          key={n}
+                          onClick={() => setForm(f => ({ ...f, dia_do_mes: String(n) }))}
+                          className={`h-10 rounded-lg text-sm font-medium transition-all active:scale-95 ${
+                            active
+                              ? 'bg-primary text-primary-foreground shadow-sm'
+                              : 'bg-muted/50 text-foreground hover:bg-muted'
+                          }`}
+                          aria-pressed={active}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {parseInt(form.dia_do_mes) >= 28 && (
+                    <p className="mt-2.5 px-1 text-[11px] text-muted-foreground leading-snug">
+                      Em meses sem o dia {form.dia_do_mes}, será lançado no último dia.
+                    </p>
+                  )}
+                </PopoverContent>
+              </Popover>
               <p className="text-[11px] text-muted-foreground flex items-center gap-1 px-0.5">
                 <Sparkles className="h-3 w-3" /> {humanFreq(parseInt(form.dia_do_mes) || 1)}
               </p>
