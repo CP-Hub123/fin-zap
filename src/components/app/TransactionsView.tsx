@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/constants';
-import { Plus, Pencil, Copy, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Copy, Trash2, ArrowUpRight, ArrowDownRight, Calendar as CalendarIcon, Wallet, Repeat, Loader2 } from 'lucide-react';
 import type { Transaction } from '@/hooks/useTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import type { TablesInsert } from '@/integrations/supabase/types';
@@ -195,34 +195,68 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg mx-4 sm:mx-auto">
-          <DialogHeader>
-            <DialogTitle>{editingId ? 'Editar' : 'Nova'} {activeTab === 'income' ? 'receita' : 'despesa'}</DialogTitle>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+          <DialogHeader className="px-5 pt-5 pb-3 border-b border-border/50">
+            <div className="flex items-center gap-2.5">
+              <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
+                activeTab === 'income'
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+              }`}>
+                {activeTab === 'income' ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-base font-semibold leading-tight">
+                  {editingId ? 'Editar' : 'Nova'} {activeTab === 'income' ? 'receita' : 'despesa'}
+                </DialogTitle>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  Preencha os campos abaixo
+                </p>
+              </div>
+            </div>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Nome</Label>
-              <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Ex: Salário" className="min-h-[44px]" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Valor (R$)</Label>
-                <Input type="number" step="0.01" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} className="min-h-[44px]" />
+
+          <div className="px-5 py-5 space-y-5 max-h-[65vh] overflow-y-auto">
+            {/* Hero: campo valor */}
+            <div className="rounded-2xl bg-muted/40 dark:bg-muted/20 border border-border/50 px-4 py-4">
+              <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Valor</Label>
+              <div className="flex items-baseline gap-1.5 mt-1.5">
+                <span className={`text-xl font-medium ${
+                  activeTab === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                }`}>R$</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  placeholder="0,00"
+                  value={form.amount}
+                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+                  className="flex-1 min-w-0 bg-transparent border-0 outline-none text-3xl font-semibold tracking-tight tabular-nums placeholder:text-muted-foreground/40 focus:ring-0"
+                  autoFocus={!editingId}
+                />
               </div>
-              <div className="space-y-2">
-                <Label>Data</Label>
-                <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="min-h-[44px]" />
-              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Cofrinho *</Label>
+
+            {/* Nome */}
+            <div className="space-y-1.5">
+              <Label>Descrição</Label>
+              <Input
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder={activeTab === 'income' ? 'Ex: Salário' : 'Ex: Mercado'}
+              />
+            </div>
+
+            {/* Cofrinho */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5" /> Cofrinho</Label>
               <Select value={form.cofrinho_id} onValueChange={v => setForm(f => ({ ...f, cofrinho_id: v }))}>
-                <SelectTrigger className="min-h-[44px]"><SelectValue placeholder="Selecione um cofrinho..." /></SelectTrigger>
+                <SelectTrigger className="h-12"><SelectValue placeholder="Selecione um cofrinho" /></SelectTrigger>
                 <SelectContent>
                   {cofrinhos.map(c => (
                     <SelectItem key={c.id} value={c.id}>
                       <span className="inline-flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.cor }} />
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.cor }} />
                         {c.nome}
                       </span>
                     </SelectItem>
@@ -230,44 +264,83 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as any }))}>
-                  <SelectTrigger className="min-h-[44px]"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planned">Previsto</SelectItem>
-                    <SelectItem value="realized">Realizado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Tipo</Label>
-                <Select value={form.is_fixed ? 'fixed' : 'variable'} onValueChange={v => setForm(f => ({ ...f, is_fixed: v === 'fixed' }))}>
-                  <SelectTrigger className="min-h-[44px]"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fixed">Fixa</SelectItem>
-                    <SelectItem value="variable">Variável</SelectItem>
-                  </SelectContent>
-                </Select>
+
+            {/* Data */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><CalendarIcon className="h-3.5 w-3.5" /> Data</Label>
+              <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+            </div>
+
+            {/* Status segmented */}
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-muted/50 border border-border/50">
+                {([
+                  { v: 'realized', label: 'Realizado' },
+                  { v: 'planned', label: 'Previsto' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.v}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, status: opt.v }))}
+                    className={`h-9 rounded-lg text-sm font-medium transition-all ${
+                      form.status === opt.v
+                        ? 'bg-background shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
 
+            {/* Fixa toggle */}
+            <button
+              type="button"
+              onClick={() => setForm(f => ({ ...f, is_fixed: !f.is_fixed }))}
+              className="w-full flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3 hover:bg-accent/40 transition-colors"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Repeat className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="text-left min-w-0">
+                  <p className="text-sm font-medium truncate">Transação fixa</p>
+                  <p className="text-xs text-muted-foreground truncate">Repete todo mês</p>
+                </div>
+              </div>
+              <div className={`h-6 w-10 rounded-full p-0.5 transition-colors shrink-0 ${
+                form.is_fixed ? 'bg-primary' : 'bg-muted'
+              }`}>
+                <div className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${
+                  form.is_fixed ? 'translate-x-4' : 'translate-x-0'
+                }`} />
+              </div>
+            </button>
+
             {impactPreview && (
-              <div className={`rounded-lg p-3 text-xs border-l-4 ${
+              <div className={`rounded-xl p-3 text-xs border-l-2 ${
                 impactPreview.level === 'safe' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300' :
                 impactPreview.level === 'attention' ? 'bg-yellow-500/10 border-yellow-500 text-yellow-700 dark:text-yellow-300' :
                 impactPreview.level === 'critical' ? 'bg-orange-500/10 border-orange-500 text-orange-700 dark:text-orange-300' :
                 'bg-red-500/10 border-red-500 text-red-700 dark:text-red-300'
               }`}>
-                <p className="font-medium mb-0.5">💡 Impacto desta decisão</p>
-                <p>{impactPreview.text}</p>
+                <p className="font-medium mb-0.5">Impacto desta decisão</p>
+                <p className="leading-relaxed">{impactPreview.text}</p>
               </div>
             )}
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>
-            <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto min-h-[44px]">{saving ? 'Salvando...' : 'Salvar'}</Button>
+
+          <DialogFooter className="px-5 py-3 border-t border-border/50 bg-card/60 backdrop-blur flex-row gap-2 sm:gap-2">
+            <Button variant="ghost" onClick={() => setDialogOpen(false)} className="flex-1 h-11">
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={saving || !form.name || !form.amount || !form.cofrinho_id}
+              className="flex-1 h-11"
+            >
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Salvando</> : 'Salvar'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
