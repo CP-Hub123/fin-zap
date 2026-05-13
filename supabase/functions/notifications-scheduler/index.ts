@@ -219,6 +219,125 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ---- 6. Contextual intelligence (1x/week, Mondays 9h SP) ----
+    const isMondayMorning = dowSP === "Mon" && hourSP === 9;
+    if (isMondayMorning) {
+      const isoWeek = `${today.getFullYear()}-W${Math.ceil(((today.getTime() - new Date(today.getFullYear(),0,1).getTime())/86400000 + new Date(today.getFullYear(),0,1).getDay()+1)/7)}`;
+      // 6a. Future card commitment dropping
+      const { data: cards } = await supabase.from("credit_cards").select("id, user_id, nome").eq("ativo", true);
+      const userCardMap = new Map<string, Array<{ id: string; nome: string }>>();
+      for (const c of cards ?? []) {
+        const arr = userCardMap.get(c.user_id) ?? [];
+        arr.push({ id: c.id, nome: c.nome });
+        userCardMap.set(c.user_id, arr);
+      }
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      const monthAfter = new Date(today.getFullYear(), today.getMonth() + 2, 1);
+      for (const [uid, userCards] of userCardMap) {
+        // Sum installments for next month vs the one after
+        const { data: m1 } = await supabase.from("months").select("id").eq("user_id", uid).eq("month", nextMonth.getMonth()+1).eq("year", nextMonth.getFullYear()).maybeSingle();
+        const { data: m2 } = await supabase.from("months").select("id").eq("user_id", uid).eq("month", monthAfter.getMonth()+1).eq("year", monthAfter.getFullYear()).maybeSingle();
+        if (!m1?.id || !m2?.id) continue;
+        const { data: t1 } = await supabase.from("transactions").select("amount").eq("month_id", m1.id).eq("origem", "cartao");
+        const { data: t2 } = await supabase.from("transactions").select("amount").eq("month_id", m2.id).eq("origem", "cartao");
+        const sum1 = (t1 ?? []).reduce((s, t) => s + Number(t.amount), 0);
+        const sum2 = (t2 ?? []).reduce((s, t) => s + Number(t.amount), 0);
+        if (sum1 > 0 && sum2 < sum1 * 0.7) {
+          await dispatch({
+            user_id: uid,
+            title: "💳 Seu cartão ficará mais leve",
+            body: `Seu compromisso com cartões cai de ${brl(sum1)} para ${brl(sum2)} no mês seguinte.`,
+            type: "card_lighter_ahead",
+            category: "insight",
+            priority: "low",
+            url: "/app/cartoes",
+            dedupe_key: `card_lighter:${uid}:${isoWeek}`,
+          });
+        }
+      }
+
+      // 6b. Next week has higher expense concentration
+      const next7Start = new Date(today);
+      next7Start.setDate(today.getDate() + 1);
+      const next7End = new Date(today);
+      next7End.setDate(today.getDate() + 7);
+      const next14End = new Date(today);
+      next14End.setDate(today.getDate() + 14);
+
+      const { data: schedRecur } = await supabase
+        .from("recurring_transactions")
+        .select("user_id, valor, tipo, proxima_execucao")
+        .eq("ativo", true)
+        .eq("tipo", "despesa")
+        .gte("proxima_execucao", ymd(next7Start))
+        .lte("proxima_execucao", ymd(next14End));
+
+      const concByUser: Record<string, { wk1: number; wk2: number }> = {};
+      for (const r of schedRecur ?? []) {
+        const slot = (r.proxima_execucao as string) <= ymd(next7End) ? "wk1" : "wk2";
+        concByUser[r.user_id] ??= { wk1: 0, wk2: 0 };
+        concByUser[r.user_id][slot] += Number(r.valor);
+      }
+      for (const [uid, c] of Object.entries(concByUser)) {
+        if (c.wk1 > 0 && c.wk1 >= c.wk2 * 1.5 && c.wk1 > 200) {
+          await dispatch({
+            user_id: uid,
+            title: "📅 Semana com mais saídas à frente",
+            body: `A próxima semana concentra ${brl(c.wk1)} em despesas previstas. Vale revisar com calma.`,
+            type: "week_concentration",
+            category: "insight",
+            priority: "low",
+            url: "/app/planejamento",
+            dedupe_key: `week_conc:${uid}:${isoWeek}`,
+          });
+        }
+      }
+
+      // 6c. Current month is calmer than typical
+      const { data: allMonths } = await supabase
+        .from("months")
+        .select("id, user_id, month, year")
+        .eq("status", "closed")
+        .order("year", { ascending: false })
+        .order("month", { ascending: false })
+        .limit(2000);
+      const userClosed: Record<string, string[]> = {};
+      for (const m of allMonths ?? []) {
+        userClosed[m.user_id] ??= [];
+        if (userClosed[m.user_id].length < 3) userClosed[m.user_id].push(m.id);
+      }
+      for (const [uid, ids] of Object.entries(userClosed)) {
+        if (ids.length < 2) continue;
+        const { data: pastTx } = await supabase.from("transactions").select("amount, month_id").in("month_id", ids).eq("type", "expense");
+        const totalsByMonth: Record<string, number> = {};
+        for (const t of pastTx ?? []) {
+          totalsByMonth[t.month_id] = (totalsByMonth[t.month_id] ?? 0) + Number(t.amount);
+        }
+        const past = Object.values(totalsByMonth);
+        if (!past.length) continue;
+        const avgPast = past.reduce((s, n) => s + n, 0) / past.length;
+        const { data: curMonth } = await supabase.from("months").select("id").eq("user_id", uid).eq("month", today.getMonth()+1).eq("year", today.getFullYear()).maybeSingle();
+        if (!curMonth?.id) continue;
+        const { data: curTx } = await supabase.from("transactions").select("amount").eq("month_id", curMonth.id).eq("type", "expense");
+        const curTotal = (curTx ?? []).reduce((s, t) => s + Number(t.amount), 0);
+        const dayOfMonth = today.getDate();
+        const lastDay = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+        const projected = curTotal * (lastDay / Math.max(dayOfMonth, 1));
+        if (avgPast > 0 && projected < avgPast * 0.8 && curTotal > 0) {
+          await dispatch({
+            user_id: uid,
+            title: "🌿 Mês mais equilibrado que o habitual",
+            body: `Seu ritmo de gastos está cerca de ${Math.round((1 - projected/avgPast) * 100)}% abaixo da sua média recente.`,
+            type: "month_calmer",
+            category: "insight",
+            priority: "low",
+            url: "/app",
+            dedupe_key: `calmer:${uid}:${monthKey}`,
+          });
+        }
+      }
+    }
+
     return new Response(JSON.stringify({ dispatched, errors }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
