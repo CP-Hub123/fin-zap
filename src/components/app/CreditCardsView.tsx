@@ -305,6 +305,9 @@ export function CreditCardsView() {
             />
           </section>
 
+          {/* Inteligência contextual de crédito */}
+          <CreditInsightsPanel insights={creditInsights} />
+
           {/* Lista de cartões */}
           <section className="space-y-3">
             <div className="flex items-center justify-between px-0.5">
