@@ -13,6 +13,7 @@ import { RecurringTransactionsView } from './RecurringTransactionsView';
 import { CofrinhoCard } from './CofrinhoCard';
 import { CofrinhoDetailSheet } from './CofrinhoDetailSheet';
 import { COVER_PRESETS, getPreset } from '@/lib/cofrinhoPresets';
+import { EmptyState } from './EmptyState';
 
 type TipoCofrinho = 'reserva' | 'mensal' | 'meta';
 
@@ -144,9 +145,19 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
       )}
 
       {cofrinhos.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground text-sm">
-          Crie seu primeiro cofrinho para começar a registrar transações.
-        </div>
+        <EmptyState
+          icon={PiggyBank}
+          eyebrow="Organize por contexto"
+          title="Crie seu primeiro cofrinho"
+          description="Cofrinhos separam seu dinheiro por propósito — moradia, lazer, reserva ou metas — para você decidir com clareza onde cada real entra e sai."
+          hints={[
+            'Reserva — proteção em meses de imprevisto',
+            'Mensal — orçamento para gastos do dia a dia',
+            'Meta — guarda dinheiro para um objetivo específico',
+          ]}
+          primaryAction={!isClosed ? { label: 'Criar cofrinho', onClick: openNew, icon: Plus } : undefined}
+          tone="primary"
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {cofrinhos.map(c => (
