@@ -163,9 +163,6 @@ const AppPage = () => {
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setNewMonthOpen(true); setMobileMenuOpen(false); }}>
               <Plus className="h-4 w-4 mr-2" /> Novo mês
             </Button>
-            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/cartoes'); setMobileMenuOpen(false); }}>
-              <CreditCard className="h-4 w-4 mr-2" /> Cartões
-            </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/tutorials'); setMobileMenuOpen(false); }}>
               <BookOpen className="h-4 w-4 mr-2" /> Tutoriais
             </Button>
