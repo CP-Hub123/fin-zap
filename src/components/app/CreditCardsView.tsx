@@ -13,6 +13,7 @@ import { useCreditCards, type CreditCard, type CardPurchase } from '@/hooks/useC
 import { CardDetailSheet } from './CardDetailSheet';
 import { EditCardPurchaseDialog } from './EditCardPurchaseDialog';
 import { CreditInsightsPanel } from './CreditInsightsPanel';
+import { EmptyState } from './EmptyState';
 import { buildCreditInsights } from '@/lib/creditInsightsEngine';
 import {
   Plus, CreditCard as CreditCardIcon, Calendar, Trash2, Pencil, Wallet,
