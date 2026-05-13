@@ -47,6 +47,21 @@ export const useRecurringTransactions = () => {
       if (error) throw error;
       return data;
     },
+    onMutate: async (vars) => {
+      await queryClient.cancelQueries({ queryKey: ['recurring_transactions'] });
+      const prev = queryClient.getQueryData<RecurringTransaction[]>(['recurring_transactions', user?.id]);
+      if (prev) {
+        queryClient.setQueryData<RecurringTransaction[]>(
+          ['recurring_transactions', user?.id],
+          prev.map(r => r.id === vars.id ? { ...r, ...vars } as RecurringTransaction : r),
+        );
+      }
+      return { prev };
+    },
+    onError: (e: any, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['recurring_transactions', user?.id], ctx.prev);
+      toast.error('Erro ao atualizar', { description: e?.message });
+    },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
       if (data && 'ativo' in data) {
@@ -55,7 +70,6 @@ export const useRecurringTransactions = () => {
         toast.success('Recorrência atualizada');
       }
     },
-    onError: (e: any) => toast.error('Erro ao atualizar', { description: e?.message }),
   });
 
   const remove = useMutation({
