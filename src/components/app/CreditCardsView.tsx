@@ -714,6 +714,13 @@ export function CreditCardsView() {
         purchase={purchases.find(p => p.id === editingPurchaseId) ?? null}
         cards={cards}
       />
+
+      <UpgradeSheet
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="cards"
+        reason={`Seu plano atual permite até ${limits.cards} cartão${limits.cards === 1 ? '' : 'es'}. Evolua para acompanhar todas as suas faturas em um só lugar.`}
+      />
     </div>
   );
 }
