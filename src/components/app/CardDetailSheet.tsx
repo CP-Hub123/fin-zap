@@ -9,6 +9,7 @@ import {
   CreditCard as CreditCardIcon, Calendar, Wallet, TrendingDown, TrendingUp,
   ShoppingBag, Repeat, Layers, Sparkles, AlertCircle, Info, Trash2, Plus,
 } from 'lucide-react';
+import { EmptyState } from './EmptyState';
 
 interface Props {
   open: boolean;
@@ -287,13 +288,15 @@ export function CardDetailSheet({
             )}
 
             {data.comprasFatura.length === 0 && (
-              <Card className="border-dashed">
-                <CardContent className="py-8 text-center space-y-2">
-                  <CreditCardIcon className="h-7 w-7 mx-auto text-muted-foreground/60" />
-                  <p className="text-sm font-medium">Sem compras nesta fatura</p>
-                  <p className="text-xs text-muted-foreground">Quando você registrar uma compra, ela aparece aqui.</p>
-                </CardContent>
-              </Card>
+              <EmptyState
+                icon={ShoppingBag}
+                eyebrow="Fatura limpa"
+                title="Sem compras nesta fatura"
+                description="Quando você registrar uma compra neste cartão, ela aparece aqui — com data, parcelas e impacto nos próximos meses."
+                primaryAction={{ label: 'Registrar compra', onClick: () => card && onAddPurchase(card.id), icon: Plus }}
+                tone="neutral"
+                compact
+              />
             )}
 
             <div className="h-2" />
