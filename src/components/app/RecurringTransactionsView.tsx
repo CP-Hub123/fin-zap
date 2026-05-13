@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useRecurringTransactions, type RecurringTransaction } from '@/hooks/useRecurringTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
+import { EmptyState } from './EmptyState';
 
 interface Props {
   cofrinhos: Cofrinho[];
