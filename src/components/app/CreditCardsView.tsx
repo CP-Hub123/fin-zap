@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
 import { useCreditCards, type CreditCard, type CardPurchase } from '@/hooks/useCreditCards';
+import { CardDetailSheet } from './CardDetailSheet';
 import {
   Plus, CreditCard as CreditCardIcon, Calendar, Trash2, Pencil, Wallet,
   TrendingDown, ChevronDown, Sparkles, ShoppingBag, Loader2, AlertCircle,
@@ -97,6 +98,7 @@ export function CreditCardsView() {
   const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
   const [confirmDeleteCard, setConfirmDeleteCard] = useState<string | null>(null);
   const [confirmDeletePurchase, setConfirmDeletePurchase] = useState<string | null>(null);
+  const [detailCardId, setDetailCardId] = useState<string | null>(null);
 
   const [cardForm, setCardForm] = useState<typeof emptyCard>(emptyCard);
   const [purchaseForm, setPurchaseForm] = useState<typeof emptyPurchase>(emptyPurchase);
@@ -321,6 +323,7 @@ export function CreditCardsView() {
                     onAddPurchase={() => openNewPurchase(card.id)}
                     onEdit={() => openEditCard(card)}
                     onDelete={() => setConfirmDeleteCard(card.id)}
+                    onOpen={() => setDetailCardId(card.id)}
                   />
                 );
               })}
@@ -666,6 +669,17 @@ export function CreditCardsView() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ============ Detail Sheet ============ */}
+      <CardDetailSheet
+        open={!!detailCardId}
+        onOpenChange={(o) => !o && setDetailCardId(null)}
+        card={cards.find(c => c.id === detailCardId) ?? null}
+        purchases={purchases}
+        installments={installments}
+        onAddPurchase={(cid) => { setDetailCardId(null); openNewPurchase(cid); }}
+        onDeletePurchase={(pid) => setConfirmDeletePurchase(pid)}
+      />
     </div>
   );
 }
@@ -710,11 +724,12 @@ interface CardItemProps {
   onAddPurchase: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onOpen: () => void;
 }
-function CardItem({ card, fatura, utilizado, disponivel, pct, vencimento, onAddPurchase, onEdit, onDelete }: CardItemProps) {
+function CardItem({ card, fatura, utilizado, disponivel, pct, vencimento, onAddPurchase, onEdit, onDelete, onOpen }: CardItemProps) {
   const isHigh = pct >= 80;
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden cursor-pointer transition-transform active:scale-[0.99]" onClick={onOpen}>
       <div
         className="p-4 text-white relative overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${card.cor}, ${card.cor}cc)` }}
@@ -727,10 +742,10 @@ function CardItem({ card, fatura, utilizado, disponivel, pct, vencimento, onAddP
             <p className="font-bold text-base mt-0.5 truncate">{card.nome}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" onClick={onEdit} className="h-8 w-8 text-white hover:bg-white/15 hover:text-white">
+            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onEdit(); }} className="h-8 w-8 text-white hover:bg-white/15 hover:text-white">
               <Pencil className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={onDelete} className="h-8 w-8 text-white hover:bg-white/15 hover:text-white">
+            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="h-8 w-8 text-white hover:bg-white/15 hover:text-white">
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -772,7 +787,7 @@ function CardItem({ card, fatura, utilizado, disponivel, pct, vencimento, onAddP
           </div>
         )}
 
-        <Button variant="outline" size="sm" onClick={onAddPurchase} className="w-full h-9 rounded-lg">
+        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onAddPurchase(); }} className="w-full h-9 rounded-lg">
           <Plus className="h-3.5 w-3.5 mr-1.5" /> Nova compra neste cartão
         </Button>
       </CardContent>
