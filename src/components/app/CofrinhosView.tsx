@@ -418,6 +418,13 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeSheet
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="cofrinhos"
+        reason={`Seu plano permite até ${limits.cofrinhos} cofrinhos. Evolua para organizar cada propósito do seu dinheiro com clareza.`}
+      />
     </div>
   );
 };
