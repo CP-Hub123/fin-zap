@@ -12,7 +12,6 @@ import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
 import { TransactionsView } from '@/components/app/TransactionsView';
-import { CofrinhosView } from '@/components/app/CofrinhosView';
 import { CreditCardsView } from '@/components/app/CreditCardsView';
 import { PlanningCenterView } from '@/components/app/PlanningCenterView';
 import { ClosingView } from '@/components/app/ClosingView';
