@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Sparkles, AlertTriangle, Info, TrendingUp, TrendingDown, ChevronRight, X } from 'lucide-react';
+import { Sparkles, AlertTriangle, Info, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
