@@ -72,11 +72,21 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
   const [form, setForm] = useState(empty);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const { canCreate, limits } = usePlan();
 
   const cofrinhoById = (id: string) => cofrinhos.find(c => c.id === id);
   const noCofrinhos = cofrinhos.length === 0;
 
-  const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const openNew = () => {
+    if (!canCreate('recorrencias', recorrencias.length)) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setEditing(null);
+    setForm(empty);
+    setOpen(true);
+  };
   const openEdit = (r: RecurringTransaction) => {
     setEditing(r);
     setForm({
