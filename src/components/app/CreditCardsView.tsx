@@ -106,6 +106,8 @@ export function CreditCardsView() {
   const [confirmDeletePurchase, setConfirmDeletePurchase] = useState<string | null>(null);
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
   const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const { canCreate, limits } = usePlan();
 
   const [cardForm, setCardForm] = useState<typeof emptyCard>(emptyCard);
   const [purchaseForm, setPurchaseForm] = useState<typeof emptyPurchase>(emptyPurchase);
