@@ -15,6 +15,8 @@ import { EditCardPurchaseDialog } from './EditCardPurchaseDialog';
 import { CreditInsightsPanel } from './CreditInsightsPanel';
 import { EmptyState } from './EmptyState';
 import { buildCreditInsights } from '@/lib/creditInsightsEngine';
+import { UpgradeSheet } from './UpgradeSheet';
+import { usePlan } from '@/hooks/usePlan';
 import {
   Plus, CreditCard as CreditCardIcon, Calendar, Trash2, Pencil, Wallet,
   TrendingDown, ChevronDown, Sparkles, ShoppingBag, Loader2, AlertCircle,
@@ -176,6 +178,10 @@ export function CreditCardsView() {
 
   // ============ Handlers ============
   function openNewCard() {
+    if (!canCreate('cards', cards.length)) {
+      setUpgradeOpen(true);
+      return;
+    }
     setEditingCard(null);
     setCardForm(emptyCard);
     setCardOpen(true);
