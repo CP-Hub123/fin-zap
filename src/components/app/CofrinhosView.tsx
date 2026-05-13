@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/constants';
-import { Plus, Pencil, Trash2, PiggyBank, ShieldCheck, Target, Wallet } from 'lucide-react';
+import { Plus, Pencil, Trash2, PiggyBank, ShieldCheck, Target, Wallet, Loader2, Sparkles } from 'lucide-react';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import { ConnectedAccountsCard } from './ConnectedAccountsCard';
 import { RecurringTransactionsView } from './RecurringTransactionsView';
@@ -184,127 +184,193 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Editar' : 'Novo'} cofrinho</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {/* Tipo */}
-            <div className="space-y-2">
-              <Label>Tipo</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  { v: 'mensal' as const, label: 'Mensal', icon: Wallet, desc: 'Gastos do mês' },
-                  { v: 'meta' as const, label: 'Meta', icon: Target, desc: 'Objetivo' },
-                  { v: 'reserva' as const, label: 'Reserva', icon: ShieldCheck, desc: 'Emergência' },
-                ]).map(t => {
-                  const Icon = t.icon;
-                  const active = form.tipo === t.v;
-                  return (
-                    <button
-                      key={t.v}
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, tipo: t.v }))}
-                      className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition ${active ? 'border-primary bg-primary/5' : 'border-border'}`}
-                    >
-                      <Icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <span className="text-xs font-medium">{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Nome</Label>
-              <Input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} placeholder="Ex: Alimentação" className="min-h-[44px]" />
-            </div>
-
-            {/* Capa preset */}
-            <div className="space-y-2">
-              <Label>Capa</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {COVER_PRESETS.map(p => {
-                  const Icon = p.icon;
-                  const active = form.cover_preset === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, cover_preset: p.id }))}
-                      className={`relative h-14 rounded-lg flex flex-col items-center justify-center text-white transition ${active ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''}`}
-                      style={{ backgroundImage: p.gradient }}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="text-[9px] mt-0.5">{p.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Campos por tipo */}
-            {form.tipo === 'mensal' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Saldo inicial (R$)</Label>
-                  <Input type="number" step="0.01" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} className="min-h-[44px]" disabled={!!editing} />
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+          {(() => {
+            const preset = getPreset(form.cover_preset);
+            const PresetIcon = preset.icon;
+            const saldoNum = parseFloat(form.saldo) || 0;
+            const metaNum = form.tipo === 'meta'
+              ? (parseFloat(form.meta_valor) || 0)
+              : form.tipo === 'reserva'
+                ? (parseFloat(form.custo_mensal) || 0) * (parseFloat(form.meses_protegidos) || 6)
+                : (parseFloat(form.orcamento_mensal) || 0);
+            const progresso = metaNum > 0 ? Math.min(100, Math.round((saldoNum / metaNum) * 100)) : 0;
+            const subtitle = form.tipo === 'meta' ? 'Meta' : form.tipo === 'reserva' ? 'Reserva de proteção' : 'Orçamento mensal';
+            return (
+              <>
+                {/* Hero preview */}
+                <div className="relative px-5 pt-6 pb-5 text-white overflow-hidden" style={{ backgroundImage: preset.gradient }}>
+                  <div className="absolute -top-12 -right-10 h-32 w-32 rounded-full bg-white/15 blur-3xl" />
+                  <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-white/10 blur-3xl" />
+                  <DialogHeader className="relative z-10 space-y-3 text-left">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="h-11 w-11 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
+                        <PresetIcon className="h-5 w-5" />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider opacity-80 px-2 py-1 rounded-full bg-white/15 backdrop-blur">
+                        {editing ? 'Editando' : 'Novo cofrinho'}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <DialogTitle className="text-xl font-semibold leading-tight break-words">
+                        {form.nome.trim() || 'Dê um nome ao seu cofrinho'}
+                      </DialogTitle>
+                      <p className="text-[11px] uppercase tracking-wider opacity-80 mt-2">{subtitle}</p>
+                      <p className="text-2xl font-semibold tabular-nums tracking-tight mt-0.5">
+                        {formatCurrency(metaNum)}
+                      </p>
+                    </div>
+                    {metaNum > 0 && (
+                      <div className="space-y-1">
+                        <div className="h-1.5 rounded-full bg-white/20 overflow-hidden">
+                          <div className="h-full bg-white transition-all duration-500" style={{ width: `${progresso}%` }} />
+                        </div>
+                        <div className="flex justify-between text-[11px] opacity-90">
+                          <span>{formatCurrency(saldoNum)} guardado</span>
+                          <span>{progresso}%</span>
+                        </div>
+                      </div>
+                    )}
+                  </DialogHeader>
                 </div>
-                <div className="space-y-2">
-                  <Label>Orçamento mensal (R$)</Label>
-                  <Input type="number" step="0.01" value={form.orcamento_mensal} onChange={e => setForm(f => ({ ...f, orcamento_mensal: e.target.value }))} className="min-h-[44px]" />
-                </div>
-              </div>
-            )}
 
-            {form.tipo === 'meta' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Saldo atual (R$)</Label>
-                  <Input type="number" step="0.01" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} className="min-h-[44px]" disabled={!!editing} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Meta (R$)</Label>
-                  <Input type="number" step="0.01" value={form.meta_valor} onChange={e => setForm(f => ({ ...f, meta_valor: e.target.value }))} className="min-h-[44px]" placeholder="Ex: 7000" />
-                </div>
-              </div>
-            )}
-
-            {form.tipo === 'reserva' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Saldo atual (R$)</Label>
-                    <Input type="number" step="0.01" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} className="min-h-[44px]" disabled={!!editing} />
+                {/* Form body */}
+                <div className="px-5 py-5 space-y-5 max-h-[55vh] overflow-y-auto">
+                  {/* Tipo segmented */}
+                  <div className="space-y-1.5">
+                    <Label>Tipo</Label>
+                    <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-muted/50 border border-border/50">
+                      {([
+                        { v: 'mensal' as const, label: 'Mensal', icon: Wallet },
+                        { v: 'meta' as const, label: 'Meta', icon: Target },
+                        { v: 'reserva' as const, label: 'Reserva', icon: ShieldCheck },
+                      ]).map(t => {
+                        const Icon = t.icon;
+                        const active = form.tipo === t.v;
+                        return (
+                          <button
+                            key={t.v}
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, tipo: t.v }))}
+                            className={`flex items-center justify-center gap-1.5 h-10 rounded-lg text-sm font-medium transition-all ${
+                              active ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {t.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Custo mensal (R$)</Label>
-                    <Input type="number" step="0.01" value={form.custo_mensal} onChange={e => setForm(f => ({ ...f, custo_mensal: e.target.value }))} className="min-h-[44px]" placeholder="Seus gastos fixos" />
+
+                  {/* Nome */}
+                  <div className="space-y-1.5">
+                    <Label>Nome</Label>
+                    <Input
+                      value={form.nome}
+                      onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                      placeholder={form.tipo === 'meta' ? 'Ex: Viagem para o Japão' : form.tipo === 'reserva' ? 'Ex: Reserva de emergência' : 'Ex: Alimentação'}
+                      maxLength={40}
+                    />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Meses de proteção desejados</Label>
-                  <Select value={form.meses_protegidos} onValueChange={v => setForm(f => ({ ...f, meses_protegidos: v }))}>
-                    <SelectTrigger className="min-h-[44px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {[3, 6, 9, 12].map(n => <SelectItem key={n} value={String(n)}>{n} meses</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {form.custo_mensal && (
-                    <p className="text-xs text-muted-foreground">
-                      Meta calculada: <strong>{formatCurrency((parseFloat(form.custo_mensal) || 0) * (parseFloat(form.meses_protegidos) || 6))}</strong>
+
+                  {/* Capa preset */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Capa</Label>
+                      <span className="text-[11px] text-muted-foreground">{preset.label}</span>
+                    </div>
+                    <div className="grid grid-cols-6 gap-2">
+                      {COVER_PRESETS.map(p => {
+                        const Icon = p.icon;
+                        const active = form.cover_preset === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, cover_preset: p.id }))}
+                            title={p.label}
+                            className={`relative aspect-square rounded-xl flex items-center justify-center text-white transition-all ${
+                              active ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'opacity-80 hover:opacity-100'
+                            }`}
+                            style={{ backgroundImage: p.gradient }}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Campos por tipo */}
+                  {form.tipo === 'mensal' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label>Saldo inicial</Label>
+                        <Input type="number" step="0.01" placeholder="R$ 0,00" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} disabled={!!editing} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Orçamento</Label>
+                        <Input type="number" step="0.01" placeholder="R$ 0,00" value={form.orcamento_mensal} onChange={e => setForm(f => ({ ...f, orcamento_mensal: e.target.value }))} />
+                      </div>
+                    </div>
+                  )}
+
+                  {form.tipo === 'meta' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label>Saldo atual</Label>
+                        <Input type="number" step="0.01" placeholder="R$ 0,00" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} disabled={!!editing} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Meta</Label>
+                        <Input type="number" step="0.01" placeholder="R$ 7.000" value={form.meta_valor} onChange={e => setForm(f => ({ ...f, meta_valor: e.target.value }))} />
+                      </div>
+                    </div>
+                  )}
+
+                  {form.tipo === 'reserva' && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label>Saldo atual</Label>
+                          <Input type="number" step="0.01" placeholder="R$ 0,00" value={form.saldo} onChange={e => setForm(f => ({ ...f, saldo: e.target.value }))} disabled={!!editing} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Custo mensal</Label>
+                          <Input type="number" step="0.01" placeholder="Gastos fixos" value={form.custo_mensal} onChange={e => setForm(f => ({ ...f, custo_mensal: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Meses de proteção</Label>
+                        <Select value={form.meses_protegidos} onValueChange={v => setForm(f => ({ ...f, meses_protegidos: v }))}>
+                          <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {[3, 6, 9, 12].map(n => <SelectItem key={n} value={String(n)}>{n} meses</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {editing && (
+                    <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                      <Sparkles className="h-3 w-3" />
+                      Saldo é ajustado automaticamente pelas transações.
                     </p>
                   )}
                 </div>
-              </div>
-            )}
 
-            {editing && <p className="text-[10px] text-muted-foreground">Saldo é ajustado automaticamente pelas transações.</p>}
-          </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancelar</Button>
-            <Button onClick={save} disabled={saving} className="w-full sm:w-auto min-h-[44px]">{saving ? 'Salvando...' : 'Salvar'}</Button>
-          </DialogFooter>
+                <DialogFooter className="px-5 py-3 border-t border-border/50 bg-card/60 backdrop-blur flex-row gap-2 sm:gap-2">
+                  <Button variant="ghost" onClick={() => setOpen(false)} className="flex-1 h-11">Cancelar</Button>
+                  <Button onClick={save} disabled={saving || !form.nome.trim()} className="flex-1 h-11">
+                    {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Salvando</> : (editing ? 'Salvar' : 'Criar cofrinho')}
+                  </Button>
+                </DialogFooter>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
