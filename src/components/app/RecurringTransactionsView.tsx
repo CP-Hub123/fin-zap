@@ -584,6 +584,13 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeSheet
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="recorrencias"
+        reason={`Seu plano permite até ${limits.recorrencias} automações. Evolua para mapear todas as suas despesas e receitas fixas.`}
+      />
     </div>
   );
 };
