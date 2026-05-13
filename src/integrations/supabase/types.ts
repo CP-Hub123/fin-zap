@@ -335,6 +335,105 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_card_purchases: {
+        Row: {
+          card_id: string
+          categoria: string | null
+          cofrinho_id: string | null
+          created_at: string
+          data_compra: string
+          descricao: string
+          id: string
+          parcelas: number
+          user_id: string
+          valor_total: number
+        }
+        Insert: {
+          card_id: string
+          categoria?: string | null
+          cofrinho_id?: string | null
+          created_at?: string
+          data_compra?: string
+          descricao: string
+          id?: string
+          parcelas?: number
+          user_id: string
+          valor_total: number
+        }
+        Update: {
+          card_id?: string
+          categoria?: string | null
+          cofrinho_id?: string | null
+          created_at?: string
+          data_compra?: string
+          descricao?: string
+          id?: string
+          parcelas?: number
+          user_id?: string
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_card_purchases_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_card_purchases_cofrinho_id_fkey"
+            columns: ["cofrinho_id"]
+            isOneToOne: false
+            referencedRelation: "cofrinhos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_cards: {
+        Row: {
+          ativo: boolean
+          bandeira: string
+          cor: string
+          created_at: string
+          fechamento_dia: number
+          id: string
+          limite: number
+          nome: string
+          ordem: number
+          updated_at: string
+          user_id: string
+          vencimento_dia: number
+        }
+        Insert: {
+          ativo?: boolean
+          bandeira?: string
+          cor?: string
+          created_at?: string
+          fechamento_dia?: number
+          id?: string
+          limite?: number
+          nome: string
+          ordem?: number
+          updated_at?: string
+          user_id: string
+          vencimento_dia?: number
+        }
+        Update: {
+          ativo?: boolean
+          bandeira?: string
+          cor?: string
+          created_at?: string
+          fechamento_dia?: number
+          id?: string
+          limite?: number
+          nome?: string
+          ordem?: number
+          updated_at?: string
+          user_id?: string
+          vencimento_dia?: number
+        }
+        Relationships: []
+      }
       monthly_closures: {
         Row: {
           closed_at: string
@@ -691,6 +790,7 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
+          card_purchase_id: string | null
           category: string | null
           cofrinho_id: string | null
           created_at: string
@@ -703,6 +803,7 @@ export type Database = {
           month_id: string | null
           name: string
           origem: string
+          parcela_num: number | null
           provider: string | null
           recurrence: Database["public"]["Enums"]["recurrence_type"]
           source: Database["public"]["Enums"]["transaction_source"]
@@ -713,6 +814,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          card_purchase_id?: string | null
           category?: string | null
           cofrinho_id?: string | null
           created_at?: string
@@ -725,6 +827,7 @@ export type Database = {
           month_id?: string | null
           name: string
           origem?: string
+          parcela_num?: number | null
           provider?: string | null
           recurrence?: Database["public"]["Enums"]["recurrence_type"]
           source?: Database["public"]["Enums"]["transaction_source"]
@@ -735,6 +838,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          card_purchase_id?: string | null
           category?: string | null
           cofrinho_id?: string | null
           created_at?: string
@@ -747,6 +851,7 @@ export type Database = {
           month_id?: string | null
           name?: string
           origem?: string
+          parcela_num?: number | null
           provider?: string | null
           recurrence?: Database["public"]["Enums"]["recurrence_type"]
           source?: Database["public"]["Enums"]["transaction_source"]
@@ -756,6 +861,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_card_purchase_id_fkey"
+            columns: ["card_purchase_id"]
+            isOneToOne: false
+            referencedRelation: "credit_card_purchases"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_cofrinho_id_fkey"
             columns: ["cofrinho_id"]
@@ -811,8 +923,16 @@ export type Database = {
         Args: { _dia: number; _from: string }
         Returns: string
       }
+      delete_card_purchase_safe: {
+        Args: { _purchase_id: string }
+        Returns: undefined
+      }
       delete_cofrinho_cascade: {
         Args: { _cofrinho_id: string }
+        Returns: undefined
+      }
+      delete_credit_card_cascade: {
+        Args: { _card_id: string }
         Returns: undefined
       }
       executar_recorrencias_usuario: {
