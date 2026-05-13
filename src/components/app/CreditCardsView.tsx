@@ -15,6 +15,8 @@ import { EditCardPurchaseDialog } from './EditCardPurchaseDialog';
 import { CreditInsightsPanel } from './CreditInsightsPanel';
 import { EmptyState } from './EmptyState';
 import { buildCreditInsights } from '@/lib/creditInsightsEngine';
+import { UpgradeSheet } from './UpgradeSheet';
+import { usePlan } from '@/hooks/usePlan';
 import {
   Plus, CreditCard as CreditCardIcon, Calendar, Trash2, Pencil, Wallet,
   TrendingDown, ChevronDown, Sparkles, ShoppingBag, Loader2, AlertCircle,
@@ -104,6 +106,8 @@ export function CreditCardsView() {
   const [confirmDeletePurchase, setConfirmDeletePurchase] = useState<string | null>(null);
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
   const [editingPurchaseId, setEditingPurchaseId] = useState<string | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const { canCreate, limits } = usePlan();
 
   const [cardForm, setCardForm] = useState<typeof emptyCard>(emptyCard);
   const [purchaseForm, setPurchaseForm] = useState<typeof emptyPurchase>(emptyPurchase);
@@ -176,6 +180,10 @@ export function CreditCardsView() {
 
   // ============ Handlers ============
   function openNewCard() {
+    if (!canCreate('cards', cards.length)) {
+      setUpgradeOpen(true);
+      return;
+    }
     setEditingCard(null);
     setCardForm(emptyCard);
     setCardOpen(true);
@@ -705,6 +713,13 @@ export function CreditCardsView() {
         onOpenChange={(o) => !o && setEditingPurchaseId(null)}
         purchase={purchases.find(p => p.id === editingPurchaseId) ?? null}
         cards={cards}
+      />
+
+      <UpgradeSheet
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="cards"
+        reason={`Seu plano atual permite até ${limits.cards} cartão${limits.cards === 1 ? '' : 'es'}. Evolua para acompanhar todas as suas faturas em um só lugar.`}
       />
     </div>
   );

@@ -16,6 +16,8 @@ import {
 import { useRecurringTransactions, type RecurringTransaction } from '@/hooks/useRecurringTransactions';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import { EmptyState } from './EmptyState';
+import { UpgradeSheet } from './UpgradeSheet';
+import { usePlan } from '@/hooks/usePlan';
 
 interface Props {
   cofrinhos: Cofrinho[];
@@ -70,11 +72,21 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
   const [form, setForm] = useState(empty);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const { canCreate, limits } = usePlan();
 
   const cofrinhoById = (id: string) => cofrinhos.find(c => c.id === id);
   const noCofrinhos = cofrinhos.length === 0;
 
-  const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const openNew = () => {
+    if (!canCreate('recorrencias', recorrencias.length)) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setEditing(null);
+    setForm(empty);
+    setOpen(true);
+  };
   const openEdit = (r: RecurringTransaction) => {
     setEditing(r);
     setForm({
@@ -572,6 +584,13 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeSheet
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="recorrencias"
+        reason={`Seu plano permite até ${limits.recorrencias} automações. Evolua para mapear todas as suas despesas e receitas fixas.`}
+      />
     </div>
   );
 };

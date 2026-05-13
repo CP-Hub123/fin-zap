@@ -14,6 +14,8 @@ import { CofrinhoCard } from './CofrinhoCard';
 import { CofrinhoDetailSheet } from './CofrinhoDetailSheet';
 import { COVER_PRESETS, getPreset } from '@/lib/cofrinhoPresets';
 import { EmptyState } from './EmptyState';
+import { UpgradeSheet } from './UpgradeSheet';
+import { usePlan } from '@/hooks/usePlan';
 
 type TipoCofrinho = 'reserva' | 'mensal' | 'meta';
 
@@ -44,8 +46,18 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const { canCreate, limits } = usePlan();
 
-  const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const openNew = () => {
+    if (!canCreate('cofrinhos', cofrinhos.length)) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setEditing(null);
+    setForm(empty);
+    setOpen(true);
+  };
   const openEdit = (c: Cofrinho) => {
     setEditing(c);
     setForm({
@@ -406,6 +418,13 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeSheet
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        feature="cofrinhos"
+        reason={`Seu plano permite até ${limits.cofrinhos} cofrinhos. Evolua para organizar cada propósito do seu dinheiro com clareza.`}
+      />
     </div>
   );
 };
