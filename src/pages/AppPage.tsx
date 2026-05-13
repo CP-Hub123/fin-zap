@@ -13,6 +13,7 @@ import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
 import { TransactionsView } from '@/components/app/TransactionsView';
 import { CofrinhosView } from '@/components/app/CofrinhosView';
+import { CreditCardsView } from '@/components/app/CreditCardsView';
 import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
@@ -249,6 +250,10 @@ const AppPage = () => {
 
 
         {selectedMonth && currentStep === 2 && (
+          <CreditCardsView />
+        )}
+
+        {selectedMonth && currentStep === 3 && (
           <CofrinhosView
             cofrinhos={cofrinhos}
             isClosed={isBlocked}
@@ -259,7 +264,7 @@ const AppPage = () => {
           />
         )}
 
-        {selectedMonth && currentStep === 3 && (
+        {selectedMonth && currentStep === 4 && (
           <ClosingView
             month={selectedMonth}
             totalIncome={totalIncome}
