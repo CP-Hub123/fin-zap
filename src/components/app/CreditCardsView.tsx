@@ -255,22 +255,19 @@ export function CreditCardsView() {
 
       {/* Empty state */}
       {cards.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-12 text-center space-y-4">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <CreditCardIcon className="h-7 w-7 text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-semibold">Nenhum cartão adicionado</p>
-              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Adicione seus cartões para visualizar faturas, parcelas e limite com tranquilidade.
-              </p>
-            </div>
-            <Button onClick={openNewCard} className="rounded-full">
-              <Plus className="h-4 w-4 mr-1.5" /> Adicionar primeiro cartão
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={CreditCardIcon}
+          eyebrow="Comece por aqui"
+          title="Sua Central de Crédito está pronta"
+          description="Adicione seu primeiro cartão para acompanhar faturas, parcelas e prever os próximos meses com clareza."
+          hints={[
+            'Faturas atualizadas automaticamente a cada compra',
+            'Parcelas projetadas nos meses seguintes',
+            'Visão única do limite disponível em todos os cartões',
+          ]}
+          primaryAction={{ label: 'Adicionar primeiro cartão', onClick: openNewCard, icon: Plus }}
+          tone="primary"
+        />
       ) : (
         <>
           {/* KPIs */}
