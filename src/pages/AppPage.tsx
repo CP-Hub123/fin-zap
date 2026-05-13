@@ -19,7 +19,7 @@ import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { Button } from '@/components/ui/button';
-import { LogOut, BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2 } from 'lucide-react';
+import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
