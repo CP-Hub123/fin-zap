@@ -8,6 +8,7 @@ import { useInAppNotifications, InAppNotification } from '@/hooks/useInAppNotifi
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { NotificationSettingsSheet } from './NotificationSettingsSheet';
+import { NotificationCenterSheet } from './NotificationCenterSheet';
 import { supabase } from '@/integrations/supabase/client';
 
 const CATEGORY_DOT: Record<string, string> = {
@@ -21,6 +22,7 @@ const CATEGORY_DOT: Record<string, string> = {
 export const NotificationBell = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useInAppNotifications();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [centerOpen, setCenterOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -86,10 +88,25 @@ export const NotificationBell = () => {
               </div>
             )}
           </ScrollArea>
+          <div className="border-t px-3 py-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-center text-xs font-medium"
+              onClick={() => { setPopoverOpen(false); setCenterOpen(true); }}
+            >
+              Ver central completa
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
 
       <NotificationSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <NotificationCenterSheet
+        open={centerOpen}
+        onOpenChange={setCenterOpen}
+        onOpenSettings={() => { setCenterOpen(false); setSettingsOpen(true); }}
+      />
     </>
   );
 };
