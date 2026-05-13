@@ -586,8 +586,10 @@ const Index = () => {
             </div>
             <div className="footer-col">
               <h5>Legal</h5>
-              <a>Privacidade</a>
-              <a>Termos de uso</a>
+              <a onClick={() => navigate('/legal/privacidade')}>Privacidade</a>
+              <a onClick={() => navigate('/legal/termos')}>Termos de uso</a>
+              <a onClick={() => navigate('/legal/consentimento')}>Consentimento</a>
+              <a onClick={() => navigate('/legal/seguranca')}>Segurança</a>
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Logo } from '@/components/app/Logo';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
+import { Link } from 'react-router-dom';
 import { Loader2, Mail, Lock, User, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 const GoogleIcon = ({ className = 'h-5 w-5' }: { className?: string }) => (
@@ -218,6 +219,27 @@ const Auth = () => {
         <div className="mt-5 flex items-center justify-center gap-1.5 text-[11.5px] text-muted-foreground/80">
           <ShieldCheck className="h-3.5 w-3.5" />
           <span>Conexão segura · Criptografia de ponta a ponta</span>
+        </div>
+
+        {mode === 'signup' && (
+          <p className="mt-3 px-2 text-center text-[11.5px] leading-relaxed text-muted-foreground/80">
+            Ao criar uma conta, você concorda com nossos{' '}
+            <Link to="/legal/termos" className="font-medium text-foreground underline-offset-2 hover:underline">
+              Termos de Uso
+            </Link>{' '}
+            e nossa{' '}
+            <Link to="/legal/privacidade" className="font-medium text-foreground underline-offset-2 hover:underline">
+              Política de Privacidade
+            </Link>
+            .
+          </p>
+        )}
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground/70">
+          <Link to="/legal/privacidade" className="hover:text-foreground">Privacidade</Link>
+          <span>·</span>
+          <Link to="/legal/termos" className="hover:text-foreground">Termos</Link>
+          <span>·</span>
+          <Link to="/legal/seguranca" className="hover:text-foreground">Segurança</Link>
         </div>
       </div>
     </div>
