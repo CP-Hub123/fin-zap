@@ -2,3 +2,6 @@ project_id = "pufhontpohhuifrtqfsu"
 
 [functions.notifications-scheduler]
 verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

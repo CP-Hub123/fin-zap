@@ -19,7 +19,7 @@ import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { Button } from '@/components/ui/button';
-import { LogOut, BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard } from 'lucide-react';
+import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2 } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
@@ -139,12 +139,12 @@ const AppPage = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate('/tutorials')} title="Tutoriais">
               <BookOpen className="h-4 w-4" />
             </Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/conta')} title="Conta">
+              <UserCircle2 className="h-4 w-4" />
+            </Button>
             {isAdmin && (
               <Button variant="ghost" size="sm" onClick={() => navigate('/admin')}>Admin</Button>
             )}
-            <Button variant="ghost" size="icon" onClick={() => signOut()} title="Sair">
-              <LogOut className="h-4 w-4" />
-            </Button>
           </div>
 
           {/* Mobile actions: ícones + hamburger (sem seletor de mês aqui) */}
@@ -172,14 +172,14 @@ const AppPage = () => {
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setBugReportOpen(true); setMobileMenuOpen(false); }}>
               <Bug className="h-4 w-4 mr-2" /> Reportar bug
             </Button>
+            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/conta'); setMobileMenuOpen(false); }}>
+              <UserCircle2 className="h-4 w-4 mr-2" /> Conta
+            </Button>
             {isAdmin && (
               <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/admin'); setMobileMenuOpen(false); }}>
                 <Menu className="h-4 w-4 mr-2" /> Painel Admin
               </Button>
             )}
-            <Button variant="ghost" className="w-full justify-start min-h-[44px] text-destructive" onClick={() => signOut()}>
-              <LogOut className="h-4 w-4 mr-2" /> Sair
-            </Button>
           </div>
         )}
       </header>
