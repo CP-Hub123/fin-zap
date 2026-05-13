@@ -14,6 +14,7 @@ import { SummaryView } from '@/components/app/SummaryView';
 import { TransactionsView } from '@/components/app/TransactionsView';
 import { CofrinhosView } from '@/components/app/CofrinhosView';
 import { CreditCardsView } from '@/components/app/CreditCardsView';
+import { PlanningCenterView } from '@/components/app/PlanningCenterView';
 import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
@@ -254,12 +255,14 @@ const AppPage = () => {
         )}
 
         {selectedMonth && currentStep === 3 && (
-          <CofrinhosView
+          <PlanningCenterView
+            month={selectedMonth}
+            transactions={transactions}
             cofrinhos={cofrinhos}
             isClosed={isBlocked}
-            onCreate={guardedAction(data => createCofrinho.mutateAsync(data))}
-            onUpdate={guardedAction(data => updateCofrinho.mutateAsync(data))}
-            onDelete={guardedAction(id => deleteCofrinho.mutateAsync(id))}
+            onCreateCofrinho={guardedAction(data => createCofrinho.mutateAsync(data))}
+            onUpdateCofrinho={guardedAction(data => updateCofrinho.mutateAsync(data))}
+            onDeleteCofrinho={guardedAction(id => deleteCofrinho.mutateAsync(id))}
             onTransfer={guardedAction(data => transferir.mutateAsync(data))}
           />
         )}
