@@ -17,6 +17,7 @@ import Upgrade from "./pages/Upgrade";
 import Maintenance from "./pages/Maintenance";
 import CreditCards from "./pages/CreditCards";
 import Account from "./pages/Account";
+import Download from "./pages/Download";
 import Privacy from "./pages/legal/Privacy";
 import Terms from "./pages/legal/Terms";
 import Consent from "./pages/legal/Consent";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/legal/consentimento" element={<Consent />} />
             <Route path="/legal/cookies" element={<CookiesPage />} />
             <Route path="/legal/seguranca" element={<Security />} />
+            <Route path="/download" element={<Download />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
             <Route path="/cartoes" element={<ProtectedRoute><CreditCards /></ProtectedRoute>} />

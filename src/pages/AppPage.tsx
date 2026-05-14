@@ -19,7 +19,7 @@ import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2 } from 'lucide-react';
+import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2, Download as DownloadIcon } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
@@ -171,6 +171,9 @@ const AppPage = () => {
             </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/conta'); setMobileMenuOpen(false); }}>
               <UserCircle2 className="h-4 w-4 mr-2" /> Conta
+            </Button>
+            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/download'); setMobileMenuOpen(false); }}>
+              <DownloadIcon className="h-4 w-4 mr-2" /> Baixar app
             </Button>
             {isAdmin && (
               <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/admin'); setMobileMenuOpen(false); }}>
