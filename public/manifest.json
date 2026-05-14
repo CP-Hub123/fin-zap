@@ -1,0 +1,21 @@
+{
+  "name": "FinZap — Decisão financeira inteligente",
+  "short_name": "FinZap",
+  "description": "Copiloto financeiro pessoal. Decida antes de gastar.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07090F",
+  "theme_color": "#07090F",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/finzap-logo-icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/finzap-logo-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Resumo do mês", "short_name": "Resumo", "url": "/app", "icons": [{ "src": "/finzap-logo-icon.png", "sizes": "192x192" }] },
+    { "name": "Cartões", "short_name": "Cartões", "url": "/cartoes", "icons": [{ "src": "/finzap-logo-icon.png", "sizes": "192x192" }] },
+    { "name": "Baixar app", "short_name": "Download", "url": "/download", "icons": [{ "src": "/finzap-logo-icon.png", "sizes": "192x192" }] }
+  ]
+}
