@@ -18,6 +18,7 @@ import Maintenance from "./pages/Maintenance";
 import CreditCards from "./pages/CreditCards";
 import Account from "./pages/Account";
 import Download from "./pages/Download";
+import Months from "./pages/Months";
 import Privacy from "./pages/legal/Privacy";
 import Terms from "./pages/legal/Terms";
 import Consent from "./pages/legal/Consent";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/cartoes" element={<ProtectedRoute><CreditCards /></ProtectedRoute>} />
             <Route path="/conta" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/tutorials" element={<ProtectedRoute><Tutorials /></ProtectedRoute>} />
+            <Route path="/meses" element={<ProtectedRoute><Months /></ProtectedRoute>} />
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/admin/*" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
