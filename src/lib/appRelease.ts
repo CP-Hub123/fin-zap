@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const APP_VERSION = "1.0.0";
 export const APP_BUILD = "1";
 export const APK_FILE_NAME = "finzap-latest.apk";
-export const APK_SIZE_MB = 18.4;
+export const APK_SIZE_MB = 8.65;
 export const RELEASE_DATE = "2026-05-14";
 export const RELEASE_CHANNEL: "stable" | "beta" = "stable";
 
