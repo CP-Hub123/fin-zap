@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMonths } from '@/hooks/useMonths';
 import { useTransactions } from '@/hooks/useTransactions';
@@ -19,7 +19,7 @@ import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2, Download as DownloadIcon } from 'lucide-react';
+import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2, Download as DownloadIcon, Layers } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
@@ -45,6 +45,7 @@ const AppPage = () => {
 
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { months, isLoading: monthsLoading, createMonth, updateMonthStatus } = useMonths();
   const selectedMonth = months.find(m => m.id === selectedMonthId);
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
@@ -95,8 +96,26 @@ const AppPage = () => {
   };
 
   useEffect(() => {
-    if (months.length > 0 && !selectedMonthId) setSelectedMonthId(months[0].id);
-  }, [months, selectedMonthId]);
+    if (months.length === 0) return;
+    if (selectedMonthId && months.find(m => m.id === selectedMonthId)) return;
+    const fromQuery = searchParams.get('month');
+    const fromStorage = localStorage.getItem('finzap:selectedMonthId') ?? undefined;
+    const preferred = [fromQuery, fromStorage].find(id => id && months.find(m => m.id === id));
+    setSelectedMonthId(preferred ?? months[0].id);
+  }, [months, selectedMonthId, searchParams]);
+
+  useEffect(() => {
+    if (selectedMonthId) localStorage.setItem('finzap:selectedMonthId', selectedMonthId);
+  }, [selectedMonthId]);
+
+  // Abrir dialog "novo mês" via ?newMonth=1
+  useEffect(() => {
+    if (searchParams.get('newMonth') === '1') {
+      setNewMonthOpen(true);
+      searchParams.delete('newMonth');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!monthsLoading && months.length === 0) navigate('/onboarding');
@@ -133,6 +152,9 @@ const AppPage = () => {
           <div className="hidden sm:flex items-center gap-2">
             <NotificationBell />
             <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => navigate('/meses')} title="Central de Meses">
+              <Layers className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/cartoes')} title="Cartões">
               <CreditCard className="h-4 w-4" />
             </Button>
@@ -162,6 +184,9 @@ const AppPage = () => {
           <div className="sm:hidden border-t bg-card px-3 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setNewMonthOpen(true); setMobileMenuOpen(false); }}>
               <Plus className="h-4 w-4 mr-2" /> Novo mês
+            </Button>
+            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/meses'); setMobileMenuOpen(false); }}>
+              <Layers className="h-4 w-4 mr-2" /> Central de Meses
             </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/tutorials'); setMobileMenuOpen(false); }}>
               <BookOpen className="h-4 w-4 mr-2" /> Tutoriais
@@ -193,15 +218,26 @@ const AppPage = () => {
             onSelect={setSelectedMonthId}
             variant="pill"
           />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setNewMonthOpen(true)}
-            className="h-9 rounded-full px-3 text-xs font-semibold text-primary hover:bg-primary/10"
-            title="Novo mês"
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" /> Novo mês
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/meses')}
+              className="h-9 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary"
+              title="Central de Meses"
+            >
+              <Layers className="h-3.5 w-3.5 mr-1" /> Meses
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setNewMonthOpen(true)}
+              className="h-9 rounded-full px-3 text-xs font-semibold text-primary hover:bg-primary/10"
+              title="Novo mês"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> Novo
+            </Button>
+          </div>
         </div>
       </div>
 
