@@ -950,6 +950,7 @@ export type Database = {
         Args: { _card_id: string }
         Returns: undefined
       }
+      delete_month_cascade: { Args: { _month_id: string }; Returns: undefined }
       executar_recorrencias_usuario: {
         Args: { _user_id: string }
         Returns: number
@@ -994,7 +995,12 @@ export type Database = {
       bug_status: "new" | "analyzing" | "fixing" | "resolved" | "ignored"
       category_type: "income" | "expense"
       cofrinho_tipo: "reserva" | "mensal" | "meta"
-      month_status: "draft" | "in_progress" | "ready_to_close" | "closed"
+      month_status:
+        | "draft"
+        | "in_progress"
+        | "ready_to_close"
+        | "closed"
+        | "archived"
       recurrence_type: "none" | "monthly"
       subscription_plan: "trial" | "premium"
       subscription_status: "active" | "expired"
@@ -1143,7 +1149,13 @@ export const Constants = {
       bug_status: ["new", "analyzing", "fixing", "resolved", "ignored"],
       category_type: ["income", "expense"],
       cofrinho_tipo: ["reserva", "mensal", "meta"],
-      month_status: ["draft", "in_progress", "ready_to_close", "closed"],
+      month_status: [
+        "draft",
+        "in_progress",
+        "ready_to_close",
+        "closed",
+        "archived",
+      ],
       recurrence_type: ["none", "monthly"],
       subscription_plan: ["trial", "premium"],
       subscription_status: ["active", "expired"],
