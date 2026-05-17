@@ -226,7 +226,7 @@ const MonthsPage = () => {
               </TabsList>
             </Tabs>
 
-            <div className="flex gap-1 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1 overflow-x-auto">
               <YearChip active={yearFilter === 'all'} onClick={() => setYearFilter('all')}>Todos os anos</YearChip>
               {years.map(y => (
                 <YearChip key={y} active={yearFilter === String(y)} onClick={() => setYearFilter(String(y))}>
