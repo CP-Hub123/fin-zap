@@ -9,6 +9,7 @@ import { Sparkles, ShieldCheck, AlertTriangle, AlertOctagon, ArrowRight, Wallet 
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
+import { useMonths } from '@/hooks/useMonths';
 import { evaluateDecision, compareDecisions, type DecisionInput, type DecisionResult, type DecisionTipo, type RiskLevel } from '@/lib/decisionEngine';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +39,10 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
   const { transactions, balance } = useTransactions(monthId);
   const { cofrinhos } = useCofrinhos();
   const { recorrencias } = useRecurringTransactions();
+  const { months } = useMonths();
+  const currentMonth = months.find(m => m.id === monthId);
+  const initialBalance = Number(currentMonth?.initial_balance ?? 0);
+  const operationalBalance = initialBalance + balance;
 
   const today = new Date().toISOString().slice(0, 10);
   const [valorA, setValorA] = useState('');
@@ -51,8 +56,8 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
     transactions,
     cofrinhos,
     recurring: recorrencias,
-    monthBalance: balance,
-  }), [transactions, cofrinhos, recorrencias, balance]);
+    monthBalance: operationalBalance,
+  }), [transactions, cofrinhos, recorrencias, operationalBalance]);
 
   const inputA: DecisionInput = {
     amount: parseFloat(valorA.replace(',', '.')) || 0,
