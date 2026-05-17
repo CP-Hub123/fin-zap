@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Tables, TablesInsert } from '@/integrations/supabase/types';
+import type { Tables } from '@/integrations/supabase/types';
 
 export type Month = Tables<'months'>;
 
@@ -47,5 +47,35 @@ export const useMonths = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['months'] }),
   });
 
-  return { months: monthsQuery.data ?? [], isLoading: monthsQuery.isLoading, createMonth, updateMonthStatus };
+  const updateMonth = useMutation({
+    mutationFn: async ({ id, ...patch }: { id: string; initial_balance?: number; status?: string }) => {
+      const { error } = await supabase
+        .from('months')
+        .update(patch as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['months'] }),
+  });
+
+  const deleteMonth = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('delete_month_cascade' as any, { _month_id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['months'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+    },
+  });
+
+  return {
+    months: monthsQuery.data ?? [],
+    isLoading: monthsQuery.isLoading,
+    createMonth,
+    updateMonthStatus,
+    updateMonth,
+    deleteMonth,
+  };
 };
