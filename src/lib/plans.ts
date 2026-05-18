@@ -60,7 +60,7 @@ export const PLANS: Record<PlanTier, PlanDefinition> = {
     highlight: true,
     ctaLabel: 'Assinar Pro',
     limits: {
-      cards: 8,
+      cards: 3,
       recorrencias: 30,
       cofrinhos: 20,
       forecastMonths: 6,
