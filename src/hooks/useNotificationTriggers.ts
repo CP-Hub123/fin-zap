@@ -57,6 +57,10 @@ export const useNotificationTriggers = ({
   // Subscription due trigger
   useEffect(() => {
     if (!user || !subscription?.expires_at) return;
+    // Only warn about renewals for paying customers — not trial/free users.
+    // Free/trial users shouldn't see billing-style notifications.
+    if (subscription.plan !== 'premium') return;
+    if (subscription.status !== 'active') return;
     const key = `sub_due_${subscription.id}`;
     if (firedRef.current.has(key)) return;
 
