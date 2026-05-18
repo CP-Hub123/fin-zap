@@ -261,7 +261,7 @@ const Onboarding = () => {
   const [txType, setTxType] = useState<'income' | 'expense'>('income');
   const [cofrinhoNome, setCofrinhoNome] = useState('Geral');
 
-  const { createMonth } = useMonths();
+  const { createMonth, months } = useMonths();
   const { addTransaction } = useTransactions(createdMonthId ?? undefined);
   const { createCofrinho } = useCofrinhos();
 
@@ -324,7 +324,21 @@ const Onboarding = () => {
     navigate('/app');
   };
 
-  const skipAll = () => navigate('/app');
+  const skipAll = async () => {
+    // Garante estado financeiro mínimo: cria o mês atual se ainda não existir.
+    try {
+      const now = new Date();
+      const m = now.getMonth() + 1;
+      const y = now.getFullYear();
+      const exists = months.some(mo => mo.month === m && mo.year === y);
+      if (!exists && months.length === 0) {
+        await createMonth.mutateAsync({ month: m, year: y, initial_balance: 0 });
+      }
+    } catch {
+      // silencioso — se falhar, /app trata o estado vazio
+    }
+    navigate('/app');
+  };
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-gradient-to-b from-background via-background to-primary/5">

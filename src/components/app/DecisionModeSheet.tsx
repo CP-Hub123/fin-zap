@@ -5,13 +5,14 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Sparkles, ShieldCheck, AlertTriangle, AlertOctagon, ArrowRight, Wallet } from 'lucide-react';
+import { Sparkles, ShieldCheck, AlertTriangle, AlertOctagon, ArrowRight, Wallet, Check, Loader2 } from 'lucide-react';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useMonths } from '@/hooks/useMonths';
 import { evaluateDecision, compareDecisions, type DecisionInput, type DecisionResult, type DecisionTipo, type RiskLevel } from '@/lib/decisionEngine';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
@@ -36,7 +37,7 @@ interface Props {
 }
 
 export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
-  const { transactions, balance } = useTransactions(monthId);
+  const { transactions, balance, addTransaction } = useTransactions(monthId);
   const { cofrinhos } = useCofrinhos();
   const { recorrencias } = useRecurringTransactions();
   const { months } = useMonths();
@@ -51,6 +52,7 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
   const [cofrinhoId, setCofrinhoId] = useState<string>('none');
   const [date, setDate] = useState(today);
   const [comparar, setComparar] = useState(false);
+  const [descricao, setDescricao] = useState('');
 
   const ctx = useMemo(() => ({
     transactions,
@@ -74,6 +76,36 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
   const reset = () => {
     setValorA(''); setValorB(''); setTipo('opcional');
     setCofrinhoId('none'); setDate(today); setComparar(false);
+    setDescricao('');
+  };
+
+  const canRegister = !!monthId && !!resultA && inputA.amount > 0;
+
+  const handleRegister = async (which: 'A' | 'B') => {
+    if (!monthId) {
+      toast.error('Selecione um mês para registrar a despesa.');
+      return;
+    }
+    const input = which === 'A' ? inputA : inputB;
+    if (!input.amount || input.amount <= 0) return;
+    try {
+      await addTransaction.mutateAsync({
+        month_id: monthId,
+        cofrinho_id: input.cofrinhoId ?? null,
+        type: 'expense',
+        name: descricao.trim() || `Decisão ${TIPOS.find(t => t.value === tipo)?.label}`,
+        amount: input.amount,
+        date: input.date,
+        status: 'realized',
+        is_fixed: false,
+        recurrence: 'none',
+      } as any);
+      toast.success('Despesa registrada', { description: 'Saldo, cofrinhos e previsões atualizados.' });
+      onOpenChange(false);
+      reset();
+    } catch (e: any) {
+      toast.error('Não foi possível registrar', { description: e?.message });
+    }
   };
 
   return (
@@ -177,6 +209,60 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
               {winner === 'tie' && (
                 <p className="text-center text-xs text-muted-foreground">As duas opções têm impacto financeiro semelhante.</p>
               )}
+            </div>
+          )}
+
+          {/* CTA: transformar simulação em ação real */}
+          {canRegister && (
+            <div className="space-y-3 rounded-2xl border bg-gradient-to-br from-primary/5 to-transparent p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Descrição (opcional)</Label>
+                <Input
+                  placeholder="Ex: Jantar, Uber, Mercado..."
+                  value={descricao}
+                  onChange={e => setDescricao(e.target.value)}
+                />
+              </div>
+              {resultB ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    size="lg"
+                    variant={winner === 'A' ? 'default' : 'outline'}
+                    onClick={() => handleRegister('A')}
+                    disabled={addTransaction.isPending}
+                    className="font-semibold"
+                  >
+                    {addTransaction.isPending ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Check className="h-4 w-4 mr-1.5" />}
+                    Registrar A
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant={winner === 'B' ? 'default' : 'outline'}
+                    onClick={() => handleRegister('B')}
+                    disabled={addTransaction.isPending}
+                    className="font-semibold"
+                  >
+                    {addTransaction.isPending ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Check className="h-4 w-4 mr-1.5" />}
+                    Registrar B
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="lg"
+                  onClick={() => handleRegister('A')}
+                  disabled={addTransaction.isPending}
+                  className="w-full font-semibold bg-gradient-zap text-primary-foreground shadow-lift hover:opacity-95"
+                >
+                  {addTransaction.isPending ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Registrando...</>
+                  ) : (
+                    <><Check className="h-4 w-4 mr-2" /> Gastar agora — registrar despesa</>
+                  )}
+                </Button>
+              )}
+              <p className="text-[11px] text-center text-muted-foreground">
+                Vai atualizar saldo, cofrinhos, previsões e timeline automaticamente.
+              </p>
             </div>
           )}
         </div>
