@@ -158,8 +158,8 @@ export function analyzeCofrinho(
   };
 }
 
-export const STATUS_COLORS: Record<CofrinhoStatus, { bg: string; text: string; ring: string; label: string; emoji: string }> = {
-  safe:      { bg: 'bg-emerald-500/10', text: 'text-emerald-600', ring: 'ring-emerald-500/30', label: 'Seguro',  emoji: '🟢' },
-  attention: { bg: 'bg-yellow-500/10',  text: 'text-yellow-600',  ring: 'ring-yellow-500/30',  label: 'Atenção', emoji: '🟡' },
-  critical:  { bg: 'bg-red-500/10',     text: 'text-red-600',     ring: 'ring-red-500/30',     label: 'Crítico', emoji: '🔴' },
+export const STATUS_COLORS: Record<CofrinhoStatus, { bg: string; text: string; ring: string; label: string; dot: string }> = {
+  safe:      { bg: 'bg-emerald-500/10', text: 'text-emerald-600', ring: 'ring-emerald-500/30', label: 'Seguro',  dot: 'bg-emerald-500' },
+  attention: { bg: 'bg-yellow-500/10',  text: 'text-yellow-600',  ring: 'ring-yellow-500/30',  label: 'Atenção', dot: 'bg-yellow-500' },
+  critical:  { bg: 'bg-red-500/10',     text: 'text-red-600',     ring: 'ring-red-500/30',     label: 'Crítico', dot: 'bg-red-500' },
 };

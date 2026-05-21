@@ -255,7 +255,7 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
         <div className="flex items-center gap-3 p-4 rounded-xl bg-[hsl(var(--finzap-red)/0.1)]">
           <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: 'hsl(var(--finzap-red))' }} />
           <span className="text-sm font-medium" style={{ color: 'hsl(var(--finzap-red))' }}>
-            ⚠️ Orçamento ultrapassado! Você gastou {formatCurrency(totalExpense - totalPlanned)} além do previsto.
+            Orçamento ultrapassado — você gastou {formatCurrency(totalExpense - totalPlanned)} além do previsto.
           </span>
         </div>
       )}

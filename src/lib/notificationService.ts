@@ -15,11 +15,11 @@ interface NotificationTemplate {
 
 const templates: Record<NotificationType, (data?: Record<string, any>) => NotificationTemplate> = {
   budget_50: () => ({
-    title: '⚠️ 50% do orçamento utilizado',
+    title: '50% do orçamento utilizado',
     body: 'Você já utilizou metade do seu orçamento mensal. Fique atento aos próximos gastos!',
   }),
   budget_80: () => ({
-    title: '🔴 80% do orçamento utilizado',
+    title: '80% do orçamento utilizado',
     body: 'Atenção: você já utilizou 80% do seu orçamento. Considere reduzir os gastos restantes.',
   }),
   budget_100: () => ({

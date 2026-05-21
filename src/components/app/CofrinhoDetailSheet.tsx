@@ -222,8 +222,8 @@ export const CofrinhoDetailSheet = ({ cofrinho: c, cofrinhos, open, onOpenChange
               {analysis.messages.map((m, i) => {
                 const s = STATUS_COLORS[m.severity];
                 return (
-                  <div key={i} className={`rounded-xl p-3 ring-1 ${s.bg} ${s.ring} flex gap-2.5`}>
-                    <span className="text-base leading-none">{s.emoji}</span>
+                  <div key={i} className={`rounded-xl p-3 ring-1 ${s.bg} ${s.ring} flex items-start gap-2.5`}>
+                    <span className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${s.dot}`} aria-hidden />
                     <p className={`text-sm leading-relaxed ${s.text}`}>{m.text}</p>
                   </div>
                 );
