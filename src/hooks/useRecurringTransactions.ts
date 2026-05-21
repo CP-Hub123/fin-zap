@@ -119,7 +119,13 @@ export const useAutoExecutarRecorrencias = () => {
   const { executar } = useRecurringTransactions();
 
   useEffect(() => {
-    if (user) executar.mutate();
+    if (!user) return;
+    // Guard diário: executar no máximo 1x por dia por usuário
+    const key = `finzap:lastRecurringExec:${user.id}`;
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem(key) === today) return;
+    localStorage.setItem(key, today);
+    executar.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 };

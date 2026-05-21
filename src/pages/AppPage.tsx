@@ -18,6 +18,7 @@ import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
+import { PushOptInBanner } from '@/components/app/PushOptInBanner';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2, Download as DownloadIcon, Layers } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
@@ -42,6 +43,7 @@ const AppPage = () => {
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [decisionOpen, setDecisionOpen] = useState(false);
   const [bugReportOpen, setBugReportOpen] = useState(false);
+  const [pushBannerOpen, setPushBannerOpen] = useState(false);
 
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -52,6 +54,7 @@ const AppPage = () => {
   const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, fecharMes, transferir } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
+  const [pushSubscribing, setPushSubscribing] = useState(false);
 
   // Executa recorrências mensais automaticamente ao carregar o app
   useAutoExecutarRecorrencias();
@@ -64,28 +67,40 @@ const AppPage = () => {
     monthId: selectedMonthId,
   });
 
-  // Run automatic monthly closure on app load
+  // Fechamento automático de cofrinhos: 1x por dia (guard em localStorage)
   useEffect(() => {
-    if (user) fecharMes.mutate();
+    if (!user) return;
+    const key = `finzap:lastMonthCloseExecution:${user.id}`;
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem(key) === today) return;
+    localStorage.setItem(key, today);
+    fecharMes.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Contextual permission prompt: only after the user already has a month created
-  // and only once we've loaded data — never interrupt the onboarding/first 3s.
+  // Banner contextual de notificações (substitui window.confirm) — só após ter mês.
   useEffect(() => {
     if (permission !== 'default') return;
     if (monthsLoading || months.length === 0) return;
     const dismissedAt = Number(localStorage.getItem('push_prompt_dismissed') || '0');
     if (Date.now() - dismissedAt < 1000 * 60 * 60 * 24 * 7) return;
-    const timer = setTimeout(() => {
-      const shouldAsk = window.confirm(
-        'Quer receber alertas importantes do FinZap (vencimentos, metas e gastos acima do orçamento)?'
-      );
-      if (shouldAsk) subscribePush();
-      else localStorage.setItem('push_prompt_dismissed', String(Date.now()));
-    }, 8000);
+    const timer = setTimeout(() => setPushBannerOpen(true), 8000);
     return () => clearTimeout(timer);
-  }, [permission, subscribePush, monthsLoading, months.length]);
+  }, [permission, monthsLoading, months.length]);
+
+  const handleEnablePush = async () => {
+    setPushSubscribing(true);
+    try {
+      await subscribePush();
+    } finally {
+      setPushSubscribing(false);
+      setPushBannerOpen(false);
+    }
+  };
+  const handleDismissPush = () => {
+    localStorage.setItem('push_prompt_dismissed', String(Date.now()));
+    setPushBannerOpen(false);
+  };
 
   const isClosed = selectedMonth?.status === 'closed';
   const isBlocked = isClosed || !canAct;
@@ -371,6 +386,12 @@ const AppPage = () => {
 
       <DecisionModeSheet open={decisionOpen} onOpenChange={setDecisionOpen} monthId={selectedMonthId} />
       <BugReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} />
+      <PushOptInBanner
+        open={pushBannerOpen}
+        onEnable={handleEnablePush}
+        onDismiss={handleDismissPush}
+        isPending={pushSubscribing}
+      />
     </div>
   );
 };

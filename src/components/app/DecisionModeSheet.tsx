@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Sparkles, ShieldCheck, AlertTriangle, AlertOctagon, ArrowRight, Wallet, Check, Loader2 } from 'lucide-react';
-import { useTransactions } from '@/hooks/useTransactions';
+import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
-import { useMonths } from '@/hooks/useMonths';
 import { evaluateDecision, compareDecisions, type DecisionInput, type DecisionResult, type DecisionTipo, type RiskLevel } from '@/lib/decisionEngine';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -37,13 +36,10 @@ interface Props {
 }
 
 export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
-  const { transactions, balance, addTransaction } = useTransactions(monthId);
+  const fb = useFinancialBalance(monthId);
+  const { transactions, addTransaction, currentBalance: operationalBalance } = fb;
   const { cofrinhos } = useCofrinhos();
   const { recorrencias } = useRecurringTransactions();
-  const { months } = useMonths();
-  const currentMonth = months.find(m => m.id === monthId);
-  const initialBalance = Number(currentMonth?.initial_balance ?? 0);
-  const operationalBalance = initialBalance + balance;
 
   const today = new Date().toISOString().slice(0, 10);
   const [valorA, setValorA] = useState('');
