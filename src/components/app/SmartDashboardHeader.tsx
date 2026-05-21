@@ -132,43 +132,47 @@ export const SmartDashboardHeader = ({ month, totalIncome, totalExpense, balance
       {/* HERO: Saldo Disponível Real — calm, premium, single accent */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-hero text-white shadow-elevated">
         <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
-        <div className="relative z-10 p-6 space-y-5">
+        {/* Subtle continuity line — sense of progression / future */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+        <div className="relative z-10 p-7 sm:p-8 space-y-6">
           <div className="flex items-start justify-between gap-3 min-w-0">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] uppercase tracking-[0.14em] opacity-60 font-medium">Saldo disponível real</p>
-              <p className="fluid-currency font-bold mt-1 max-w-full">
+              <p className="text-[10px] uppercase tracking-[0.18em] opacity-55 font-medium">Saldo disponível real</p>
+              <p className="hero-currency mt-2 max-w-full">
                 {formatCurrency(saldoDisponivelReal)}
               </p>
-              <p className="text-xs opacity-65 mt-1">
+              <p className="text-[11px] opacity-55 mt-2 font-medium">
                 Após compromissos {isCurrentMonth ? 'do mês' : 'previstos'}
               </p>
             </div>
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 ${sStyle.bg} backdrop-blur-md`}>
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full shrink-0 ${sStyle.bg} backdrop-blur-md`}>
               <span className={`h-1.5 w-1.5 rounded-full ${sStyle.dot}`} />
-              <span className="text-[11px] font-medium tracking-wide">{sStyle.label}</span>
+              <span className="text-[10px] font-medium tracking-wide uppercase">{sStyle.label}</span>
             </div>
           </div>
 
           {/* Mini KPIs — quieter, separated by hairlines */}
-          <div className="grid grid-cols-3 gap-px rounded-xl overflow-hidden bg-white/10">
-            <div className="bg-white/[0.04] p-3 min-w-0">
-              <p className="text-[10px] uppercase tracking-wide opacity-55">Atual</p>
-              <p className="fluid-currency-sm font-semibold mt-0.5">{formatCurrency(saldoAtual)}</p>
+          <div className="grid grid-cols-3 gap-px rounded-2xl overflow-hidden bg-white/[0.08]">
+            <div className="bg-white/[0.03] p-3.5 min-w-0">
+              <p className="text-[9px] uppercase tracking-[0.14em] opacity-50">Atual</p>
+              <p className="fluid-currency-sm font-semibold mt-1">{formatCurrency(saldoAtual)}</p>
             </div>
-            <div className="bg-white/[0.04] p-3 min-w-0">
-              <p className="text-[10px] uppercase tracking-wide opacity-55">Comprometido</p>
-              <p className="fluid-currency-sm font-semibold mt-0.5">{formatCurrency(compromissosFuturos)}</p>
+            <div className="bg-white/[0.03] p-3.5 min-w-0">
+              <p className="text-[9px] uppercase tracking-[0.14em] opacity-50">Comprometido</p>
+              <p className="fluid-currency-sm font-semibold mt-1">{formatCurrency(compromissosFuturos)}</p>
             </div>
-            <div className="bg-white/[0.04] p-3 min-w-0">
-              <p className="text-[10px] uppercase tracking-wide opacity-55">Projeção</p>
-              <p className="fluid-currency-sm font-semibold mt-0.5">{formatCurrency(projecaoFimMes)}</p>
+            <div className="bg-white/[0.03] p-3.5 min-w-0">
+              <p className="text-[9px] uppercase tracking-[0.14em] opacity-50">Projeção</p>
+              <p className="fluid-currency-sm font-semibold mt-1">{formatCurrency(projecaoFimMes)}</p>
             </div>
           </div>
 
           {isCurrentMonth && (
-            <p className="text-[11px] opacity-65">
-              Faltam <span className="font-semibold opacity-90">{daysRemaining}</span> {daysRemaining === 1 ? 'dia' : 'dias'} para fechar o mês
-            </p>
+            <div className="flex items-center gap-2 text-[11px] opacity-60">
+              <div className="flex-1 h-px bg-white/15" />
+              <span>Faltam <span className="font-semibold opacity-90">{daysRemaining}</span> {daysRemaining === 1 ? 'dia' : 'dias'} para fechar o mês</span>
+              <div className="flex-1 h-px bg-white/15" />
+            </div>
           )}
         </div>
       </div>
