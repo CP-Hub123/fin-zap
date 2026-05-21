@@ -25,7 +25,16 @@ import Consent from "./pages/legal/Consent";
 import CookiesPage from "./pages/legal/Cookies";
 import Security from "./pages/legal/Security";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,            // 30s: evita refetch a cada navegação
+      gcTime: 5 * 60_000,           // 5min: mantém em cache após desmontar
+      refetchOnWindowFocus: false,  // sem refetch agressivo ao voltar pra aba
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
