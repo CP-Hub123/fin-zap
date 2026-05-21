@@ -53,7 +53,8 @@ const AppPage = () => {
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
   const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, fecharMes, transferir } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
-  const { permission, subscribe: subscribePush, isSubscribing } = usePushNotifications();
+  const { permission, subscribe: subscribePush } = usePushNotifications();
+  const [pushSubscribing, setPushSubscribing] = useState(false);
 
   // Executa recorrências mensais automaticamente ao carregar o app
   useAutoExecutarRecorrencias();
@@ -88,9 +89,11 @@ const AppPage = () => {
   }, [permission, monthsLoading, months.length]);
 
   const handleEnablePush = async () => {
+    setPushSubscribing(true);
     try {
       await subscribePush();
     } finally {
+      setPushSubscribing(false);
       setPushBannerOpen(false);
     }
   };
@@ -387,7 +390,7 @@ const AppPage = () => {
         open={pushBannerOpen}
         onEnable={handleEnablePush}
         onDismiss={handleDismissPush}
-        isPending={isSubscribing}
+        isPending={pushSubscribing}
       />
     </div>
   );
