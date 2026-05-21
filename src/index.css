@@ -41,6 +41,12 @@
     --finzap-red: 0 84% 60%;
     --finzap-blue: 217 91% 60%;
 
+    /* Refined semantic palette — less saturated, more editorial */
+    --finzap-green-soft: 152 52% 42%;
+    --finzap-red-soft: 6 74% 58%;
+    --finzap-purple: 258 60% 62%;
+    --finzap-amber: 38 88% 52%;
+
     /* Brand gradients & motion (logo: zap + crescimento + transformação) */
     --finzap-blue-glow: 199 89% 56%;
     --gradient-zap: linear-gradient(135deg, hsl(var(--finzap-blue)) 0%, hsl(var(--finzap-blue-glow)) 55%, hsl(var(--finzap-green)) 100%);
@@ -133,6 +139,18 @@
   }
   /* Headings: premium tracking */
   h1, h2, h3, h4 { letter-spacing: -0.015em; }
+  /* Hero numeric — editorial weight */
+  .hero-currency {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+    font-size: clamp(2rem, 9.5vw, 3.25rem);
+    line-height: 1;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    display: inline-block;
+  }
 }
 
 @layer components {
