@@ -14,6 +14,7 @@ import type { Transaction } from '@/hooks/useTransactions';
 import type { BudgetPlan } from '@/hooks/useBudget';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { SmartDashboardHeader } from './SmartDashboardHeader';
+import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 
 interface SummaryViewProps {
   month: Month;
@@ -66,6 +67,8 @@ const PieTooltip = ({ active, payload }: any) => {
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  // Fonte oficial de saldo final (initial_balance + delta)
+  const { currentBalance: finalBalance } = useFinancialBalance(month.id);
   const cofrinhoMap = useMemo(() => {
     const map: Record<string, { nome: string; cor: string; orcamento: number }> = {};
     cofrinhos.forEach(c => {
@@ -79,7 +82,6 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
   const currentDay = month.year === now.getFullYear() && month.month === now.getMonth() + 1
     ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
   const monthProgress = Math.round((currentDay / daysInMonth) * 100);
-  const finalBalance = balance + Number(month.initial_balance);
   const isPositive = finalBalance >= 0;
 
   // Budget usage — based on cofrinhos
@@ -175,13 +177,7 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
   return (
     <div className="space-y-6">
       {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
-      <SmartDashboardHeader
-        month={month}
-        totalIncome={totalIncome}
-        totalExpense={totalExpense}
-        balance={balance}
-        transactions={transactions}
-      />
+      <SmartDashboardHeader month={month} />
 
       {/* Análise detalhada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
