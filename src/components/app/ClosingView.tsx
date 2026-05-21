@@ -8,25 +8,33 @@ import { Lock, Unlock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Month } from '@/hooks/useMonths';
+import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 
 interface ClosingViewProps {
   month: Month;
-  totalIncome: number;
-  totalExpense: number;
-  balance: number;
-  incomeCount: number;
-  expenseCount: number;
+  /** Props legados ignorados — fonte oficial é useFinancialBalance. */
+  totalIncome?: number;
+  totalExpense?: number;
+  balance?: number;
+  incomeCount?: number;
+  expenseCount?: number;
   onUpdateStatus: (data: { id: string; status: string; closed_at?: string | null }) => Promise<any>;
 }
 
-export const ClosingView = ({ month, totalIncome, totalExpense, balance, incomeCount, expenseCount, onUpdateStatus }: ClosingViewProps) => {
+export const ClosingView = ({ month, onUpdateStatus }: ClosingViewProps) => {
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
   const [reopenStep, setReopenStep] = useState(0); // 0=closed, 1=first confirm, 2=second confirm
   const [loading, setLoading] = useState(false);
 
+  const fb = useFinancialBalance(month.id);
+  const totalIncome = fb.totalIncome;
+  const totalExpense = fb.totalExpense;
+  const incomeCount = fb.incomeCount;
+  const expenseCount = fb.expenseCount;
+  const finalBalance = fb.currentBalance;
+
   const isClosed = month.status === 'closed';
   const canClose = incomeCount > 0 && expenseCount > 0;
-  const finalBalance = balance + Number(month.initial_balance);
 
   const handleClose = async () => {
     setLoading(true);
