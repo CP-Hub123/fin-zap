@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { formatCurrency } from '@/lib/constants';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
+import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 import { useInsights } from '@/hooks/useInsights';
 import { getPreset, getStatusLevel, STATUS_META } from '@/lib/cofrinhoPresets';
 import {
@@ -14,36 +15,43 @@ import type { Transaction } from '@/hooks/useTransactions';
 type SitStatus = 'safe' | 'attention' | 'critical';
 
 const STATUS = {
-  safe:      { label: 'Seguro',  emoji: '🟢', bg: 'bg-white/8 border border-emerald-400/30',  text: 'text-emerald-50', dot: 'bg-emerald-400' },
-  attention: { label: 'Atenção', emoji: '🟡', bg: 'bg-white/8 border border-amber-300/30',    text: 'text-amber-50',   dot: 'bg-amber-300' },
-  critical:  { label: 'Crítico', emoji: '🔴', bg: 'bg-white/8 border border-rose-400/40',     text: 'text-rose-50',    dot: 'bg-rose-400' },
+  safe:      { label: 'Seguro',  bg: 'bg-white/8 border border-emerald-400/30',  text: 'text-emerald-50', dot: 'bg-emerald-400' },
+  attention: { label: 'Atenção', bg: 'bg-white/8 border border-amber-300/30',    text: 'text-amber-50',   dot: 'bg-amber-300' },
+  critical:  { label: 'Crítico', bg: 'bg-white/8 border border-rose-400/40',     text: 'text-rose-50',    dot: 'bg-rose-400' },
 };
 
-const INSIGHT_STYLE: Record<SitStatus | 'info', { bg: string; ring: string; text: string; icon: any; emoji: string }> = {
-  safe:      { bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/30', text: 'text-emerald-700 dark:text-emerald-300', icon: ShieldCheck, emoji: '🟢' },
-  attention: { bg: 'bg-yellow-500/10',  ring: 'ring-yellow-500/30',  text: 'text-yellow-700 dark:text-yellow-300',   icon: AlertTriangle, emoji: '🟡' },
-  critical:  { bg: 'bg-red-500/10',     ring: 'ring-red-500/30',     text: 'text-red-700 dark:text-red-300',         icon: AlertCircle, emoji: '🔴' },
-  info:      { bg: 'bg-primary/10',     ring: 'ring-primary/20',     text: 'text-primary',                            icon: Sparkles, emoji: '💡' },
+const INSIGHT_STYLE: Record<SitStatus | 'info', { bg: string; ring: string; text: string; icon: any }> = {
+  safe:      { bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/30', text: 'text-emerald-700 dark:text-emerald-300', icon: ShieldCheck },
+  attention: { bg: 'bg-yellow-500/10',  ring: 'ring-yellow-500/30',  text: 'text-yellow-700 dark:text-yellow-300',   icon: AlertTriangle },
+  critical:  { bg: 'bg-red-500/10',     ring: 'ring-red-500/30',     text: 'text-red-700 dark:text-red-300',         icon: AlertCircle },
+  info:      { bg: 'bg-primary/10',     ring: 'ring-primary/20',     text: 'text-primary',                            icon: Sparkles },
 };
 
 interface Props {
   month: Month;
-  totalIncome: number;
-  totalExpense: number;
-  balance: number;
-  transactions: Transaction[];
+  /** Props legados aceitos mas IGNORADOS — o hook é a fonte oficial. */
+  totalIncome?: number;
+  totalExpense?: number;
+  balance?: number;
+  transactions?: Transaction[];
 }
 
-export const SmartDashboardHeader = ({ month, totalIncome, totalExpense, balance, transactions }: Props) => {
+export const SmartDashboardHeader = ({ month }: Props) => {
   const { cofrinhos } = useCofrinhos();
   const { recorrencias } = useRecurringTransactions();
   const { insights } = useInsights(month);
 
+  // Fonte ÚNICA de saldo
+  const fb = useFinancialBalance(month.id);
+  const {
+    totalIncome, totalExpense,
+    currentBalance: saldoAtual,
+    availableReal: saldoDisponivelReal,
+    projectedEndOfMonth: projecaoFimMes,
+    commitmentsRemaining: compromissosFuturos,
+    isCurrentMonth, daysRemaining,
+  } = fb;
   const now = new Date();
-  const isCurrentMonth = month.year === now.getFullYear() && month.month === now.getMonth() + 1;
-  const daysInMonth = new Date(month.year, month.month, 0).getDate();
-  const today = isCurrentMonth ? now.getDate() : daysInMonth;
-  const daysRemaining = Math.max(0, daysInMonth - today);
 
   // Próximos impactos (apenas mês atual)
   const proximosImpactos = useMemo(() => {
@@ -59,23 +67,6 @@ export const SmartDashboardHeader = ({ month, totalIncome, totalExpense, balance
       .sort((a, b) => a.diffDays - b.diffDays)
       .slice(0, 4);
   }, [recorrencias, isCurrentMonth, now]);
-
-  // Compromissos futuros do mês (despesas)
-  const compromissosFuturos = proximosImpactos
-    .filter(x => x.r.tipo === 'despesa')
-    .reduce((s, x) => s + Number(x.r.valor), 0);
-  const receitasFuturas = proximosImpactos
-    .filter(x => x.r.tipo === 'receita')
-    .reduce((s, x) => s + Number(x.r.valor), 0);
-
-  const saldoAtual = balance + Number(month.initial_balance);
-  const saldoDisponivelReal = saldoAtual - compromissosFuturos + receitasFuturas;
-
-  // Burn rate diário e projeção fim do mês
-  const dailyBurn = isCurrentMonth && today > 0 ? totalExpense / today : 0;
-  const projecaoFimMes = isCurrentMonth
-    ? saldoDisponivelReal - (dailyBurn * daysRemaining * 0.5) // pondera 50% do ritmo (gastos não-recorrentes)
-    : saldoAtual;
 
   // Status global
   const status: SitStatus = useMemo(() => {
