@@ -24,6 +24,8 @@ import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2, Downlo
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
+import { BottomNav } from '@/components/layout/BottomNav';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -150,21 +152,52 @@ const AppPage = () => {
 
   if (monthsLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="min-h-screen bg-background">
+        <div className="border-b border-border/60 bg-card/85 backdrop-blur-xl">
+          <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+            <Skeleton className="h-7 w-24" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-9 rounded-full" />
+              <Skeleton className="h-9 w-9 rounded-full" />
+            </div>
+          </div>
+        </div>
+        <main className="max-w-5xl mx-auto px-3 sm:px-4 py-5 space-y-4">
+          <Skeleton className="h-44 w-full rounded-3xl" />
+          <Skeleton className="h-20 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-4">
+    <div className="min-h-screen bg-background pb-[calc(64px+env(safe-area-inset-bottom))] sm:pb-4">
       {/* Header */}
       <header className="border-b border-border/60 bg-card/85 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <Logo />
+            {/* Mobile: month selector como identidade contextual */}
+            <div className="sm:hidden min-w-0 flex-1 flex justify-end pr-1">
+              <MonthSelector
+                months={months}
+                selectedMonthId={selectedMonthId}
+                onSelect={setSelectedMonthId}
+                variant="pill"
+              />
+            </div>
+          </div>
 
           {/* Desktop actions */}
           <div className="hidden sm:flex items-center gap-2">
+            <MonthSelector
+              months={months}
+              selectedMonthId={selectedMonthId}
+              onSelect={setSelectedMonthId}
+              variant="pill"
+            />
             <NotificationBell />
             <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={() => navigate('/meses')} title="Central de Meses">
@@ -184,24 +217,26 @@ const AppPage = () => {
             )}
           </div>
 
-          {/* Mobile actions: ícones + hamburger (sem seletor de mês aqui) */}
-          <div className="flex sm:hidden items-center gap-1">
+          {/* Mobile: apenas notificações; o menu vai pra BottomNav */}
+          <div className="flex sm:hidden items-center gap-0.5 shrink-0">
             <NotificationBell />
-            <ThemeToggle />
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
           </div>
         </div>
 
         {/* Mobile dropdown menu */}
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t bg-card px-3 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200">
+          <div className="sm:hidden fixed inset-x-0 top-[57px] z-20 border-t bg-card/95 backdrop-blur-xl px-3 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200 shadow-elevated">
+            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setMobileMenuOpen(false); }}>
+              <ThemeToggle /> <span className="ml-2">Tema</span>
+            </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setNewMonthOpen(true); setMobileMenuOpen(false); }}>
               <Plus className="h-4 w-4 mr-2" /> Novo mês
             </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/meses'); setMobileMenuOpen(false); }}>
               <Layers className="h-4 w-4 mr-2" /> Central de Meses
+            </Button>
+            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/cartoes'); setMobileMenuOpen(false); }}>
+              <CreditCard className="h-4 w-4 mr-2" /> Cartões
             </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/tutorials'); setMobileMenuOpen(false); }}>
               <BookOpen className="h-4 w-4 mr-2" /> Tutoriais
@@ -224,41 +259,9 @@ const AppPage = () => {
         )}
       </header>
 
-      {/* Context bar — seletor de mês como filtro premium */}
-      <div className="border-b border-border/40 bg-background/60 backdrop-blur">
-        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 min-w-0">
-          <MonthSelector
-            months={months}
-            selectedMonthId={selectedMonthId}
-            onSelect={setSelectedMonthId}
-            variant="pill"
-          />
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/meses')}
-              className="h-9 rounded-full px-3 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary"
-              title="Central de Meses"
-            >
-              <Layers className="h-3.5 w-3.5 mr-1" /> Meses
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setNewMonthOpen(true)}
-              className="h-9 rounded-full px-3 text-xs font-semibold text-primary hover:bg-primary/10"
-              title="Novo mês"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1" /> Novo
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stepper */}
-      <div className="border-b bg-card">
-        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3">
+      {/* Stepper leve — sem border-b dominante */}
+      <div className="bg-background">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-2 pb-1">
           <Stepper currentStep={currentStep} onStepChange={setCurrentStep} />
         </div>
       </div>
@@ -371,18 +374,25 @@ const AppPage = () => {
 
       <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
 
-      {/* Floating Decision Mode trigger */}
+      {/* Floating Decision Mode trigger — desktop apenas; mobile usa BottomNav */}
       <button
         type="button"
         onClick={() => setDecisionOpen(true)}
-        className="fixed bottom-5 right-5 z-30 inline-flex items-center gap-2 rounded-full bg-gradient-zap px-4 py-3 text-sm font-semibold text-primary-foreground shadow-zap transition-all hover:scale-[1.03] active:scale-95 sm:bottom-6 sm:right-6"
+        className="hidden sm:inline-flex fixed bottom-6 right-6 z-30 items-center gap-2 rounded-full bg-gradient-zap px-4 py-3 text-sm font-semibold text-primary-foreground shadow-zap transition-all hover:scale-[1.03] active:scale-95"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
         aria-label="Abrir Modo Decisão"
       >
         <Sparkles className="h-4 w-4" strokeWidth={2.5} />
-        <span className="hidden sm:inline">Modo Decisão</span>
-        <span className="sm:hidden">Decidir</span>
+        <span>Modo Decisão</span>
       </button>
+
+      {/* Bottom navigation mobile-first */}
+      <BottomNav
+        currentStep={currentStep}
+        onStepChange={setCurrentStep}
+        onDecidir={() => setDecisionOpen(true)}
+        onMenu={() => setMobileMenuOpen(prev => !prev)}
+      />
 
       <DecisionModeSheet open={decisionOpen} onOpenChange={setDecisionOpen} monthId={selectedMonthId} />
       <BugReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} />
