@@ -20,7 +20,7 @@ import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { PushOptInBanner } from '@/components/app/PushOptInBanner';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Plus, Menu, X, Sparkles, Bug, CreditCard, UserCircle2, Download as DownloadIcon, Layers } from 'lucide-react';
+import { BookOpen, Plus, Menu, Sparkles, Bug, CreditCard, UserCircle2, Download as DownloadIcon, Layers } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
