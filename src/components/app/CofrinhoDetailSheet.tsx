@@ -14,7 +14,7 @@ import {
   ArrowDownLeft, ArrowUpRight, ArrowLeftRight, ShieldCheck,
   Activity, TrendingUp, TrendingDown, Sparkles, CalendarDays,
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip } from 'recharts';
 import { analyzeCofrinho, STATUS_COLORS } from '@/lib/cofrinhoIntelligence';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
@@ -130,17 +130,17 @@ export const CofrinhoDetailSheet = ({ cofrinho: c, cofrinhos, open, onOpenChange
     const v = parseFloat(valor);
     if (!destino || !v || v <= 0) return;
     if (v > Number(c.saldo)) {
-      toast({ title: 'Saldo insuficiente', variant: 'destructive' });
+      toast.error('Saldo insuficiente');
       return;
     }
     setSaving(true);
     try {
       await onTransfer({ origem_id: c.id, destino_id: destino, valor: v });
-      toast({ title: 'Transferência realizada' });
+      toast.success('Transferência realizada');
       setTransferOpen(false);
       setDestino(''); setValor('');
     } catch (e: any) {
-      toast({ title: 'Erro ao transferir', description: e.message, variant: 'destructive' });
+      toast.error('Erro ao transferir', { description: e.message });
     } finally { setSaving(false); }
   };
 
