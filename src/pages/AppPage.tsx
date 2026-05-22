@@ -225,10 +225,11 @@ const AppPage = () => {
 
         {/* Mobile dropdown menu */}
         {mobileMenuOpen && (
-          <div className="sm:hidden fixed inset-x-0 top-[57px] z-20 border-t bg-card/95 backdrop-blur-xl px-3 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200 shadow-elevated">
-            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setMobileMenuOpen(false); }}>
-              <ThemeToggle /> <span className="ml-2">Tema</span>
-            </Button>
+          <div className="sm:hidden fixed inset-x-0 top-[57px] z-30 border-t bg-card/95 backdrop-blur-xl px-3 py-3 space-y-1 animate-in slide-in-from-top-2 duration-200 shadow-elevated max-h-[calc(100vh-57px-80px)] overflow-y-auto">
+            <div className="flex items-center justify-between min-h-[44px] px-3">
+              <span className="text-sm font-medium text-foreground">Tema</span>
+              <ThemeToggle />
+            </div>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setNewMonthOpen(true); setMobileMenuOpen(false); }}>
               <Plus className="h-4 w-4 mr-2" /> Novo mês
             </Button>
