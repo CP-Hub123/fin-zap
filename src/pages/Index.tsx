@@ -51,13 +51,13 @@ const Index = () => {
 
   // SEO: dynamic meta + JSON-LD
   useEffect(() => {
-    document.title = 'FinZap — Decisão financeira inteligente para sua vida pessoal';
+    document.title = 'FinZap — Decisão financeira inteligente';
     const setMeta = (name: string, content: string, attr: 'name' | 'property' = 'name') => {
       let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement('meta'); el.setAttribute(attr, name); document.head.appendChild(el); }
       el.content = content;
     };
-    setMeta('description', 'O FinZap é o app financeiro inteligente que mostra exatamente para onde seu dinheiro vai e te ajuda a decidir antes de gastar. Cofrinhos, orçamento e reserva automática em um só lugar.');
+    setMeta('description', 'App financeiro que mostra o impacto de cada gasto antes da decisão. Cofrinhos, orçamento e reserva automática em um só lugar.');
     setMeta('keywords', 'app financeiro inteligente, controle financeiro premium, organização financeira pessoal, app de orçamento, controle de gastos, planejamento financeiro, cofrinhos, reserva de emergência, decisão financeira, finanças pessoais com IA');
     setMeta('og:title', 'FinZap — Decisão financeira inteligente', 'property');
     setMeta('og:description', 'Pare de descobrir onde gastou. Decida antes. O sistema financeiro pessoal mais inteligente para quem quer controle real.', 'property');
@@ -99,7 +99,8 @@ const Index = () => {
   const LogoMark = ({ size = 28 }: { size?: number }) => (
     <img
       src={finzapLogo}
-      alt="FinZap"
+      alt=""
+      aria-hidden="true"
       width={size}
       height={size}
       className="logo-mark-img"
@@ -511,7 +512,7 @@ const Index = () => {
               ].map((b) => (
                 <div key={b.t} className="beneficio-item">
                   <div className="ben-icon"><b.I /></div>
-                  <div className="ben-content"><h4>{b.t}</h4><p>{b.d}</p></div>
+                  <div className="ben-content"><h3>{b.t}</h3><p>{b.d}</p></div>
                 </div>
               ))}
             </div>
@@ -574,18 +575,18 @@ const Index = () => {
           </div>
           <div className="footer-links">
             <div className="footer-col">
-              <h5>Produto</h5>
+              <h4>Produto</h4>
               <a onClick={() => scrollTo('solucao')}>Como funciona</a>
               <a onClick={() => scrollTo('demo')}>Demonstração</a>
               <a onClick={() => scrollTo('beneficios')}>Benefícios</a>
             </div>
             <div className="footer-col">
-              <h5>Acesso</h5>
+              <h4>Acesso</h4>
               <a onClick={goAuth}>Criar conta</a>
               <a onClick={goAuth}>Entrar</a>
             </div>
             <div className="footer-col">
-              <h5>Legal</h5>
+              <h4>Legal</h4>
               <a onClick={() => navigate('/legal/privacidade')}>Privacidade</a>
               <a onClick={() => navigate('/legal/termos')}>Termos de uso</a>
               <a onClick={() => navigate('/legal/consentimento')}>Consentimento</a>

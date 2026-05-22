@@ -1,0 +1,16 @@
+# FinZap
+
+> FinZap é um app financeiro pessoal em português que mostra o impacto de cada gasto antes da decisão, com cofrinhos, orçamento e reserva de emergência integrados.
+
+## Pages
+
+- [Home](/): visão geral do produto, problema que resolve e diferenciais.
+- [Download](/download): instruções para instalar o app no celular.
+
+## Legal
+
+- [Privacidade](/legal/privacidade): política de privacidade e tratamento de dados (LGPD).
+- [Termos de uso](/legal/termos): regras de uso do FinZap.
+- [Consentimento](/legal/consentimento): consentimentos de dados que você autoriza.
+- [Cookies](/legal/cookies): política de cookies e armazenamento local.
+- [Segurança](/legal/seguranca): práticas de segurança e proteção de dados.
