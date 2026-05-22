@@ -62,6 +62,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Authorization: ensure itemId either is not yet linked to any user (first sync)
+    // or belongs to the authenticated caller. Prevents IDOR where a user supplies
+    // another user's pluggy_item_id and imports their bank data.
+    const { data: existingLinks, error: linkErr } = await admin
+      .from("connected_accounts")
+      .select("user_id")
+      .eq("pluggy_item_id", itemId);
+    if (linkErr) {
+      return new Response(JSON.stringify({ error: "Authorization check failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (existingLinks && existingLinks.length > 0 && existingLinks.some((r: any) => r.user_id !== userId)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const apiKey = await getPluggyApiKey();
 
     // 1. Item info (bank)
