@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const CONFIRM_WORD = "EXCLUIR";
 
@@ -37,14 +37,12 @@ export default function Account() {
       if (error || (data as { error?: string })?.error) {
         throw new Error((data as { error?: string })?.error || error?.message || "Erro");
       }
-      toast({ title: "Conta excluída", description: "Seus dados foram removidos com sucesso." });
+      toast.success("Conta excluída", { description: "Seus dados foram removidos com sucesso." });
       await supabase.auth.signOut();
       navigate("/", { replace: true });
     } catch (e: any) {
-      toast({
-        title: "Não foi possível excluir",
+      toast.error("Não foi possível excluir", {
         description: e?.message ?? "Tente novamente em instantes.",
-        variant: "destructive",
       });
       setLoading(false);
     }

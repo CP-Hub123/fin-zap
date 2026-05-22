@@ -1,12 +1,11 @@
 import { cn } from '@/lib/utils';
-import { CheckCircle, BarChart3, Database, CreditCard, Target, Lock } from 'lucide-react';
 
 const STEPS = [
-  { label: 'Resumo', icon: BarChart3 },
-  { label: 'Transações', icon: Database },
-  { label: 'Cartões', icon: CreditCard },
-  { label: 'Planejamento', icon: Target },
-  { label: 'Fechamento', icon: Lock },
+  { label: 'Resumo' },
+  { label: 'Transações' },
+  { label: 'Cartões' },
+  { label: 'Plano' },
+  { label: 'Fechar' },
 ];
 
 interface StepperProps {
@@ -14,48 +13,41 @@ interface StepperProps {
   onStepChange: (step: number) => void;
 }
 
+/**
+ * Stepper leve e contextual — sem pills coloridas, sem gradiente.
+ * Indicador é apenas underline + peso tipográfico. Quase invisível quando inativo.
+ */
 export const Stepper = ({ currentStep, onStepChange }: StepperProps) => {
   return (
     <nav
       aria-label="Etapas do mês"
-      className="flex items-center justify-between sm:justify-center gap-1 sm:gap-1.5"
+      className="flex items-center justify-between sm:justify-center gap-1 sm:gap-2 overflow-x-auto"
     >
       {STEPS.map((step, i) => {
-        const StepIcon = step.icon;
-        const isCompleted = i < currentStep;
         const isActive = i === currentStep;
-        const Icon = isCompleted ? CheckCircle : StepIcon;
-
+        const isCompleted = i < currentStep;
         return (
           <button
             key={step.label}
+            type="button"
             onClick={() => onStepChange(i)}
-            aria-label={step.label}
             aria-current={isActive ? 'step' : undefined}
             className={cn(
-              'btn-impulse group flex items-center gap-1.5 rounded-full transition-all duration-300 min-h-[40px] min-w-0 overflow-hidden',
-              // Mobile: icon-only by default, expands with label when active
+              'relative shrink-0 px-2.5 sm:px-3 py-1.5 text-[12px] sm:text-[13px] tracking-tight transition-colors duration-200 min-h-[36px]',
               isActive
-                ? 'flex-[2] sm:flex-none px-3 sm:px-3.5 py-2 bg-gradient-zap text-primary-foreground shadow-lift'
+                ? 'text-foreground font-semibold'
                 : isCompleted
-                ? 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-2 bg-primary/10 text-primary hover:bg-primary/15'
-                : 'flex-1 sm:flex-none justify-center px-2 sm:px-3 py-2 text-muted-foreground hover:bg-muted/60',
+                ? 'text-muted-foreground hover:text-foreground font-medium'
+                : 'text-muted-foreground/70 hover:text-foreground font-medium',
             )}
           >
-            <Icon className="h-4 w-4 shrink-0" />
-            {/* Desktop: always show label. Mobile: only active shows label. */}
+            {step.label}
             <span
               className={cn(
-                'hidden sm:inline text-sm font-medium whitespace-nowrap',
+                'absolute left-1/2 -translate-x-1/2 -bottom-0.5 h-[2px] rounded-full transition-all duration-300',
+                isActive ? 'w-6 bg-primary' : 'w-0 bg-transparent',
               )}
-            >
-              {step.label}
-            </span>
-            {isActive && (
-              <span className="sm:hidden text-[12px] font-semibold whitespace-nowrap tracking-tight">
-                {step.label}
-              </span>
-            )}
+            />
           </button>
         );
       })}
