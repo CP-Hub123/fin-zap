@@ -42,7 +42,7 @@ export const ConnectedAccountsCard = () => {
             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
             <img
               src={openFinanceLogo}
-              alt="Open Finance"
+              alt="Logotipo Open Finance"
               className="relative h-20 w-20 object-contain"
             />
           </div>
@@ -184,7 +184,7 @@ const _LegacyConnectedAccountsCard = () => {
                   <div className="flex items-center gap-3">
                     <div className="h-11 w-11 rounded-xl bg-muted flex items-center justify-center overflow-hidden shrink-0 border">
                       {a.bank_logo ? (
-                        <img src={a.bank_logo} alt={a.bank_name ?? 'Banco'} className="h-full w-full object-contain" />
+                        <img src={a.bank_logo} alt={`Logotipo do banco ${a.bank_name ?? ''}`.trim()} className="h-full w-full object-contain" />
                       ) : (
                         <Landmark className="h-5 w-5 text-muted-foreground" />
                       )}

@@ -51,6 +51,7 @@ const ResetPassword = () => {
         <Card className="w-full max-w-md shadow-lg border-0">
           <CardHeader className="text-center space-y-4">
             <div className="flex justify-center"><Logo /></div>
+            <h1 className="text-xl font-semibold">Redefinir sua senha</h1>
             <CardDescription>Verificando link de recuperação...</CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
@@ -64,10 +65,11 @@ const ResetPassword = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md shadow-lg border-0">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center"><Logo /></div>
-          <CardDescription>Digite sua nova senha</CardDescription>
-        </CardHeader>
+          <CardHeader className="text-center space-y-4">
+            <div className="flex justify-center"><Logo /></div>
+            <h1 className="text-xl font-semibold">Redefinir sua senha</h1>
+            <CardDescription>Digite sua nova senha</CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
