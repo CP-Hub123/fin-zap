@@ -36,7 +36,7 @@ const Terms = () => (
 
     <LegalSection title="3. Planos e cobranças">
       <p>
-        O FinZap oferece um <strong>plano gratuito</strong> com limites e planos pagos opcionais (Pro e Ultra).
+        O FinZap oferece um <strong>plano gratuito</strong> com limites e um plano pago opcional (FinZap Founders — acesso vitalício).
         Assinaturas pagas são cobradas de forma recorrente conforme o ciclo escolhido. Você pode cancelar a qualquer
         momento — o acesso premium permanece ativo até o fim do ciclo já pago.
       </p>

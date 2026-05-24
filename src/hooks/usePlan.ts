@@ -4,9 +4,10 @@ import { PLANS, PlanTier, PlanLimits, isLimitReached } from '@/lib/plans';
 
 /**
  * Map current subscription state to a plan tier.
- * - Active trial OR active premium → pro (full premium experience while paying or on trial)
- * - Expired or no sub → free
- * Future tiers (ultra) will be unlocked via subscription.plan === 'ultra' once supported.
+ * - Active trial / premium / founders → pro (full premium experience)
+ * - Founders = lifetime (expires_at IS NULL), kept on the same `pro` tier so the
+ *   whole app shares one feature gate. Future paid tiers can branch from here.
+ * - Expired or no sub → free.
  */
 export function usePlan() {
   const sub = useSubscription();
@@ -14,9 +15,12 @@ export function usePlan() {
   const tier: PlanTier = useMemo(() => {
     if (!sub.subscription) return 'free';
     if (sub.subscription.status !== 'active') return 'free';
-    // @ts-expect-error future enum values
-    if (sub.subscription.plan === 'ultra') return 'ultra';
     return 'pro';
+  }, [sub.subscription]);
+
+  const isFounders = useMemo(() => {
+    const s = sub.subscription;
+    return !!s && s.status === 'active' && ((s.plan as string) === 'founders' || (s.is_manual && !s.expires_at));
   }, [sub.subscription]);
 
   const plan = PLANS[tier];
@@ -36,7 +40,7 @@ export function usePlan() {
     limits,
     isFree: tier === 'free',
     isPro: tier === 'pro',
-    isUltra: tier === 'ultra',
+    isFounders,
     canCreate,
   };
 }

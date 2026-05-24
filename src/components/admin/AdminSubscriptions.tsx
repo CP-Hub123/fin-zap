@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Pencil, Crown, Ban, Infinity } from 'lucide-react';
+import { Pencil, Crown, Ban, Infinity, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SubRow {
@@ -83,12 +83,19 @@ export const AdminSubscriptions = () => {
     setEditingSub(null);
   };
 
-  const quickAction = (sub: SubRow, action: 'activate' | 'expire' | 'lifetime' | 'premium') => {
+  const quickAction = (sub: SubRow, action: 'activate' | 'expire' | 'lifetime' | 'premium' | 'founders') => {
     const updates: any = { id: sub.id };
     if (action === 'activate') { updates.status = 'active'; updates.is_manual = true; }
     if (action === 'expire') { updates.status = 'expired'; }
     if (action === 'lifetime') { updates.status = 'active'; updates.expires_at = null; updates.is_manual = true; }
     if (action === 'premium') { updates.plan = 'premium'; updates.status = 'active'; updates.is_manual = true; }
+    if (action === 'founders') {
+      updates.plan = 'founders';
+      updates.status = 'active';
+      updates.expires_at = null;
+      updates.is_manual = true;
+      updates.discount_tag = sub.discount_tag ?? 'FOUNDERS';
+    }
     updateSub.mutate(updates);
   };
 
@@ -151,6 +158,9 @@ export const AdminSubscriptions = () => {
                 <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => quickAction(sub, 'premium')}>
                   <Crown className="h-3 w-3 mr-1" /> Premium
                 </Button>
+                <Button size="sm" variant="default" className="text-xs h-8" onClick={() => quickAction(sub, 'founders')}>
+                  <Sparkles className="h-3 w-3 mr-1" /> Founders
+                </Button>
                 <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => quickAction(sub, 'lifetime')}>
                   <Infinity className="h-3 w-3 mr-1" /> Vitalício
                 </Button>
@@ -207,6 +217,9 @@ export const AdminSubscriptions = () => {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => quickAction(sub, 'premium')} title="Premium">
                       <Crown className="h-3.5 w-3.5" />
                     </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => quickAction(sub, 'founders')} title="Ativar Founders vitalício">
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => quickAction(sub, 'lifetime')} title="Vitalício">
                       <Infinity className="h-3.5 w-3.5" />
                     </Button>
@@ -242,6 +255,7 @@ export const AdminSubscriptions = () => {
                   <SelectContent>
                     <SelectItem value="trial">Trial</SelectItem>
                     <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="founders">Founders (vitalício)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
