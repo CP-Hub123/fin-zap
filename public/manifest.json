@@ -15,7 +15,6 @@
   ],
   "shortcuts": [
     { "name": "Resumo do mês", "short_name": "Resumo", "url": "/app", "icons": [{ "src": "/finzap-logo-icon.png", "sizes": "192x192" }] },
-    { "name": "Cartões", "short_name": "Cartões", "url": "/cartoes", "icons": [{ "src": "/finzap-logo-icon.png", "sizes": "192x192" }] },
-    { "name": "Baixar app", "short_name": "Download", "url": "/download", "icons": [{ "src": "/finzap-logo-icon.png", "sizes": "192x192" }] }
+    { "name": "Cartões", "short_name": "Cartões", "url": "/cartoes", "icons": [{ "src": "/finzap-logo-icon.png", "sizes": "192x192" }] }
   ]
 }
