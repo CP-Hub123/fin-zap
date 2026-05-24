@@ -5,7 +5,6 @@
 ## Pages
 
 - [Home](/): visão geral do produto, problema que resolve e diferenciais.
-- [Download](/download): instruções para instalar o app no celular.
 
 ## Legal
 

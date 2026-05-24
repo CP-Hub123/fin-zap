@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import finzapLogo from '@/assets/finzap-logo-icon.png';
 import './landing.css';
+import { PWAInstallBanner } from '@/components/app/PWAInstallBanner';
 
 type Tab = 'visao-geral' | 'cofrinhos' | 'cartoes' | 'decisao';
 
@@ -601,6 +602,7 @@ const Index = () => {
           </div>
         </div>
       </footer>
+      <PWAInstallBanner />
     </div>
   );
 };
