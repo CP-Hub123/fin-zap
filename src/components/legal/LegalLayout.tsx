@@ -54,7 +54,7 @@ export const LegalLayout = ({
           <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
             Documentos
           </p>
-          <nav className="flex w-full max-w-full gap-1.5 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden lg:flex-col lg:overflow-visible lg:pb-0">
+          <nav className="flex w-full max-w-full flex-wrap gap-1.5 overflow-visible pb-1 lg:flex-col lg:pb-0">
             {LEGAL_NAV.map(item => {
               const active = pathname === item.to;
               return (
@@ -62,7 +62,7 @@ export const LegalLayout = ({
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    'group inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-medium transition lg:min-h-0 lg:rounded-lg',
+                    'group inline-flex min-h-11 min-w-0 items-center gap-2 rounded-full border px-3.5 py-2 text-[13px] font-medium transition lg:min-h-0 lg:rounded-lg',
                     active
                       ? 'border-primary/30 bg-primary/10 text-foreground'
                       : 'border-border/60 bg-background text-muted-foreground hover:bg-accent/50 hover:text-foreground lg:border-transparent lg:bg-transparent',
@@ -153,9 +153,9 @@ export const LegalCallout = ({
     warning: 'border-amber-500/30 bg-amber-500/5',
   } as const;
   return (
-    <div className={cn('my-5 rounded-xl border p-4 sm:p-5', tones[tone])}>
+    <div className={cn('my-6 max-w-full rounded-xl border p-4 [overflow-wrap:anywhere] sm:p-5', tones[tone])}>
       <p className="text-[13px] font-semibold text-foreground">{title}</p>
-      <div className="mt-1.5 text-[13.5px] leading-relaxed text-foreground/85">{children}</div>
+      <div className="mt-2 text-[14px] leading-[1.75] text-foreground/85 [overflow-wrap:anywhere]">{children}</div>
     </div>
   );
 };
