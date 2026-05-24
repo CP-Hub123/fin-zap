@@ -38,7 +38,7 @@ const Consent = () => (
       <ul>
         <li>Notificações: nas configurações do app.</li>
         <li>Open Finance: desconectando a instituição correspondente.</li>
-        <li>Tratamento geral: solicitando exclusão da conta em <a href="mailto:privacidade@finzap.app">privacidade@finzap.app</a>.</li>
+        <li>Tratamento geral: solicitando exclusão da conta em <a href="mailto:finzapsuporte@gmail.com">finzapsuporte@gmail.com</a>.</li>
       </ul>
     </LegalSection>
 

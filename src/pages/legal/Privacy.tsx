@@ -20,9 +20,9 @@ const Privacy = () => (
       <p>Para que o FinZap funcione, processamos as seguintes categorias de dados:</p>
       <ul>
         <li><strong>Cadastro:</strong> nome, email e senha (criptografada).</li>
-        <li><strong>Financeiros:</strong> transações, categorias, cartões, recorrências, cofrinhos e fechamentos mensais que você registra.</li>
+        <li><strong>Financeiros:</strong> transações, categorias, cartões de crédito, recorrências, cofrinhos, orçamentos e fechamentos mensais que você registra manualmente.</li>
         <li><strong>Uso:</strong> métricas de uso anônimas para melhorar o produto (quais telas funcionam, onde há fricção).</li>
-        <li><strong>Dispositivo:</strong> tipo de aparelho e navegador para entregar a melhor experiência e enviar notificações.</li>
+        <li><strong>Dispositivo:</strong> tipo de aparelho e navegador para entregar a melhor experiência como Progressive Web App (PWA) e enviar notificações push, quando autorizadas.</li>
         <li><strong>Open Finance (opcional, futuro):</strong> apenas com seu consentimento explícito, sincronizamos dados bancários via instituições autorizadas pelo Banco Central.</li>
       </ul>
     </LegalSection>
@@ -30,7 +30,7 @@ const Privacy = () => (
     <LegalSection title="2. Por que utilizamos">
       <ul>
         <li>Para entregar o serviço contratado (registrar, projetar e organizar suas finanças).</li>
-        <li>Para gerar insights inteligentes que ajudam você a decidir melhor.</li>
+        <li>Para gerar insights e projeções financeiras a partir dos seus próprios dados, ajudando você a decidir melhor.</li>
         <li>Para garantir segurança, prevenção a fraudes e estabilidade técnica.</li>
         <li>Para cumprir obrigações legais e regulatórias.</li>
       </ul>
@@ -54,7 +54,7 @@ const Privacy = () => (
         <li>Solicitar a exclusão completa da sua conta e dos dados associados.</li>
         <li>Revogar consentimentos previamente concedidos.</li>
       </ul>
-      <p>Para exercer qualquer direito, escreva para <a href="mailto:privacidade@finzap.app">privacidade@finzap.app</a>.</p>
+      <p>Para exercer qualquer direito, escreva para <a href="mailto:finzapsuporte@gmail.com">finzapsuporte@gmail.com</a>.</p>
     </LegalSection>
 
     <LegalSection title="5. Retenção e exclusão">
@@ -69,7 +69,7 @@ const Privacy = () => (
       <p>Compartilhamos dados apenas com operadores essenciais para o serviço:</p>
       <ul>
         <li>Provedores de infraestrutura em nuvem (banco de dados e autenticação).</li>
-        <li>Processadores de pagamento, caso você assine um plano premium.</li>
+        <li>Canais de pagamento manual (como WhatsApp) utilizados na ativação do plano FinZap Founders Vitalício. Processadores automatizados poderão ser adicionados no futuro.</li>
         <li>Provedores de notificação push, com identificadores anônimos.</li>
       </ul>
       <p>Todos sob contrato e obrigações de confidencialidade.</p>

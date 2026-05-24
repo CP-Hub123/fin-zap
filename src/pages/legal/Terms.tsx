@@ -12,8 +12,9 @@ const Terms = () => (
     </p>
 
     <LegalCallout title="O que o FinZap é">
-      Uma ferramenta de organização financeira pessoal. Ajudamos você a registrar, projetar e decidir sobre o seu
-      dinheiro. Não somos uma instituição financeira, não realizamos transferências e não oferecemos crédito.
+      Uma ferramenta de organização financeira pessoal disponível como web app (PWA) instalável. Ajudamos você a
+      registrar transações, cartões, cofrinhos e recorrências, gerar insights e projeções, e fechar o mês com clareza.
+      Não somos uma instituição financeira, não realizamos transferências e não oferecemos crédito.
     </LegalCallout>
 
     <LegalSection title="1. Conta e elegibilidade">
@@ -36,9 +37,11 @@ const Terms = () => (
 
     <LegalSection title="3. Planos e cobranças">
       <p>
-        O FinZap oferece um <strong>plano gratuito</strong> com limites e um plano pago opcional (FinZap Founders — acesso vitalício).
-        Assinaturas pagas são cobradas de forma recorrente conforme o ciclo escolhido. Você pode cancelar a qualquer
-        momento — o acesso premium permanece ativo até o fim do ciclo já pago.
+        O FinZap oferece um <strong>plano gratuito</strong> com limites de uso e um plano pago opcional chamado
+        <strong> FinZap Founders</strong>, com <strong>pagamento único e acesso vitalício</strong>. Atualmente a
+        contratação do Founders acontece de forma manual via WhatsApp, com ativação feita pela equipe FinZap após a
+        confirmação do pagamento. Por ser um pagamento único, não há cobranças recorrentes nem renovação automática.
+        Eventuais reembolsos seguem o Código de Defesa do Consumidor (arrependimento em até 7 dias após a ativação).
       </p>
     </LegalSection>
 
