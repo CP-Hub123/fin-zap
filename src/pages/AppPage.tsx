@@ -398,6 +398,7 @@ const AppPage = () => {
         onDismiss={handleDismissPush}
         isPending={pushSubscribing}
       />
+      <PWAInstallBanner />
     </div>
   );
 };
