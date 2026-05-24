@@ -1,5 +1,5 @@
 /* FinZap Service Worker — Web Push */
-const SW_VERSION = 'finzap-sw-v2';
+const SW_VERSION = 'finzap-sw-v3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -11,6 +11,21 @@ self.addEventListener('activate', (event) => {
     await Promise.all(names.map((n) => caches.delete(n)));
     await self.clients.claim();
   })());
+});
+
+// Minimal fetch handler — required for Chrome installability criteria.
+// Network-first for navigations; passthrough for everything else.
+// We intentionally do NOT cache responses to avoid stale content issues.
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req).catch(() => new Response(
+        '<!doctype html><meta charset="utf-8"><title>FinZap</title><body style="font-family:system-ui;padding:24px;background:#07090F;color:#fff"><h1>Sem conexão</h1><p>Verifique sua internet e tente novamente.</p></body>',
+        { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      ))
+    );
+  }
 });
 
 self.addEventListener('push', (event) => {
