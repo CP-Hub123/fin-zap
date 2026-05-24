@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { BellRing, Send } from 'lucide-react';
 import { PushDiagnostics } from './PushDiagnostics';
+import { PushStatus } from './PushStatus';
 
 const ROWS: Array<{ key: keyof NotificationPreferences; title: string; desc: string }> = [
   { key: 'alertas_criticos', title: 'Alertas críticos', desc: 'Sempre entregue, mesmo no modo silencioso.' },
@@ -27,9 +29,13 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const { prefs, update } = useNotificationPreferences();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { permission, isSubscribed, supported, subscribe } = usePushNotifications();
   const [testing, setTesting] = useState(false);
+  const location = useLocation();
+
+  const debugMode = new URLSearchParams(location.search).get('debug') === 'true';
+  const showDiagnostics = isAdmin || debugMode;
 
   const set = <K extends keyof NotificationPreferences>(key: K, value: NotificationPreferences[K]) => {
     update.mutate({ [key]: value } as Partial<NotificationPreferences>);
@@ -70,16 +76,22 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-          {needsPermission && (
-            <div className="rounded-xl border bg-primary/5 p-4 space-y-3">
-              <div>
-                <p className="text-sm font-semibold">Ativar notificações neste dispositivo</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Permita para receber avisos de vencimentos, metas e alertas críticos.
-                </p>
-              </div>
-              <Button size="sm" onClick={subscribe}>Ativar agora</Button>
-            </div>
+          {!showDiagnostics && (
+            <>
+              {needsPermission ? (
+                <div className="rounded-xl border bg-primary/5 p-4 space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold">Ativar notificações neste dispositivo</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Permita para receber avisos de vencimentos, metas e alertas críticos.
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={subscribe}>Ativar agora</Button>
+                </div>
+              ) : (
+                <PushStatus />
+              )}
+            </>
           )}
 
           <div className="space-y-3">
@@ -133,16 +145,21 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
             </div>
           </div>
 
-          <Separator />
-
-          <PushDiagnostics />
+          {showDiagnostics && (
+            <>
+              <Separator />
+              <PushDiagnostics />
+            </>
+          )}
         </div>
 
-        <div className="border-t p-4">
-          <Button variant="outline" className="w-full" onClick={sendTest} disabled={testing || !isSubscribed}>
-            <Send className="mr-2 h-4 w-4" /> {testing ? 'Enviando…' : 'Enviar notificação de teste'}
-          </Button>
-        </div>
+        {showDiagnostics && (
+          <div className="border-t p-4">
+            <Button variant="outline" className="w-full" onClick={sendTest} disabled={testing || !isSubscribed}>
+              <Send className="mr-2 h-4 w-4" /> {testing ? 'Enviando…' : 'Enviar notificação de teste'}
+            </Button>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
