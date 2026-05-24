@@ -1002,7 +1002,7 @@ export type Database = {
         | "closed"
         | "archived"
       recurrence_type: "none" | "monthly"
-      subscription_plan: "trial" | "premium"
+      subscription_plan: "trial" | "premium" | "founders"
       subscription_status: "active" | "expired"
       sync_status_type: "pending" | "synced" | "error"
       transaction_source: "manual" | "external" | "recurring"
@@ -1157,7 +1157,7 @@ export const Constants = {
         "archived",
       ],
       recurrence_type: ["none", "monthly"],
-      subscription_plan: ["trial", "premium"],
+      subscription_plan: ["trial", "premium", "founders"],
       subscription_status: ["active", "expired"],
       sync_status_type: ["pending", "synced", "error"],
       transaction_source: ["manual", "external", "recurring"],
