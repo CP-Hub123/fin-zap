@@ -20,7 +20,7 @@ import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { PushOptInBanner } from '@/components/app/PushOptInBanner';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Plus, Menu, Sparkles, Bug, CreditCard, UserCircle2, Download as DownloadIcon, Layers } from 'lucide-react';
+import { BookOpen, Plus, Menu, Sparkles, Bug, CreditCard, UserCircle2, Layers } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
 import { NotificationBell } from '@/components/app/NotificationBell';
 import { ThemeToggle } from '@/components/app/ThemeToggle';
@@ -236,9 +236,6 @@ const AppPage = () => {
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/meses'); setMobileMenuOpen(false); }}>
               <Layers className="h-4 w-4 mr-2" /> Central de Meses
             </Button>
-            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/cartoes'); setMobileMenuOpen(false); }}>
-              <CreditCard className="h-4 w-4 mr-2" /> Cartões
-            </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/tutorials'); setMobileMenuOpen(false); }}>
               <BookOpen className="h-4 w-4 mr-2" /> Tutoriais
             </Button>
@@ -247,9 +244,6 @@ const AppPage = () => {
             </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/conta'); setMobileMenuOpen(false); }}>
               <UserCircle2 className="h-4 w-4 mr-2" /> Conta
-            </Button>
-            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/download'); setMobileMenuOpen(false); }}>
-              <DownloadIcon className="h-4 w-4 mr-2" /> Baixar app
             </Button>
             {isAdmin && (
               <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/admin'); setMobileMenuOpen(false); }}>
