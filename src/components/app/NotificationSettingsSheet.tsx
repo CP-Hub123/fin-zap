@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { BellRing, Send } from 'lucide-react';
+import { PushDiagnostics } from './PushDiagnostics';
 
 const ROWS: Array<{ key: keyof NotificationPreferences; title: string; desc: string }> = [
   { key: 'alertas_criticos', title: 'Alertas críticos', desc: 'Sempre entregue, mesmo no modo silencioso.' },
@@ -131,6 +132,10 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
               </div>
             </div>
           </div>
+
+          <Separator />
+
+          <PushDiagnostics />
         </div>
 
         <div className="border-t p-4">
