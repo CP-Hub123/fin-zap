@@ -29,9 +29,9 @@ export const PushOptInBanner = ({ open, onEnable, onDismiss, isPending }: Props)
             <Bell className="h-5 w-5" strokeWidth={2.25} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold leading-snug">Receba alertas importantes</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-              Vencimentos, metas e gastos acima do orçamento — direto no seu dispositivo.
+            <p className="text-sm font-semibold leading-snug tracking-tight">Ative alertas inteligentes</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Receba previsões, vencimentos e lembretes financeiros diretamente no seu celular.
             </p>
           </div>
           <button
