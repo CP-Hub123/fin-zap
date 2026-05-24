@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Pencil, Crown, Ban, Infinity } from 'lucide-react';
+import { Pencil, Crown, Ban, Infinity, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SubRow {
