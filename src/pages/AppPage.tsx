@@ -19,6 +19,7 @@ import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
 import { PushOptInBanner } from '@/components/app/PushOptInBanner';
+import { PWAInstallBanner } from '@/components/app/PWAInstallBanner';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Plus, Menu, Sparkles, Bug, CreditCard, UserCircle2, Layers } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
