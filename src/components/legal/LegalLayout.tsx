@@ -79,7 +79,7 @@ export const LegalLayout = ({
         <article className="min-w-0 max-w-full overflow-x-clip">
           <div className="mb-8 min-w-0 max-w-full border-b border-border/60 pb-7 sm:mb-9">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">{eyebrow}</p>
-            <h1 className="max-w-full text-[25px] font-semibold leading-[1.16] tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-[34px]">
+            <h1 className="max-w-full text-[25px] font-semibold leading-[1.16] tracking-normal text-foreground [overflow-wrap:anywhere] sm:text-[34px]">
               {title}
             </h1>
             {description && (
@@ -94,7 +94,7 @@ export const LegalLayout = ({
             className={cn(
               'w-full max-w-[66ch] min-w-0 text-[15.5px] leading-[1.82] text-foreground/90 [overflow-wrap:anywhere] sm:text-[16px]',
               '[&_*]:min-w-0 [&_*]:max-w-full [&_section]:scroll-mt-24',
-              '[&_h2]:mt-10 [&_h2]:mb-3 [&_h2]:text-[19px] [&_h2]:font-semibold [&_h2]:leading-[1.25] [&_h2]:tracking-tight [&_h2]:text-foreground [&_h2]:[overflow-wrap:anywhere] sm:[&_h2]:mt-11 sm:[&_h2]:text-[21px]',
+              '[&_h2]:mt-10 [&_h2]:mb-3 [&_h2]:text-[19px] [&_h2]:font-semibold [&_h2]:leading-[1.25] [&_h2]:tracking-normal [&_h2]:text-foreground [&_h2]:[overflow-wrap:anywhere] sm:[&_h2]:mt-11 sm:[&_h2]:text-[21px]',
               '[&_h3]:mt-7 [&_h3]:mb-2.5 [&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:leading-[1.35] [&_h3]:text-foreground [&_h3]:[overflow-wrap:anywhere]',
               '[&_p]:my-4 [&_p]:text-foreground/85 [&_p]:[overflow-wrap:anywhere]',
               '[&_ul]:my-4 [&_ul]:space-y-2.5 [&_ul]:pl-4 sm:[&_ul]:pl-5 [&_ul>li]:list-disc [&_li]:pl-1 [&_li]:text-foreground/85 [&_li]:leading-[1.78] [&_li]:[overflow-wrap:anywhere]',
@@ -150,7 +150,7 @@ export const LegalCallout = ({
   const tones = {
     primary: 'border-primary/30 bg-primary/5',
     success: 'border-[hsl(var(--finzap-green))]/30 bg-[hsl(var(--finzap-green))]/5',
-    warning: 'border-amber-500/30 bg-amber-500/5',
+    warning: 'border-[hsl(var(--finzap-amber)/0.3)] bg-[hsl(var(--finzap-amber)/0.05)]',
   } as const;
   return (
     <div className={cn('my-6 max-w-full rounded-xl border p-4 [overflow-wrap:anywhere] sm:p-5', tones[tone])}>
