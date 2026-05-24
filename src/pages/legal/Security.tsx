@@ -1,4 +1,4 @@
-import { LegalLayout, LegalSection, LegalCallout } from '@/components/legal/LegalLayout';
+import { LegalLayout, LegalSection, LegalCallout } from "@/components/legal/LegalLayout";
 
 const Security = () => (
   <LegalLayout
@@ -12,15 +12,23 @@ const Security = () => (
 
     <LegalSection title="1. Criptografia">
       <ul>
-        <li><strong>Em trânsito:</strong> todo o tráfego usa TLS 1.2+ com certificados modernos.</li>
-        <li><strong>Em repouso:</strong> banco de dados criptografado em nível de disco.</li>
-        <li><strong>Senhas:</strong> nunca armazenadas em texto puro — usamos hashing forte com salt.</li>
+        <li>
+          <strong>Em trânsito:</strong> todo o tráfego usa TLS 1.2+ com certificados modernos.
+        </li>
+        <li>
+          <strong>Em repouso:</strong> banco de dados criptografado em nível de disco.
+        </li>
+        <li>
+          <strong>Senhas:</strong> nunca armazenadas em texto puro — usamos hashing forte com salt.
+        </li>
       </ul>
     </LegalSection>
 
     <LegalSection title="2. Controle de acesso">
       <ul>
-        <li>Cada usuário acessa <strong>somente seus próprios dados</strong>, isolados por Row-Level Security no banco.</li>
+        <li>
+          Cada usuário acessa <strong>somente seus próprios dados</strong>, isolados por Row-Level Security no banco.
+        </li>
         <li>Acesso administrativo é restrito a contas autorizadas e auditadas.</li>
         <li>Suporte humano nunca acessa dados financeiros sem solicitação explícita do usuário.</li>
       </ul>
@@ -28,7 +36,9 @@ const Security = () => (
 
     <LegalSection title="3. Infraestrutura">
       <ul>
-        <li>Servidores hospedados em provedores com certificações <strong>ISO 27001, SOC 2 e PCI-DSS</strong>.</li>
+        <li>
+          Servidores hospedados em provedores com certificações <strong>ISO 27001, SOC 2 e PCI-DSS</strong>.
+        </li>
         <li>Backups automáticos diários com retenção e recuperação testadas.</li>
         <li>Monitoramento contínuo de disponibilidade e anomalias.</li>
       </ul>
@@ -36,9 +46,8 @@ const Security = () => (
 
     <LegalSection title="4. Open Finance (em breve)">
       <p>
-        Quando ativarmos a sincronização bancária, ela ocorrerá exclusivamente via instituições autorizadas pelo
-        Banco Central, dentro do ecossistema Open Finance regulado. <strong>Nunca</strong> pediremos sua senha de
-        banco.
+        Quando ativarmos a sincronização bancária, ela ocorrerá exclusivamente via instituições autorizadas pelo Banco
+        Central, dentro do ecossistema Open Finance regulado. <strong>Nunca</strong> pediremos sua senha de banco.
       </p>
     </LegalSection>
 
@@ -51,9 +60,9 @@ const Security = () => (
 
     <LegalSection title="6. Reporte uma vulnerabilidade">
       <p>
-        Encontrou algo? Reporte de forma responsável para{' '}
-        <a href="mailto:seguranca@finzap.app">seguranca@finzap.app</a>. Reconhecemos publicamente pesquisadores que
-        colaboram com a segurança do FinZap.
+        Encontrou algo? Reporte de forma responsável para{" "}
+        <a href="mailto:finzapsuporte@gmail.com">finzapsuporte@gmail.com</a>. Reconhecemos publicamente pesquisadores
+        que colaboram com a segurança do FinZap.
       </p>
     </LegalSection>
   </LegalLayout>
