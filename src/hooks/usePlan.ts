@@ -20,7 +20,7 @@ export function usePlan() {
 
   const isFounders = useMemo(() => {
     const s = sub.subscription;
-    return !!s && s.status === 'active' && (s.plan === 'founders' || (s.is_manual && !s.expires_at));
+    return !!s && s.status === 'active' && ((s.plan as string) === 'founders' || (s.is_manual && !s.expires_at));
   }, [sub.subscription]);
 
   const plan = PLANS[tier];
