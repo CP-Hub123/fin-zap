@@ -517,6 +517,7 @@ export type Database = {
       notification_preferences: {
         Row: {
           alertas_criticos: boolean
+          cartoes: boolean
           created_at: string
           insights: boolean
           lembrete_diario: boolean
@@ -525,6 +526,8 @@ export type Database = {
           quiet_hours_start: number
           recorrencias: boolean
           resumo_semanal: boolean
+          saldo_orcamento: boolean
+          sistema_novidades: boolean
           timezone: string
           updated_at: string
           user_id: string
@@ -532,6 +535,7 @@ export type Database = {
         }
         Insert: {
           alertas_criticos?: boolean
+          cartoes?: boolean
           created_at?: string
           insights?: boolean
           lembrete_diario?: boolean
@@ -540,6 +544,8 @@ export type Database = {
           quiet_hours_start?: number
           recorrencias?: boolean
           resumo_semanal?: boolean
+          saldo_orcamento?: boolean
+          sistema_novidades?: boolean
           timezone?: string
           updated_at?: string
           user_id: string
@@ -547,6 +553,7 @@ export type Database = {
         }
         Update: {
           alertas_criticos?: boolean
+          cartoes?: boolean
           created_at?: string
           insights?: boolean
           lembrete_diario?: boolean
@@ -555,6 +562,8 @@ export type Database = {
           quiet_hours_start?: number
           recorrencias?: boolean
           resumo_semanal?: boolean
+          saldo_orcamento?: boolean
+          sistema_novidades?: boolean
           timezone?: string
           updated_at?: string
           user_id?: string
