@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const VAPID_SUBJECT = "mailto:christianpietromello079@gmail.com";
-const VAPID_PUBLIC_KEY = "BFkJUOVv4zqJ66952R07dAL9LFzYfunNlPnOvTzN8jVd5c0ZWOWkNn4fcpL3Zca_BO3f1rFJXDAvzEdNr2wf3z0";
+const VAPID_PUBLIC_KEY = "BAYXMjrgg8HMIunCShXbeLZLKNZDvKUT0hTgk_wAUl6GZ8mmHKWKQpI-gnf38dcts56K0XFRTjWf38cs2KizJ70";
 const ADMIN_EMAIL = "christianpietromello079@gmail.com";
 
 type SendPushBody = {
