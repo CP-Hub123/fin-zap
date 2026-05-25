@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-const VAPID_PUBLIC_KEY = 'BFkJUOVv4zqJ66952R07dAL9LFzYfunNlPnOvTzN8jVd5c0ZWOWkNn4fcpL3Zca_BO3f1rFJXDAvzEdNr2wf3z0';
+const VAPID_PUBLIC_KEY = 'BAYXMjrgg8HMIunCShXbeLZLKNZDvKUT0hTgk_wAUl6GZ8mmHKWKQpI-gnf38dcts56K0XFRTjWf38cs2KizJ70';
 
 const VALID_HOST = /\.(googleapis\.com|mozilla\.com|windows\.com|apple\.com|push\.services)/i;
 
