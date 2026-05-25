@@ -11,18 +11,67 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { BellRing, Send } from 'lucide-react';
+import { BellRing, Send, CreditCard, Wallet, Repeat, Target, Sparkles, Megaphone, AlertTriangle, Sun, CalendarDays, LucideIcon } from 'lucide-react';
 import { PushDiagnostics } from './PushDiagnostics';
 import { PushStatus } from './PushStatus';
 
-const ROWS: Array<{ key: keyof NotificationPreferences; title: string; desc: string }> = [
-  { key: 'alertas_criticos', title: 'Alertas críticos', desc: 'Sempre entregue, mesmo no modo silencioso.' },
-  { key: 'vencimentos', title: 'Vencimentos', desc: 'Avisos antes de contas e cartões vencerem.' },
-  { key: 'recorrencias', title: 'Recorrências', desc: 'Lançamentos automáticos de receitas e despesas.' },
-  { key: 'metas_cofrinhos', title: 'Metas e cofrinhos', desc: 'Progresso e conquistas das suas metas.' },
-  { key: 'insights', title: 'Insights financeiros', desc: 'Padrões e oportunidades detectados.' },
-  { key: 'lembrete_diario', title: 'Lembrete diário', desc: 'Um aviso pela manhã para revisar suas finanças.' },
-  { key: 'resumo_semanal', title: 'Resumo semanal', desc: 'Domingo à noite, fechamento da semana.' },
+type Row = {
+  key: keyof NotificationPreferences;
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+  locked?: boolean;
+};
+
+type Group = { label: string; hint?: string; rows: Row[] };
+
+const GROUPS: Group[] = [
+  {
+    label: 'Essenciais',
+    hint: 'Avisos críticos sempre são entregues, mesmo em modo silencioso.',
+    rows: [
+      { key: 'alertas_criticos', title: 'Alertas críticos', desc: 'Saldo no vermelho, limite estourado, ações urgentes.', icon: AlertTriangle, locked: true },
+    ],
+  },
+  {
+    label: 'Cartões',
+    rows: [
+      { key: 'cartoes', title: 'Cartões de crédito', desc: 'Fechamento da fatura, vencimento, limite e compras relevantes.', icon: CreditCard },
+      { key: 'vencimentos', title: 'Vencimentos', desc: 'Lembrete antes de contas e faturas vencerem.', icon: CalendarDays },
+    ],
+  },
+  {
+    label: 'Saldo & orçamento',
+    rows: [
+      { key: 'saldo_orcamento', title: 'Saldo e orçamento', desc: 'Saldo previsto negativo, gastos acima da média, limites do mês.', icon: Wallet },
+    ],
+  },
+  {
+    label: 'Recorrências',
+    rows: [
+      { key: 'recorrencias', title: 'Recorrências', desc: 'Cobranças amanhã, assinaturas e despesas automáticas.', icon: Repeat },
+    ],
+  },
+  {
+    label: 'Cofrinhos & metas',
+    rows: [
+      { key: 'metas_cofrinhos', title: 'Cofrinhos e metas', desc: 'Progresso relevante, meta próxima e objetivos alcançados.', icon: Target },
+    ],
+  },
+  {
+    label: 'Insights inteligentes',
+    rows: [
+      { key: 'insights', title: 'Insights financeiros', desc: 'Previsões, padrões e recomendações para economizar.', icon: Sparkles },
+      { key: 'resumo_semanal', title: 'Resumo semanal', desc: 'Domingo à noite, um fechamento da semana.', icon: CalendarDays },
+      { key: 'lembrete_diario', title: 'Lembrete diário', desc: 'Um aviso pela manhã para revisar suas finanças.', icon: Sun },
+    ],
+  },
+  {
+    label: 'Sistema & novidades',
+    rows: [
+      { key: 'sistema_novidades', title: 'Novidades e melhorias', desc: 'Atualizações do app, founders e manutenções programadas.', icon: Megaphone },
+    ],
+  },
 ];
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -94,19 +143,36 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
             </>
           )}
 
-          <div className="space-y-3">
-            <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Categorias</p>
-            {ROWS.map(({ key, title, desc }) => (
-              <div key={key} className="flex items-start justify-between gap-3 py-2">
-                <div className="flex-1 min-w-0">
-                  <Label className="text-sm font-medium">{title}</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+          <div className="space-y-6">
+            {GROUPS.map((group) => (
+              <section key={group.label} className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <p className="text-[11px] uppercase tracking-[0.14em] font-semibold text-muted-foreground">
+                    {group.label}
+                  </p>
                 </div>
-                <Switch
-                  checked={Boolean(prefs[key])}
-                  onCheckedChange={(v) => set(key, v as any)}
-                />
-              </div>
+                {group.hint && (
+                  <p className="text-xs text-muted-foreground/80 -mt-1">{group.hint}</p>
+                )}
+                <div className="rounded-2xl border bg-card/50 divide-y">
+                  {group.rows.map(({ key, title, desc, icon: Icon, locked }) => (
+                    <div key={key} className="flex items-start gap-3 p-4">
+                      <div className="mt-0.5 h-9 w-9 shrink-0 rounded-xl bg-muted/60 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-foreground/80" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <Label className="text-sm font-medium leading-tight">{title}</Label>
+                        <p className="text-xs text-muted-foreground mt-1 leading-snug">{desc}</p>
+                      </div>
+                      <Switch
+                        checked={Boolean(prefs[key])}
+                        disabled={locked}
+                        onCheckedChange={(v) => set(key, v as any)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
 

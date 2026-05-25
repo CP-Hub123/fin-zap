@@ -35,11 +35,14 @@ type PushSubscriptionRow = {
 
 type Prefs = {
   user_id: string;
+  cartoes: boolean;
+  saldo_orcamento: boolean;
   vencimentos: boolean;
   recorrencias: boolean;
   metas_cofrinhos: boolean;
   insights: boolean;
   alertas_criticos: boolean;
+  sistema_novidades: boolean;
   lembrete_diario: boolean;
   resumo_semanal: boolean;
   quiet_hours_start: number;
@@ -48,12 +51,22 @@ type Prefs = {
 };
 
 const CATEGORY_TO_PREF: Record<string, keyof Prefs | null> = {
+  cartao: "cartoes",
+  cartoes: "cartoes",
+  fechamento: "cartoes",
+  limite: "cartoes",
   vencimento: "vencimentos",
   recorrencia: "recorrencias",
+  saldo: "saldo_orcamento",
+  orcamento: "saldo_orcamento",
+  saldo_orcamento: "saldo_orcamento",
   cofrinho: "metas_cofrinhos",
   meta: "metas_cofrinhos",
   insight: "insights",
   alerta: "alertas_criticos",
+  sistema: "sistema_novidades",
+  novidade: "sistema_novidades",
+  founders: "sistema_novidades",
   lembrete_diario: "lembrete_diario",
   resumo_semanal: "resumo_semanal",
   test: null,
