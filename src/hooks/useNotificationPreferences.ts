@@ -4,11 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export type NotificationPreferences = {
   user_id: string;
+  cartoes: boolean;
+  saldo_orcamento: boolean;
   vencimentos: boolean;
   recorrencias: boolean;
   metas_cofrinhos: boolean;
   insights: boolean;
   alertas_criticos: boolean;
+  sistema_novidades: boolean;
   lembrete_diario: boolean;
   resumo_semanal: boolean;
   quiet_hours_start: number;
@@ -17,11 +20,14 @@ export type NotificationPreferences = {
 };
 
 const DEFAULTS: Omit<NotificationPreferences, 'user_id'> = {
+  cartoes: true,
+  saldo_orcamento: true,
   vencimentos: true,
   recorrencias: true,
   metas_cofrinhos: true,
   insights: true,
   alertas_criticos: true,
+  sistema_novidades: true,
   lembrete_diario: false,
   resumo_semanal: true,
   quiet_hours_start: 22,
