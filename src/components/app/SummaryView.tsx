@@ -415,6 +415,13 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       </Card>
         </CollapsibleContent>
       </Collapsible>
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        monthId={month.id}
+        periodoLabel={`${MONTH_NAMES[month.month - 1]} de ${month.year}`}
+      />
     </div>
   );
 };
