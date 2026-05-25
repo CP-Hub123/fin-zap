@@ -151,19 +151,41 @@ function categoryAllowed(category: string | undefined, prefs: Prefs | null): boo
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const stage = { current: "init" as string };
+  const setStage = (s: string) => { stage.current = s; console.log(`[send-push] stage=${s}`); };
+
   try {
+    setStage("load_env");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
+    const envCheck = {
+      SUPABASE_URL: !!supabaseUrl,
+      SUPABASE_ANON_KEY: !!anonKey,
+      SUPABASE_SERVICE_ROLE_KEY: !!serviceKey,
+      VAPID_PRIVATE_KEY: !!vapidPrivateKey,
+      VAPID_PRIVATE_KEY_length: vapidPrivateKey?.length ?? 0,
+      VAPID_PUBLIC_KEY_length: VAPID_PUBLIC_KEY.length,
+    };
+    console.log(`[send-push] env=${JSON.stringify(envCheck)}`);
+    if (!supabaseUrl || !anonKey || !serviceKey) {
+      return respond({ stage: "load_env", error: "Missing Supabase env vars", env: envCheck }, 500);
+    }
+    if (!vapidPrivateKey) {
+      return respond({ stage: "load_env", error: "VAPID_PRIVATE_KEY missing", env: envCheck }, 500);
+    }
 
+    setStage("parse_body");
     const body = (await req.json()) as SendPushBody;
+    console.log(`[send-push] body=${JSON.stringify({ ...body, body: body.body ? "[redacted]" : undefined })}`);
     const { title, body: messageBody, type = "general", category, priority = "normal", url, dedupe_key, broadcast = false, internal = false } = body;
     let { user_id } = body;
 
-    if (!title || !messageBody) return respond({ error: "Missing title or body" }, 400);
+    if (!title || !messageBody) return respond({ stage: "parse_body", error: "Missing title or body" }, 400);
 
     // ---- Auth ----
+    setStage("auth");
     let isAdmin = false;
     let callerId: string | null = null;
     const authHeader = req.headers.get("Authorization");
@@ -187,12 +209,30 @@ Deno.serve(async (req) => {
       }
       if (!broadcast && !user_id) user_id = callerId;
     } else {
-      if (!broadcast && !user_id) return respond({ error: "Missing user_id" }, 400);
+      if (!broadcast && !user_id) return respond({ stage: "auth", error: "Missing user_id" }, 400);
     }
 
+    setStage("init_supabase_client");
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    setStage("validate_vapid");
+    try {
+      await importVapidKeysFromEnv(vapidPrivateKey);
+      console.log("[send-push] vapid=ok");
+    } catch (vapidError) {
+      const message = vapidError instanceof Error ? vapidError.message : String(vapidError);
+      console.error(`[send-push] vapid_validation_failed error=${message}`);
+      return respond({
+        stage: "validate_vapid",
+        error: message,
+        hint: "VAPID_PRIVATE_KEY secret does not match the public key embedded in the app/edge function. Regenerate a matching VAPID key pair and update both the secret and VAPID_PUBLIC_KEY.",
+        vapid_public_key: VAPID_PUBLIC_KEY,
+        vapid_private_key_length: vapidPrivateKey.length,
+      }, 500);
+    }
+
     // ---- Resolve target users ----
+    setStage("resolve_targets");
     const targetUserIds: string[] = [];
     if (broadcast) {
       const { data: subs } = await supabase.from("push_subscriptions").select("user_id");
@@ -211,6 +251,7 @@ Deno.serve(async (req) => {
     let skippedQuiet = 0;
 
     for (const uid of targetUserIds) {
+      setStage(`user:${uid}:prefs`);
       // Preferences
       const { data: prefsRow } = await supabase
         .from("notification_preferences")
@@ -277,8 +318,12 @@ Deno.serve(async (req) => {
         }
       }
 
-      if (valid.length === 0) continue;
+      if (valid.length === 0) {
+        console.warn(`[send-push] user=${uid} no_valid_subscriptions found=${all.length}`);
+        continue;
+      }
 
+      setStage(`user:${uid}:build_app_server`);
       const appServer = await webpush.ApplicationServer.new({
         contactInformation: VAPID_SUBJECT,
         vapidKeys: await importVapidKeysFromEnv(vapidPrivateKey),
@@ -299,16 +344,20 @@ Deno.serve(async (req) => {
       let lastError: string | null = null;
 
       for (const sub of valid) {
+        setStage(`user:${uid}:send:${sub.id}`);
         try {
           const subscriber = appServer.subscribe({
             endpoint: sub.endpoint,
             keys: { p256dh: sub.p256dh, auth: sub.auth },
           });
+          const endpointHost = (() => { try { return new URL(sub.endpoint).host; } catch { return "invalid"; } })();
+          console.log(`[send-push] sending user=${uid} sub=${sub.id} host=${endpointHost}`);
           await subscriber.pushTextMessage(payload, {
             urgency: isCritical ? webpush.Urgency.High : webpush.Urgency.Normal,
             ttl: isCritical ? 600 : 3600,
           });
           userSent++;
+          console.log(`[send-push] delivered user=${uid} sub=${sub.id}`);
           await supabase
             .from("push_subscriptions")
             .update({ failure_count: 0, last_seen_at: new Date().toISOString(), last_error: null })
@@ -319,7 +368,8 @@ Deno.serve(async (req) => {
           const status = error instanceof webpush.PushMessageError ? error.response.status : 0;
           const isGone = error instanceof webpush.PushMessageError && (error.isGone() || status === 404);
           const isAuthMismatch = isAuthOrVapidError(error, message);
-          console.warn(`[send-push] delivery failed user=${uid} sub=${sub.id} status=${status || "n/a"} auth_or_vapid=${isAuthMismatch} error=${message}`);
+          const stack = error instanceof Error ? error.stack : undefined;
+          console.warn(`[send-push] delivery_failed user=${uid} sub=${sub.id} status=${status || "n/a"} auth_or_vapid=${isAuthMismatch} gone=${isGone} error=${message}${stack ? `\nstack=${stack}` : ""}`);
           if (isGone || isAuthMismatch || (sub.failure_count ?? 0) >= 2) {
             await supabase.from("push_subscriptions").delete().eq("id", sub.id);
             totalRemoved++;
@@ -343,6 +393,7 @@ Deno.serve(async (req) => {
         .eq("id", logRow.id);
     }
 
+    setStage("done");
     return respond({
       sent: totalSent,
       found: totalFound,
@@ -352,7 +403,8 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[send-push] unexpected error=${message}`);
-    return respond({ error: message }, 500);
+    const stack = error instanceof Error ? error.stack : undefined;
+    console.error(`[send-push] unexpected stage=${stage.current} error=${message}${stack ? `\nstack=${stack}` : ""}`);
+    return respond({ stage: stage.current, error: message, stack }, 500);
   }
 });
