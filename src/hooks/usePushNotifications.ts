@@ -24,9 +24,7 @@ function uint8ArrayToBase64Url(bytes: Uint8Array) {
 function subscriptionVapidKey(sub: PushSubscription) {
   const key = sub.options?.applicationServerKey;
   if (!key) return null;
-  const bytes = key instanceof ArrayBuffer
-    ? new Uint8Array(key)
-    : new Uint8Array(key.buffer, key.byteOffset, key.byteLength);
+  const bytes = new Uint8Array(key as ArrayBuffer);
   return uint8ArrayToBase64Url(bytes);
 }
 
@@ -115,7 +113,8 @@ export const usePushNotifications = () => {
       const bad = !sub ||
         !isValidEndpoint(existing?.endpoint) ||
         !existing?.keys?.p256dh ||
-        !existing?.keys?.auth;
+        !existing?.keys?.auth ||
+        !usesCurrentVapidKey(sub);
       if (sub && bad) {
         await sub.unsubscribe().catch(() => undefined);
         sub = null;
