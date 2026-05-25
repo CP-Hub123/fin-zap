@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute, AdminRoute } from "@/components/layout/ProtectedRoute";
+import { useAppBranding } from "@/hooks/useAppBranding";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -34,8 +35,14 @@ const queryClient = new QueryClient({
   },
 });
 
+const BrandingApplier = () => {
+  useAppBranding();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <BrandingApplier />
     <TooltipProvider>
       <Sonner position="top-center" />
       <BrowserRouter>
