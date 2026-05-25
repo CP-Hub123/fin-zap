@@ -30,6 +30,7 @@ type PushSubscriptionRow = {
   p256dh: string;
   auth: string;
   failure_count: number;
+  device_info?: Record<string, unknown> | null;
 };
 
 type Prefs = {
@@ -88,10 +89,15 @@ async function importVapidKeysFromEnv(privateKey: string): Promise<CryptoKeyPair
   if (rawPublic.length !== 65 || rawPublic[0] !== 4) throw new Error("Invalid VAPID public key");
   const x = encodeBase64Url(rawPublic.slice(1, 33));
   const y = encodeBase64Url(rawPublic.slice(33, 65));
-  return webpush.importVapidKeys({
+  const keys = await webpush.importVapidKeys({
     publicKey: { kty: "EC", crv: "P-256", x, y },
     privateKey: { kty: "EC", crv: "P-256", x, y, d: privateKey },
   });
+  const probe = new TextEncoder().encode("finzap-vapid-key-check");
+  const signature = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, keys.privateKey, probe);
+  const validPair = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, keys.publicKey, signature, probe);
+  if (!validPair) throw new Error("VAPID key mismatch: VAPID_PRIVATE_KEY does not match the public key used by the app");
+  return keys;
 }
 
 async function describePushError(error: unknown): Promise<string> {
@@ -101,6 +107,16 @@ async function describePushError(error: unknown): Promise<string> {
   }
   if (error instanceof Error) return error.message;
   return String(error);
+}
+
+function isAuthOrVapidError(error: unknown, message: string): boolean {
+  const status = error instanceof webpush.PushMessageError ? error.response.status : 0;
+  return status === 401 || status === 403 || /invalid jwt|vapid|unauthorized|permission denied/i.test(message);
+}
+
+function hasCurrentVapidKey(sub: PushSubscriptionRow): boolean {
+  const key = sub.device_info?.vapid_public_key;
+  return typeof key !== "string" || key === VAPID_PUBLIC_KEY;
 }
 
 function respond(data: Record<string, unknown>, status = 200) {
@@ -245,16 +261,17 @@ Deno.serve(async (req) => {
       // Subscriptions
       const { data: subscriptions } = await supabase
         .from("push_subscriptions")
-        .select("id, user_id, endpoint, p256dh, auth, failure_count")
+        .select("id, user_id, endpoint, p256dh, auth, failure_count, device_info")
         .eq("user_id", uid);
       const all = (subscriptions ?? []) as PushSubscriptionRow[];
       totalFound += all.length;
 
       const valid: PushSubscriptionRow[] = [];
       for (const sub of all) {
-        if (!isValidEndpoint(sub.endpoint) || !sub.p256dh || !sub.auth) {
+        if (!isValidEndpoint(sub.endpoint) || !sub.p256dh || !sub.auth || !hasCurrentVapidKey(sub)) {
           await supabase.from("push_subscriptions").delete().eq("id", sub.id);
           totalRemoved++;
+          console.warn(`[send-push] removed invalid subscription id=${sub.id} user=${uid} reason=invalid-or-vapid-mismatch`);
         } else {
           valid.push(sub);
         }
@@ -299,8 +316,11 @@ Deno.serve(async (req) => {
         } catch (error) {
           const message = await describePushError(error);
           lastError = message;
-          const isGone = error instanceof webpush.PushMessageError && (error.isGone() || error.response.status === 404);
-          if (isGone || (sub.failure_count ?? 0) >= 2) {
+          const status = error instanceof webpush.PushMessageError ? error.response.status : 0;
+          const isGone = error instanceof webpush.PushMessageError && (error.isGone() || status === 404);
+          const isAuthMismatch = isAuthOrVapidError(error, message);
+          console.warn(`[send-push] delivery failed user=${uid} sub=${sub.id} status=${status || "n/a"} auth_or_vapid=${isAuthMismatch} error=${message}`);
+          if (isGone || isAuthMismatch || (sub.failure_count ?? 0) >= 2) {
             await supabase.from("push_subscriptions").delete().eq("id", sub.id);
             totalRemoved++;
           } else {
