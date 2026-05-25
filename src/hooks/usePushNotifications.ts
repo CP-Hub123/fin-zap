@@ -80,7 +80,7 @@ export const usePushNotifications = () => {
       .eq('user_id', user.id)
       .like('endpoint', '%permanently-removed.invalid%');
 
-    await supabase.from('push_subscriptions').upsert(
+    const { error: upsertError } = await supabase.from('push_subscriptions').upsert(
       {
         user_id: user.id,
         endpoint: json.endpoint!,
@@ -93,6 +93,15 @@ export const usePushNotifications = () => {
       },
       { onConflict: 'endpoint' }
     );
+    if (upsertError) {
+      console.error('[push] subscription upsert failed', upsertError);
+      throw upsertError;
+    }
+    console.log('[push] subscription persisted', {
+      user_id: user.id,
+      endpoint_host: (() => { try { return new URL(json.endpoint!).host; } catch { return 'invalid'; } })(),
+      vapid: VAPID_PUBLIC_KEY.slice(0, 12) + '…',
+    });
     setIsSubscribed(true);
   }, [user]);
 
