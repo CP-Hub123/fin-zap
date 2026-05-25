@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/constants';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown } from 'lucide-react';
+import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ReportModal } from './ReportModal';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -67,6 +69,7 @@ const PieTooltip = ({ active, payload }: any) => {
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   // Fonte oficial de saldo final (initial_balance + delta)
   const { currentBalance: finalBalance } = useFinancialBalance(month.id);
   const cofrinhoMap = useMemo(() => {
@@ -178,6 +181,18 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
     <div className="space-y-6">
       {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
       <SmartDashboardHeader month={month} />
+
+      {/* Relatório premium */}
+      <div className="flex items-center justify-between rounded-2xl border bg-gradient-to-br from-primary/5 via-card to-card p-4">
+        <div className="min-w-0 pr-3">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Relatório premium</p>
+          <p className="text-sm font-medium mt-0.5 truncate">Gere um PDF editorial deste mês</p>
+          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">Resumo executivo, evolução de 6 meses, cofrinhos, cartões e insights.</p>
+        </div>
+        <Button size="sm" onClick={() => setReportOpen(true)} className="shrink-0">
+          <FileText className="h-4 w-4 mr-2" /> Gerar relatório
+        </Button>
+      </div>
 
       {/* Análise detalhada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
@@ -399,6 +414,13 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       </Card>
         </CollapsibleContent>
       </Collapsible>
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        monthId={month.id}
+        periodoLabel={`${MONTH_NAMES[month.month - 1]} de ${month.year}`}
+      />
     </div>
   );
 };
