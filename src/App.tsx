@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,17 +24,6 @@ import Terms from "./pages/legal/Terms";
 import Consent from "./pages/legal/Consent";
 import CookiesPage from "./pages/legal/Cookies";
 import Security from "./pages/legal/Security";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,            // 30s: evita refetch a cada navegação
-      gcTime: 5 * 60_000,           // 5min: mantém em cache após desmontar
-      refetchOnWindowFocus: false,  // sem refetch agressivo ao voltar pra aba
-      retry: 1,
-    },
-  },
-});
 
 const BrandingApplier = () => {
   useAppBranding();
