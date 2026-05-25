@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { resetClientSessionState } from '@/lib/queryClient';
 
 const ADMIN_EMAIL = 'christianpietromello079@gmail.com';
 
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const previousUserIdRef = React.useRef<string | null>(null);
 
   const user = session?.user ?? null;
   const isAdmin = user?.email === ADMIN_EMAIL;
@@ -26,14 +28,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
+      const nextUserId = session?.user?.id ?? null;
+      const prevUserId = previousUserIdRef.current;
+      // Hard reset when switching accounts or signing out, to prevent
+      // any cross-tenant data leak via React Query cache / localStorage.
+      if (event === 'SIGNED_OUT' || (prevUserId && nextUserId && prevUserId !== nextUserId)) {
+        resetClientSessionState();
+      }
+      previousUserIdRef.current = nextUserId;
       setSession(session);
       setIsLoading(false);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
+      previousUserIdRef.current = session?.user?.id ?? null;
       setSession(session);
       setIsLoading(false);
     });
@@ -59,6 +70,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    // Pre-emptively clear cache so no stale data flashes after sign-out.
+    resetClientSessionState();
     await supabase.auth.signOut();
   };
 
