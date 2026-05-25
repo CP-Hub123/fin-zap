@@ -313,6 +313,7 @@ const AdminSettings = () => {
   const getSetting = (key: string) => values[key] ?? settings.find(s => s.key === key)?.value ?? '';
   const currentStatus = getSetting('system_status') || 'active';
   const isMaintenance = currentStatus === 'maintenance';
+  const currentIconMode = (getSetting('app_icon_mode') || 'normal') as 'normal' | 'maintenance' | 'event' | 'founders';
 
   const saveSetting = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
@@ -385,6 +386,38 @@ const AdminSettings = () => {
           </div>
           <Input value={testMessage} onChange={e => setTestMessage(e.target.value)} placeholder="Mensagem (opcional)" />
           <Button onClick={sendTestPush} disabled={sending} size="sm">{sending ? 'Enviando...' : 'Enviar notificação'}</Button>
+        </div>
+
+        <div className="rounded-xl border bg-card p-5 space-y-3">
+          <div>
+            <h3 className="text-sm font-semibold">Modo de branding do app</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Troca favicon, logo no app e theme-color em tempo real. Ícones já instalados na tela inicial só atualizam quando o sistema operacional refaz o fetch do manifest (iOS: nunca; Android: horas a dias).
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {(['normal','maintenance','event','founders'] as const).map((m) => {
+              const labels: Record<string,string> = { normal: 'Normal', maintenance: 'Manutenção', event: 'Evento', founders: 'Founders' };
+              const active = currentIconMode === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setValues(v => ({ ...v, app_icon_mode: m }));
+                    saveSetting.mutate({ key: 'app_icon_mode', value: m });
+                  }}
+                  disabled={saveSetting.isPending}
+                  className={cn(
+                    'flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-colors',
+                    active ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/40'
+                  )}
+                >
+                  <img src={`/finzap-icon-${m}-v1.png`} alt={labels[m]} className="h-12 w-12 rounded" />
+                  <span className="text-xs font-medium">{labels[m]}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {[
