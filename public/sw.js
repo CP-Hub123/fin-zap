@@ -1,5 +1,5 @@
 /* FinZap Service Worker — Web Push */
-const SW_VERSION = 'finzap-sw-v3';
+const SW_VERSION = 'finzap-sw-v4';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -11,6 +11,13 @@ self.addEventListener('activate', (event) => {
     await Promise.all(names.map((n) => caches.delete(n)));
     await self.clients.claim();
   })());
+});
+
+// Allow the page to trigger immediate activation of a waiting SW.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Minimal fetch handler — required for Chrome installability criteria.
