@@ -183,6 +183,18 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
       <SmartDashboardHeader month={month} />
 
+      {/* Relatório premium */}
+      <div className="flex items-center justify-between rounded-2xl border bg-gradient-to-br from-primary/5 via-card to-card p-4">
+        <div className="min-w-0 pr-3">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Relatório premium</p>
+          <p className="text-sm font-medium mt-0.5 truncate">Gere um PDF editorial deste mês</p>
+          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">Resumo executivo, evolução de 6 meses, cofrinhos, cartões e insights.</p>
+        </div>
+        <Button size="sm" onClick={() => setReportOpen(true)} className="shrink-0">
+          <FileText className="h-4 w-4 mr-2" /> Gerar relatório
+        </Button>
+      </div>
+
       {/* Análise detalhada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
         <CollapsibleTrigger className="group w-full flex items-center justify-between pt-2 pb-1 text-left">
