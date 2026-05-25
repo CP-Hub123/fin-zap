@@ -15,6 +15,26 @@ function urlBase64ToUint8Array(base64String: string) {
   return out;
 }
 
+function uint8ArrayToBase64Url(bytes: Uint8Array) {
+  let binary = '';
+  bytes.forEach((b) => { binary += String.fromCharCode(b); });
+  return window.btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function subscriptionVapidKey(sub: PushSubscription) {
+  const key = sub.options?.applicationServerKey;
+  if (!key) return null;
+  const bytes = key instanceof ArrayBuffer
+    ? new Uint8Array(key)
+    : new Uint8Array(key.buffer, key.byteOffset, key.byteLength);
+  return uint8ArrayToBase64Url(bytes);
+}
+
+function usesCurrentVapidKey(sub: PushSubscription) {
+  const key = subscriptionVapidKey(sub);
+  return !key || key === VAPID_PUBLIC_KEY;
+}
+
 function isValidEndpoint(endpoint?: string | null) {
   if (!endpoint || endpoint.includes('permanently-removed.invalid')) return false;
   try {
@@ -31,7 +51,12 @@ function deviceInfo() {
                    /Windows/.test(ua) ? 'Windows' :
                    /Mac OS/.test(ua) ? 'macOS' :
                    /Linux/.test(ua) ? 'Linux' : 'Unknown';
-  return { platform, language: navigator.language };
+  return {
+    platform,
+    language: navigator.language,
+    push_provider: 'web-push',
+    vapid_public_key: VAPID_PUBLIC_KEY,
+  };
 }
 
 export const usePushNotifications = () => {
