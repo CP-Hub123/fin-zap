@@ -237,10 +237,7 @@ Deno.serve(async (req) => {
       console.error(`[send-push] vapid_validation_failed error=${message}`);
       return respond({
         stage: "validate_vapid",
-        error: message,
-        hint: "VAPID_PRIVATE_KEY secret does not match the public key embedded in the app/edge function. Regenerate a matching VAPID key pair and update both the secret and VAPID_PUBLIC_KEY.",
-        vapid_public_key: VAPID_PUBLIC_KEY,
-        vapid_private_key_length: vapidPrivateKey.length,
+        error: "VAPID configuration error",
       }, 500);
     }
 
@@ -426,6 +423,6 @@ Deno.serve(async (req) => {
     const message = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
     console.error(`[send-push] unexpected stage=${stage.current} error=${message}${stack ? `\nstack=${stack}` : ""}`);
-    return respond({ stage: stage.current, error: message, stack }, 500);
+    return respond({ error: "Internal server error" }, 500);
   }
 });
