@@ -30,6 +30,7 @@ type PushSubscriptionRow = {
   p256dh: string;
   auth: string;
   failure_count: number;
+  device_info?: Record<string, unknown> | null;
 };
 
 type Prefs = {
@@ -101,6 +102,16 @@ async function describePushError(error: unknown): Promise<string> {
   }
   if (error instanceof Error) return error.message;
   return String(error);
+}
+
+function isAuthOrVapidError(error: unknown, message: string): boolean {
+  const status = error instanceof webpush.PushMessageError ? error.response.status : 0;
+  return status === 401 || status === 403 || /invalid jwt|vapid|unauthorized|permission denied/i.test(message);
+}
+
+function hasCurrentVapidKey(sub: PushSubscriptionRow): boolean {
+  const key = sub.device_info?.vapid_public_key;
+  return typeof key !== "string" || key === VAPID_PUBLIC_KEY;
 }
 
 function respond(data: Record<string, unknown>, status = 200) {
@@ -245,16 +256,17 @@ Deno.serve(async (req) => {
       // Subscriptions
       const { data: subscriptions } = await supabase
         .from("push_subscriptions")
-        .select("id, user_id, endpoint, p256dh, auth, failure_count")
+        .select("id, user_id, endpoint, p256dh, auth, failure_count, device_info")
         .eq("user_id", uid);
       const all = (subscriptions ?? []) as PushSubscriptionRow[];
       totalFound += all.length;
 
       const valid: PushSubscriptionRow[] = [];
       for (const sub of all) {
-        if (!isValidEndpoint(sub.endpoint) || !sub.p256dh || !sub.auth) {
+        if (!isValidEndpoint(sub.endpoint) || !sub.p256dh || !sub.auth || !hasCurrentVapidKey(sub)) {
           await supabase.from("push_subscriptions").delete().eq("id", sub.id);
           totalRemoved++;
+          console.warn(`[send-push] removed invalid subscription id=${sub.id} user=${uid} reason=invalid-or-vapid-mismatch`);
         } else {
           valid.push(sub);
         }
@@ -299,8 +311,11 @@ Deno.serve(async (req) => {
         } catch (error) {
           const message = await describePushError(error);
           lastError = message;
-          const isGone = error instanceof webpush.PushMessageError && (error.isGone() || error.response.status === 404);
-          if (isGone || (sub.failure_count ?? 0) >= 2) {
+          const status = error instanceof webpush.PushMessageError ? error.response.status : 0;
+          const isGone = error instanceof webpush.PushMessageError && (error.isGone() || status === 404);
+          const isAuthMismatch = isAuthOrVapidError(error, message);
+          console.warn(`[send-push] delivery failed user=${uid} sub=${sub.id} status=${status || "n/a"} auth_or_vapid=${isAuthMismatch} error=${message}`);
+          if (isGone || isAuthMismatch || (sub.failure_count ?? 0) >= 2) {
             await supabase.from("push_subscriptions").delete().eq("id", sub.id);
             totalRemoved++;
           } else {
