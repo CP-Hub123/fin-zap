@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/constants';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ReportModal } from './ReportModal';
+import { MONTH_NAMES } from '@/lib/constants';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -67,6 +70,7 @@ const PieTooltip = ({ active, payload }: any) => {
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   // Fonte oficial de saldo final (initial_balance + delta)
   const { currentBalance: finalBalance } = useFinancialBalance(month.id);
   const cofrinhoMap = useMemo(() => {
