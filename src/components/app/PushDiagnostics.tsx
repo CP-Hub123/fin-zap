@@ -161,7 +161,15 @@ export function PushDiagnostics() {
       });
       if (error) throw error;
       const d = data as any;
-      toast.message(`Enviado: ${d?.sent ?? 0}/${d?.found ?? 0} • removidos: ${d?.removed ?? 0}`);
+      const sk = d?.skipped ?? {};
+      const skBits = [
+        sk.preferences ? `prefs:${sk.preferences}` : null,
+        sk.dedupe ? `dedupe:${sk.dedupe}` : null,
+        sk.quiet_hours ? `quiet:${sk.quiet_hours}` : null,
+      ].filter(Boolean).join(' ');
+      toast.message(
+        `Enviado: ${d?.sent ?? 0}/${d?.found ?? 0} • removidos: ${d?.removed ?? 0}${skBits ? ` • skip ${skBits}` : ''}`
+      );
       await refresh();
     } catch (e: any) { toast.error(`Falha: ${e?.message ?? e}`); }
     finally { setBusy(null); }
