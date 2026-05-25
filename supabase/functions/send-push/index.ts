@@ -261,9 +261,17 @@ Deno.serve(async (req) => {
       const prefs = (prefsRow as Prefs | null) ?? null;
 
       const isCritical = priority === "critical" || category === "alerta";
+      // Diagnostic/test pushes must always be delivered — they bypass user preferences and quiet hours.
+      const bypassPrefs = isCritical || category === "test" || type === "test";
 
-      if (!isCritical && !categoryAllowed(category, prefs)) { skippedPrefs++; continue; }
-      if (!isCritical && isInQuietHours(prefs)) { skippedQuiet++; continue; }
+      if (!bypassPrefs && !categoryAllowed(category, prefs)) {
+        console.warn(`[send-push] skip user=${uid} reason=preferences category=${category}`);
+        skippedPrefs++; continue;
+      }
+      if (!bypassPrefs && isInQuietHours(prefs)) {
+        console.warn(`[send-push] skip user=${uid} reason=quiet_hours tz=${prefs?.timezone} start=${prefs?.quiet_hours_start} end=${prefs?.quiet_hours_end}`);
+        skippedQuiet++; continue;
+      }
 
       // Dedupe (by dedupe_key) — DB unique index will also protect
       if (dedupe_key) {
