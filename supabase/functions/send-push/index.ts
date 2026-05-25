@@ -89,10 +89,15 @@ async function importVapidKeysFromEnv(privateKey: string): Promise<CryptoKeyPair
   if (rawPublic.length !== 65 || rawPublic[0] !== 4) throw new Error("Invalid VAPID public key");
   const x = encodeBase64Url(rawPublic.slice(1, 33));
   const y = encodeBase64Url(rawPublic.slice(33, 65));
-  return webpush.importVapidKeys({
+  const keys = await webpush.importVapidKeys({
     publicKey: { kty: "EC", crv: "P-256", x, y },
     privateKey: { kty: "EC", crv: "P-256", x, y, d: privateKey },
   });
+  const probe = new TextEncoder().encode("finzap-vapid-key-check");
+  const signature = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, keys.privateKey, probe);
+  const validPair = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, keys.publicKey, signature, probe);
+  if (!validPair) throw new Error("VAPID key mismatch: VAPID_PRIVATE_KEY does not match the public key used by the app");
+  return keys;
 }
 
 async function describePushError(error: unknown): Promise<string> {
