@@ -310,6 +310,10 @@
   0%, 100% { filter: brightness(1); }
   50%      { filter: brightness(1.15); }
 }
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
 
 .animate-rise-in { animation: rise-in 0.5s var(--ease-zap) both; }
 .animate-zap-grow { animation: zap-grow 0.7s var(--ease-zap) both; }
