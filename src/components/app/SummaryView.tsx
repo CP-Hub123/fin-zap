@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReportModal } from './ReportModal';
 import { Progress } from '@/components/ui/progress';
@@ -182,17 +182,37 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
       <SmartDashboardHeader month={month} />
 
-      {/* Relatório premium */}
-      <div className="flex items-center justify-between rounded-2xl border bg-gradient-to-br from-primary/5 via-card to-card p-4">
-        <div className="min-w-0 pr-3">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Relatório premium</p>
-          <p className="text-sm font-medium mt-0.5 truncate">Gere um PDF editorial deste mês</p>
-          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">Resumo executivo, evolução de 6 meses, cofrinhos, cartões e insights.</p>
+      {/* Relatório Inteligente — flagship premium */}
+      <button
+        type="button"
+        onClick={() => setReportOpen(true)}
+        className="group relative w-full text-left overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-primary/[0.06] via-card to-card p-5 transition-all duration-300 hover:border-primary/40 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      >
+        <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl opacity-60 transition-opacity duration-500 group-hover:opacity-90" />
+        <div className="relative flex items-start gap-4">
+          <div className="relative shrink-0">
+            <div className="absolute inset-0 rounded-xl bg-primary/30 blur-md opacity-60 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-[1.04]">
+              <Sparkles className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-primary/80">FinZap Premium</p>
+              <span className="text-[10px] text-muted-foreground">·</span>
+              <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Edição mensal</p>
+            </div>
+            <h3 className="mt-1 text-base font-semibold leading-snug">Relatório Inteligente</h3>
+            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              Transforme seu mês financeiro em um relatório visual premium com insights, evolução e análises do FinZap.
+            </p>
+            <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary">
+              Gerar relatório premium
+              <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">{"\u2192"}</span>
+            </div>
+          </div>
         </div>
-        <Button size="sm" onClick={() => setReportOpen(true)} className="shrink-0">
-          <FileText className="h-4 w-4 mr-2" /> Gerar relatório
-        </Button>
-      </div>
+      </button>
 
       {/* Análise detalhada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
