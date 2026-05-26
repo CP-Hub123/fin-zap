@@ -10,7 +10,6 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
   Svg,
   Path,
   Line,
@@ -22,18 +21,13 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Manrope (Google Fonts TTF)
-try {
-  Font.register({
-    family: "Manrope",
-    fonts: [
-      { src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggexSg.ttf", fontWeight: 400 },
-      { src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggOxSg.ttf", fontWeight: 500 },
-      { src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggKxSg.ttf", fontWeight: 600 },
-      { src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggW7Sg.ttf", fontWeight: 700 },
-    ],
-  });
-} catch (_) {/* ignore re-register */}
+// NOTE: We intentionally rely on react-pdf's built-in Helvetica family.
+// Registering remote fonts (Manrope) at runtime causes intermittent TLS / DNS
+// failures on Deno Deploy and is the single most common cause of silent
+// renderToBuffer crashes in this function. Helvetica is identical across
+// Chromium / preview / print, so the editorial look is preserved.
+const FONT = "Helvetica";
+const FONT_BOLD = "Helvetica-Bold";
 
 // ────────────────────────────────────────────────────────────────────────
 // Brand tokens (editorial / premium)
@@ -56,7 +50,7 @@ const C = {
 const styles = StyleSheet.create({
   page: {
     padding: 48,
-    fontFamily: "Manrope",
+    fontFamily: FONT,
     fontSize: 10,
     color: C.ink,
     backgroundColor: C.bg,
@@ -66,14 +60,14 @@ const styles = StyleSheet.create({
   coverTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   brandDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: C.brand },
-  brandText: { fontSize: 12, fontWeight: 700, letterSpacing: 0.6 },
+  brandText: { fontSize: 12, fontFamily: FONT_BOLD, letterSpacing: 0.6 },
   coverEyebrow: { fontSize: 9, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
-  coverTitle: { fontSize: 44, fontWeight: 700, lineHeight: 1.05, marginTop: 12 },
+  coverTitle: { fontSize: 44, fontFamily: FONT_BOLD, lineHeight: 1.05, marginTop: 12 },
   coverSub: { fontSize: 14, color: C.muted, marginTop: 12, maxWidth: 380 },
   coverMetaGrid: { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: C.hair, paddingTop: 16 },
   coverMetaCol: { flex: 1 },
   coverMetaLabel: { fontSize: 8, color: C.muted, letterSpacing: 1.4, textTransform: "uppercase" },
-  coverMetaValue: { fontSize: 13, fontWeight: 600, marginTop: 4 },
+  coverMetaValue: { fontSize: 13, fontFamily: FONT_BOLD, marginTop: 4 },
 
   // Generic page chrome
   pageHeader: { flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 0.5, borderBottomColor: C.hair, paddingBottom: 10, marginBottom: 22 },
@@ -83,32 +77,32 @@ const styles = StyleSheet.create({
 
   section: { marginBottom: 24 },
   sectionEyebrow: { fontSize: 8, color: C.muted, letterSpacing: 1.6, textTransform: "uppercase", marginBottom: 6 },
-  sectionTitle: { fontSize: 22, fontWeight: 700, marginBottom: 4 },
+  sectionTitle: { fontSize: 22, fontFamily: FONT_BOLD, marginBottom: 4 },
   sectionLede: { fontSize: 10, color: C.muted, maxWidth: 480 },
 
   // KPI cards
   kpiGrid: { flexDirection: "row", gap: 12, marginTop: 14 },
   kpiCard: { flex: 1, padding: 14, borderWidth: 0.5, borderColor: C.hair, borderRadius: 6 },
   kpiLabel: { fontSize: 8, color: C.muted, letterSpacing: 1.4, textTransform: "uppercase" },
-  kpiValue: { fontSize: 18, fontWeight: 700, marginTop: 8 },
+  kpiValue: { fontSize: 18, fontFamily: FONT_BOLD, marginTop: 8 },
   kpiHint: { fontSize: 9, color: C.muted, marginTop: 4 },
 
   // Rows
   row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: C.hair },
   rowFirst: { borderTopWidth: 0.5, borderTopColor: C.hair },
-  rowName: { fontSize: 10, fontWeight: 500 },
+  rowName: { fontSize: 10 },
   rowMeta: { fontSize: 9, color: C.muted, marginTop: 2 },
-  rowValue: { fontSize: 11, fontWeight: 600 },
+  rowValue: { fontSize: 11, fontFamily: FONT_BOLD },
 
   // Insights
   insight: { paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: C.hair },
   insightLabel: { fontSize: 8, color: C.muted, letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 6 },
-  insightTitle: { fontSize: 12, fontWeight: 600, marginBottom: 4 },
+  insightTitle: { fontSize: 12, fontFamily: FONT_BOLD, marginBottom: 4 },
   insightBody: { fontSize: 10, color: C.ink2, lineHeight: 1.5 },
 
   // Closing
   closingWrap: { flexGrow: 1, justifyContent: "center", alignItems: "center" },
-  closingQuote: { fontSize: 26, fontWeight: 600, textAlign: "center", maxWidth: 380, lineHeight: 1.25 },
+  closingQuote: { fontSize: 26, fontFamily: FONT_BOLD, textAlign: "center", maxWidth: 380, lineHeight: 1.25 },
   closingSig: { marginTop: 28, fontSize: 9, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
 });
 
