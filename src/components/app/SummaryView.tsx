@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReportModal } from './ReportModal';
 import { Progress } from '@/components/ui/progress';
