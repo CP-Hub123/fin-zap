@@ -586,7 +586,10 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const t0 = Date.now();
+  let stage = "init";
   try {
+    stage = "auth";
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -606,6 +609,7 @@ Deno.serve(async (req) => {
     }
     const userId = claims.claims.sub as string;
 
+    stage = "parse_body";
     const body = await req.json().catch(() => ({}));
     const monthId = String(body?.monthId || "");
     if (!monthId) {
@@ -617,6 +621,7 @@ Deno.serve(async (req) => {
     // Use service role only for read perf, but always filter by userId.
     const supa = createClient(SUPABASE_URL, SERVICE_ROLE);
 
+    stage = "load_payload";
     let payload;
     try {
       payload = await loadPayload(supa, userId, monthId);
@@ -632,14 +637,32 @@ Deno.serve(async (req) => {
           status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.error("loadPayload error", e);
-      return new Response(JSON.stringify({ error: "Falha ao carregar dados" }), {
+      console.error("[generate-report] loadPayload failed", { userId, monthId, error: e });
+      return new Response(JSON.stringify({
+        error: "Falha ao carregar dados do relatório",
+        stage,
+        reason: e?.message || String(e),
+      }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    stage = "build_document";
+    console.log("[generate-report] payload loaded", {
+      userId, monthId, periodo: payload.periodo,
+      tx: payload.history?.length, cofrinhos: payload.cofrinhos?.length, cards: payload.cards?.length,
+      ms: Date.now() - t0,
+    });
     const doc = buildDocument(payload);
+
+    stage = "render_pdf";
+    const tRender = Date.now();
     const buffer = await renderToBuffer(doc as any);
+    console.log("[generate-report] rendered", {
+      bytes: (buffer as any)?.length ?? (buffer as any)?.byteLength,
+      renderMs: Date.now() - tRender,
+      totalMs: Date.now() - t0,
+    });
 
     return new Response(buffer, {
       status: 200,
@@ -651,8 +674,13 @@ Deno.serve(async (req) => {
       },
     });
   } catch (e) {
-    console.error("generate-report fatal", e);
-    return new Response(JSON.stringify({ error: "Erro ao gerar relatório" }), {
+    const err = e as any;
+    console.error("[generate-report] fatal", { stage, error: err, stack: err?.stack });
+    return new Response(JSON.stringify({
+      error: "Falha ao gerar relatório",
+      stage,
+      reason: err?.message || String(err),
+    }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
