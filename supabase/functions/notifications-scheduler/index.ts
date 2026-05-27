@@ -52,8 +52,37 @@ Deno.serve(async (req) => {
 
   let dispatchedCount = 0;
   let errorCount = 0;
+  let cappedCount = 0;
+
+  // Per-run daily cap tracker (max 2 non-critical pushes / 24h / user).
+  // Critical alerts (orçamento estourado, vencimentos hoje, alerta) bypass the cap.
+  const DAILY_CAP = 2;
+  const dailyCounts = new Map<string, number>();
+  const cap24hStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  async function loadDailyCount(userId: string): Promise<number> {
+    if (dailyCounts.has(userId)) return dailyCounts.get(userId)!;
+    const { count } = await supabase
+      .from("notifications_log")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .neq("priority", "critical")
+      .gte("sent_at", cap24hStart);
+    const n = count ?? 0;
+    dailyCounts.set(userId, n);
+    return n;
+  }
 
   async function dispatch(args: PushArgs) {
+    const isCritical = args.priority === "critical" || args.category === "alerta";
+    if (!isCritical) {
+      const n = await loadDailyCount(args.user_id);
+      if (n >= DAILY_CAP) {
+        cappedCount++;
+        console.log(`[scheduler] cap_hit user=${args.user_id} count=${n} type=${args.type}`);
+        return;
+      }
+    }
     try {
       const res = await fetch(`${supabaseUrl}/functions/v1/send-push`, {
         method: "POST",
@@ -64,8 +93,15 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ ...args, internal: true }),
       });
       const json = await res.json().catch(() => ({}));
-      if (res.ok) dispatchedCount++;
-      else errorCount++;
+      if (res.ok) {
+        const sent = Number((json as any)?.sent ?? 0);
+        if (sent > 0 || !isCritical) {
+          dailyCounts.set(args.user_id, (dailyCounts.get(args.user_id) ?? 0) + 1);
+        }
+        dispatchedCount++;
+      } else {
+        errorCount++;
+      }
       return json;
     } catch (e) {
       errorCount++;
@@ -100,8 +136,8 @@ Deno.serve(async (req) => {
       const dedupe = `recurring:${r.user_id}:${r.nome}:${r.proxima_execucao}`;
       await dispatch({
         user_id: r.user_id,
-        title: isToday ? "📅 Vence hoje" : "📅 Vence amanhã",
-        body: `${r.nome} (${brl(Number(r.valor))}) ${when}.`,
+        title: isToday ? "Vence hoje" : "Vence amanhã",
+        body: `${r.nome} — ${brl(Number(r.valor))} ${when}. Confirme para manter sua previsão precisa.`,
         type: "recurring_due",
         category: r.tipo === "receita" ? "recorrencia" : "vencimento",
         priority: isToday ? "high" : "normal",
@@ -142,16 +178,16 @@ Deno.serve(async (req) => {
         const used = spent[p.category] ?? 0;
         const pct = used / planned;
         const thresholds: Array<[number, string, string, "high" | "critical"]> = [
-          [1.0, "🚨 Orçamento estourado", `Você ultrapassou o orçamento de ${p.category}.`, "critical"],
-          [0.8, "🔴 80% do orçamento", `Você já usou 80% do orçamento de ${p.category}.`, "high"],
-          [0.5, "⚠️ 50% do orçamento", `Você já usou metade do orçamento de ${p.category}.`, "normal" as any],
+          [1.0, "Orçamento de " + p.category + " ultrapassado", `O planejado para ${p.category} foi superado neste mês.`, "critical"],
+          [0.8, "80% do orçamento de " + p.category, `Você já utilizou a maior parte do planejado para ${p.category}.`, "high"],
+          [0.5, "Metade do orçamento de " + p.category, `Você cruzou metade do planejado para ${p.category}.`, "normal" as any],
         ];
         for (const [t, title, body, prio] of thresholds) {
           if (pct >= t) {
             await dispatch({
               user_id: m.user_id,
               title,
-              body: `${body} (${brl(used)} de ${brl(planned)})`,
+              body: `${body} (${brl(used)} de ${brl(planned)}).`,
               type: `budget_${Math.round(t * 100)}`,
               category: t >= 1 ? "alerta" : "insight",
               priority: prio,
@@ -177,10 +213,10 @@ Deno.serve(async (req) => {
           const isDone = m >= 1;
           await dispatch({
             user_id: c.user_id,
-            title: isDone ? "🎉 Meta concluída" : `🐷 ${Math.round(m * 100)}% da meta`,
+            title: isDone ? "Meta concluída" : `${Math.round(m * 100)}% da meta`,
             body: isDone
-              ? `Cofrinho “${c.nome}” atingiu a meta de ${brl(Number(c.meta_valor))}!`
-              : `Você está a ${brl(Number(c.meta_valor) - Number(c.saldo))} da meta “${c.nome}”.`,
+              ? `O cofrinho “${c.nome}” atingiu a meta de ${brl(Number(c.meta_valor))}.`
+              : `Faltam ${brl(Number(c.meta_valor) - Number(c.saldo))} para a meta de “${c.nome}”.`,
             type: "cofrinho_milestone",
             category: "cofrinho",
             priority: isDone ? "high" : "normal",
@@ -192,7 +228,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ---- 4. Daily reminder (8h SP) ----
+    // ---- 4. Daily reminder — legacy explicit opt-in (8h SP) ----
     if (isMorning) {
       const { data: prefs } = await supabase
         .from("notification_preferences")
@@ -201,8 +237,8 @@ Deno.serve(async (req) => {
       for (const p of prefs ?? []) {
         await dispatch({
           user_id: p.user_id,
-          title: "☀️ Bom dia",
-          body: "Confira suas finanças e mantenha o controle do dia.",
+          title: "Bom dia",
+          body: "Um momento curto com o FinZap mantém sua previsão alinhada ao seu dia.",
           type: "daily_reminder",
           category: "lembrete_diario",
           url: "/app",
@@ -230,13 +266,104 @@ Deno.serve(async (req) => {
         const totalOut = (txs ?? []).filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
         await dispatch({
           user_id: p.user_id,
-          title: "📊 Resumo da semana",
-          body: `Entrou ${brl(totalIn)} • Saiu ${brl(totalOut)} • Saldo ${brl(totalIn - totalOut)}.`,
+          title: "Resumo da semana",
+          body: `Entrou ${brl(totalIn)} · Saiu ${brl(totalOut)} · Saldo ${brl(totalIn - totalOut)}.`,
           type: "weekly_summary",
           category: "resumo_semanal",
           url: "/app",
           dedupe_key: `weekly:${p.user_id}:${todayStr}`,
         });
+      }
+    }
+
+    // ---- 7. Ritmo Financeiro & Atualização contextual (once / day, 9h SP) ----
+    // Reads only users with at least one transaction ever; computes precision proxy
+    // based on time since the last registered movement. Sends at most one signal
+    // per user per week, respecting the per-user daily cap above.
+    const isRhythmHour = hourSP === 9;
+    if (isRhythmHour) {
+      const isoWeek = `${today.getFullYear()}-W${Math.ceil(
+        ((today.getTime() - new Date(today.getFullYear(), 0, 1).getTime()) / 86400000 +
+          new Date(today.getFullYear(), 0, 1).getDay() + 1) / 7,
+      )}`;
+
+      // Pull rhythm-eligible users (opt-in by default).
+      const { data: rhythmPrefs } = await supabase
+        .from("notification_preferences")
+        .select("user_id, ritmo_financeiro, atualizacao_diaria");
+
+      for (const p of rhythmPrefs ?? []) {
+        const uid = p.user_id;
+
+        // Last transaction recorded (by created_at, not date — we want activity).
+        const { data: lastTxRow } = await supabase
+          .from("transactions")
+          .select("created_at")
+          .eq("user_id", uid)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!lastTxRow?.created_at) continue; // novos usuários — nada a sinalizar
+
+        const lastTs = new Date(lastTxRow.created_at as string).getTime();
+        const daysSince = Math.floor((today.getTime() - lastTs) / 86400000);
+
+        // Activity in last 14 days (dias com pelo menos 1 movimento)
+        const since14 = new Date(today.getTime() - 14 * 86400000).toISOString();
+        const { data: recent14 } = await supabase
+          .from("transactions")
+          .select("created_at")
+          .eq("user_id", uid)
+          .gte("created_at", since14)
+          .limit(500);
+        const activeDays = new Set(
+          (recent14 ?? []).map((t: any) => (t.created_at as string).slice(0, 10)),
+        ).size;
+
+        // —— Atualização contextual (ritmo caindo) ——
+        // Only fires when the system genuinely loses visibility.
+        if (p.atualizacao_diaria) {
+          if (daysSince >= 7) {
+            await dispatch({
+              user_id: uid,
+              title: "O FinZap perdeu visibilidade",
+              body: "Seus dados podem não refletir seu momento atual. Atualize quando puder — sua previsão volta ao normal.",
+              type: "rhythm_outdated",
+              category: "atualizacao_diaria",
+              priority: "normal",
+              url: "/app",
+              dedupe_key: `rhythm_outdated:${uid}:${isoWeek}`,
+            });
+            continue;
+          }
+          if (daysSince >= 4) {
+            await dispatch({
+              user_id: uid,
+              title: "Seu nível de previsibilidade caiu",
+              body: "Sem movimentos recentes, o FinZap fica menos preciso. Registrar devolve nitidez ao seu panorama.",
+              type: "rhythm_attention",
+              category: "atualizacao_diaria",
+              priority: "low",
+              url: "/app",
+              dedupe_key: `rhythm_attention:${uid}:${isoWeek}`,
+            });
+            continue;
+          }
+        }
+
+        // —— Ritmo Financeiro (reforço positivo, 1x / semana, segundas) ——
+        if (p.ritmo_financeiro && dowSP === "Mon" && daysSince <= 2 && activeDays >= 5) {
+          await dispatch({
+            user_id: uid,
+            title: "Ritmo consistente",
+            body: "Você manteve uma boa previsibilidade nos últimos dias. Suas projeções estão sólidas.",
+            type: "rhythm_consistent",
+            category: "ritmo_financeiro",
+            priority: "low",
+            url: "/app",
+            dedupe_key: `rhythm_consistent:${uid}:${isoWeek}`,
+          });
+        }
       }
     }
 
@@ -359,14 +486,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ dispatched: dispatchedCount, errors: errorCount }), {
+    return new Response(JSON.stringify({ dispatched: dispatchedCount, errors: errorCount, capped: cappedCount }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[scheduler] error=${message}`);
-    return new Response(JSON.stringify({ error: "Internal error", dispatched: dispatchedCount, errors: errorCount }), {
+    return new Response(JSON.stringify({ error: "Internal error", dispatched: dispatchedCount, errors: errorCount, capped: cappedCount }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
