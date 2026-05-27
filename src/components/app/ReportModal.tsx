@@ -17,7 +17,7 @@ interface Props {
 type Stage = "idle" | "analyzing" | "insights" | "rendering" | "finalizing" | "ready" | "error";
 
 const PROGRESS: Record<Stage, { label: string; sub: string; progress: number }> = {
-  idle:       { label: "Pronto para gerar",            sub: "Toque em \"Gerar relatório premium\" para começar.", progress: 0 },
+  idle:       { label: "Pronto para abrir",            sub: "Toque em \"Ver meu relatório\" para começar.",       progress: 0 },
   analyzing:  { label: "Analisando movimentações…",    sub: "Lendo receitas, despesas e cofrinhos do mês.",      progress: 22 },
   insights:   { label: "Gerando insights…",            sub: "Identificando padrões e variações do período.",     progress: 52 },
   rendering:  { label: "Montando relatório…",          sub: "Compondo a edição editorial em A4.",                progress: 80 },
@@ -244,11 +244,11 @@ export const ReportModal = ({ open, onOpenChange, monthId, periodoLabel }: Props
               ) : (
                 <Button onClick={handleGenerate} disabled={isBusy || !monthId} className="w-full" size="lg">
                   {isBusy ? (
-                    <>Gerando relatório…</>
+                    <>Preparando sua leitura…</>
                   ) : stage === "error" ? (
                     <>Tentar novamente</>
                   ) : (
-                    <><Sparkles className="h-4 w-4 mr-2" /> Gerar relatório premium</>
+                    <><Sparkles className="h-4 w-4 mr-2" /> Ver meu relatório</>
                   )}
                 </Button>
               )}
