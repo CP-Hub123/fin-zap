@@ -187,16 +187,19 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       <FinancialRhythmCard />
 
       {/* Relatório Inteligente — flagship premium */}
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setReportOpen(true)}
-        className="group relative w-full text-left overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-primary/[0.06] via-card to-card p-5 transition-all duration-300 hover:border-primary/40 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setReportOpen(true); } }}
+        className="group relative w-full overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-primary/[0.07] via-card to-card p-5 cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-[0_10px_40px_-14px_hsl(var(--primary)/0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.995]"
       >
-        <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl opacity-60 transition-opacity duration-500 group-hover:opacity-90" />
+        <div aria-hidden className="pointer-events-none absolute -top-20 -right-20 h-44 w-44 rounded-full bg-primary/25 blur-3xl opacity-60 transition-opacity duration-500 group-hover:opacity-90" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/[0.08] to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
         <div className="relative flex items-start gap-4">
           <div className="relative shrink-0">
-            <div className="absolute inset-0 rounded-xl bg-primary/30 blur-md opacity-60 transition-opacity duration-300 group-hover:opacity-100" />
-            <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-[1.04]">
+            <div className="absolute inset-0 rounded-xl bg-primary/40 blur-md opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-[1.06]">
               <Sparkles className="h-5 w-5" />
             </div>
           </div>
@@ -206,17 +209,25 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
               <span className="text-[10px] text-muted-foreground">·</span>
               <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Edição mensal</p>
             </div>
-            <h3 className="mt-1 text-base font-semibold leading-snug">Relatório Inteligente</h3>
+            <h3 className="mt-1 text-[17px] font-semibold leading-snug tracking-tight">Relatório Inteligente</h3>
             <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-              Transforme seu mês financeiro em um relatório visual premium com insights, evolução e análises do FinZap.
+              Entenda seu mês além dos números.
             </p>
-            <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary">
-              Gerar relatório premium
-              <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">{"\u2192"}</span>
-            </div>
           </div>
         </div>
-      </button>
+
+        <Button
+          type="button"
+          size="lg"
+          onClick={(e) => { e.stopPropagation(); setReportOpen(true); }}
+          className="relative mt-5 w-full h-12 text-[15px] font-semibold tracking-tight bg-gradient-to-br from-primary to-primary/85 text-primary-foreground shadow-[0_8px_24px_-10px_hsl(var(--primary)/0.7)] hover:shadow-[0_12px_32px_-10px_hsl(var(--primary)/0.85)] hover:from-primary hover:to-primary transition-all duration-300 active:scale-[0.98]"
+        >
+          <span className="relative inline-flex items-center gap-2">
+            Ver meu relatório
+            <Sparkles className="h-4 w-4 opacity-90 transition-transform duration-300 group-hover:rotate-12" />
+          </span>
+        </Button>
+      </div>
 
       {/* Análise detalhada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
