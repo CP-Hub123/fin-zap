@@ -16,6 +16,7 @@ import type { Transaction } from '@/hooks/useTransactions';
 import type { BudgetPlan } from '@/hooks/useBudget';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { SmartDashboardHeader } from './SmartDashboardHeader';
+import { FinancialRhythmCard } from './FinancialRhythmCard';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 
 interface SummaryViewProps {
@@ -181,6 +182,9 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
     <div className="space-y-6">
       {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
       <SmartDashboardHeader month={month} />
+
+      {/* Ritmo Financeiro — confiabilidade da projeção (retenção premium) */}
+      <FinancialRhythmCard />
 
       {/* Relatório Inteligente — flagship premium */}
       <button
