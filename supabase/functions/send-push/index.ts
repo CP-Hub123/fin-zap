@@ -45,6 +45,8 @@ type Prefs = {
   sistema_novidades: boolean;
   lembrete_diario: boolean;
   resumo_semanal: boolean;
+  ritmo_financeiro: boolean;
+  atualizacao_diaria: boolean;
   quiet_hours_start: number;
   quiet_hours_end: number;
   timezone: string;
@@ -69,6 +71,11 @@ const CATEGORY_TO_PREF: Record<string, keyof Prefs | null> = {
   founders: "sistema_novidades",
   lembrete_diario: "lembrete_diario",
   resumo_semanal: "resumo_semanal",
+  ritmo: "ritmo_financeiro",
+  ritmo_financeiro: "ritmo_financeiro",
+  precisao: "ritmo_financeiro",
+  atualizacao: "atualizacao_diaria",
+  atualizacao_diaria: "atualizacao_diaria",
   test: null,
   general: null,
 };

@@ -11,7 +11,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { BellRing, Send, CreditCard, Wallet, Repeat, Target, Sparkles, Megaphone, AlertTriangle, Sun, CalendarDays, LucideIcon } from 'lucide-react';
+import { BellRing, Send, CreditCard, Wallet, Repeat, Target, Sparkles, Megaphone, AlertTriangle, Sun, CalendarDays, Activity, Compass, LucideIcon } from 'lucide-react';
 import { PushDiagnostics } from './PushDiagnostics';
 import { PushStatus } from './PushStatus';
 
@@ -62,6 +62,8 @@ const GROUPS: Group[] = [
     label: 'Insights inteligentes',
     rows: [
       { key: 'insights', title: 'Insights financeiros', desc: 'Previsões, padrões e recomendações para economizar.', icon: Sparkles },
+      { key: 'ritmo_financeiro', title: 'Ritmo financeiro', desc: 'Sinais discretos sobre a precisão da sua previsão e a consistência da sua rotina.', icon: Activity },
+      { key: 'atualizacao_diaria', title: 'Atualização contextual', desc: 'Um lembrete sutil somente quando o FinZap perde visibilidade dos seus movimentos.', icon: Compass },
       { key: 'resumo_semanal', title: 'Resumo semanal', desc: 'Domingo à noite, um fechamento da semana.', icon: CalendarDays },
       { key: 'lembrete_diario', title: 'Lembrete diário', desc: 'Um aviso pela manhã para revisar suas finanças.', icon: Sun },
     ],
