@@ -74,8 +74,17 @@ export const useRecurringTransactions = () => {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('recurring_transactions').delete().eq('id', id);
+      if (!user) throw new Error('Não autenticado');
+      const { data, error } = await supabase
+        .from('recurring_transactions')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select('id');
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('Recorrência não encontrada ou já removida.');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
