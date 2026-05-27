@@ -14,6 +14,11 @@ import {
   Path,
   Line,
   Rect,
+  Circle,
+  G,
+  Defs,
+  LinearGradient,
+  Stop,
   renderToBuffer,
 } from "npm:@react-pdf/renderer@3.4.4";
 
@@ -28,194 +33,423 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // Chromium / preview / print, so the editorial look is preserved.
 const FONT = "Helvetica";
 const FONT_BOLD = "Helvetica-Bold";
+const FONT_OBL = "Helvetica-Oblique";
 
 // ────────────────────────────────────────────────────────────────────────
 // Brand tokens (editorial / premium)
 // ────────────────────────────────────────────────────────────────────────
 const C = {
-  ink: "#0B0F14",
-  ink2: "#1A2230",
-  muted: "#6B7280",
-  hair: "#E5E7EB",
-  bg: "#FFFFFF",
-  surface: "#F8FAFC",
-  brand: "#1F8A4C",
-  brandSoft: "#E8F5EE",
-  pos: "#1F8A4C",
-  neg: "#B42318",
-  warn: "#B54708",
-  blue: "#1D4ED8",
+  ink:       "#0A0E14",
+  ink2:      "#1F2937",
+  ink3:      "#374151",
+  muted:     "#6B7280",
+  mutedSoft: "#9CA3AF",
+  hair:      "#EAEDF1",
+  hairSoft:  "#F2F4F7",
+  bg:        "#FFFFFF",
+  surface:   "#F8FAFC",
+  surface2:  "#F4F7FB",
+  brand:     "#0F8A5F",      // FinZap deep green
+  brandSoft: "#E6F4EE",
+  brand2:    "#127E7A",      // teal accent (signature)
+  blue:      "#1D4ED8",
+  blueSoft:  "#E8EEFB",
+  pos:       "#0F8A5F",
+  neg:       "#B42318",
+  negSoft:   "#FDECEC",
+  warn:      "#B54708",
+  warnSoft:  "#FEF5E7",
+  glow:      "#9BE7CB",
 };
 
 const styles = StyleSheet.create({
   page: {
-    padding: 48,
+    paddingTop: 56,
+    paddingBottom: 56,
+    paddingHorizontal: 52,
     fontFamily: FONT,
-    fontSize: 10,
+    fontSize: 9.5,
     color: C.ink,
     backgroundColor: C.bg,
   },
+  pageCover: {
+    padding: 0,
+    fontFamily: FONT,
+    color: C.ink,
+    backgroundColor: C.bg,
+  },
+
   // Cover
-  coverWrap: { flexGrow: 1, justifyContent: "space-between" },
-  coverTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  brandDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: C.brand },
-  brandText: { fontSize: 12, fontFamily: FONT_BOLD, letterSpacing: 0.6 },
-  coverEyebrow: { fontSize: 9, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
-  coverTitle: { fontSize: 44, fontFamily: FONT_BOLD, lineHeight: 1.05, marginTop: 12 },
-  coverSub: { fontSize: 14, color: C.muted, marginTop: 12, maxWidth: 380 },
-  coverMetaGrid: { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: C.hair, paddingTop: 16 },
-  coverMetaCol: { flex: 1 },
-  coverMetaLabel: { fontSize: 8, color: C.muted, letterSpacing: 1.4, textTransform: "uppercase" },
-  coverMetaValue: { fontSize: 13, fontFamily: FONT_BOLD, marginTop: 4 },
+  coverBg:    { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  coverInner: { flexGrow: 1, padding: 56, justifyContent: "space-between" },
+  coverTop:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  brandRow:   { flexDirection: "row", alignItems: "center", gap: 8 },
+  brandMark:  { width: 12, height: 12, borderRadius: 3, backgroundColor: C.brand },
+  brandText:  { fontSize: 11, fontFamily: FONT_BOLD, letterSpacing: 2 },
+  coverEyebrow: { fontSize: 8.5, color: C.muted, letterSpacing: 2.2, textTransform: "uppercase" },
+  coverTitle: { fontSize: 52, fontFamily: FONT_BOLD, lineHeight: 1.02, marginTop: 14, letterSpacing: -0.5 },
+  coverPeriod:{ fontSize: 14, color: C.brand, marginTop: 12, fontFamily: FONT_BOLD, letterSpacing: 0.4 },
+  coverSub:   { fontSize: 12, color: C.ink3, marginTop: 16, maxWidth: 360, lineHeight: 1.55 },
+
+  coverMetaGrid:  { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: C.hair, paddingTop: 18 },
+  coverMetaCol:   { flex: 1, paddingRight: 12 },
+  coverMetaLabel: { fontSize: 7.5, color: C.muted, letterSpacing: 1.6, textTransform: "uppercase" },
+  coverMetaValue: { fontSize: 12, fontFamily: FONT_BOLD, marginTop: 6 },
+  coverMetaHint:  { fontSize: 8, color: C.muted, marginTop: 2 },
 
   // Generic page chrome
-  pageHeader: { flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 0.5, borderBottomColor: C.hair, paddingBottom: 10, marginBottom: 22 },
-  pageHeaderL: { fontSize: 8, color: C.muted, letterSpacing: 1.6, textTransform: "uppercase" },
-  pageHeaderR: { fontSize: 8, color: C.muted },
-  pageFooter: { position: "absolute", left: 48, right: 48, bottom: 28, flexDirection: "row", justifyContent: "space-between", fontSize: 8, color: C.muted },
+  pageHeader:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 10, marginBottom: 26 },
+  pageHeaderL: { fontSize: 7.5, color: C.muted, letterSpacing: 1.8, textTransform: "uppercase" },
+  pageHeaderR: { fontSize: 7.5, color: C.muted, letterSpacing: 1.2 },
+  hairline:    { height: 0.5, backgroundColor: C.hair, marginBottom: 26 },
 
-  section: { marginBottom: 24 },
-  sectionEyebrow: { fontSize: 8, color: C.muted, letterSpacing: 1.6, textTransform: "uppercase", marginBottom: 6 },
-  sectionTitle: { fontSize: 22, fontFamily: FONT_BOLD, marginBottom: 4 },
-  sectionLede: { fontSize: 10, color: C.muted, maxWidth: 480 },
+  pageFooter:  { position: "absolute", left: 52, right: 52, bottom: 28, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  footerLeft:  { fontSize: 7.5, color: C.muted, letterSpacing: 1.6 },
+  footerRight: { fontSize: 7.5, color: C.muted, letterSpacing: 0.4 },
+
+  section: { marginBottom: 28 },
+  sectionEyebrow: { fontSize: 7.5, color: C.brand, letterSpacing: 1.8, textTransform: "uppercase", marginBottom: 8, fontFamily: FONT_BOLD },
+  sectionTitle:   { fontSize: 22, fontFamily: FONT_BOLD, marginBottom: 6, letterSpacing: -0.3 },
+  sectionLede:    { fontSize: 10, color: C.ink3, maxWidth: 460, lineHeight: 1.55 },
 
   // KPI cards
-  kpiGrid: { flexDirection: "row", gap: 12, marginTop: 14 },
-  kpiCard: { flex: 1, padding: 14, borderWidth: 0.5, borderColor: C.hair, borderRadius: 6 },
-  kpiLabel: { fontSize: 8, color: C.muted, letterSpacing: 1.4, textTransform: "uppercase" },
-  kpiValue: { fontSize: 18, fontFamily: FONT_BOLD, marginTop: 8 },
-  kpiHint: { fontSize: 9, color: C.muted, marginTop: 4 },
+  kpiGrid: { flexDirection: "row", gap: 10, marginTop: 16 },
+  kpiCard: { flex: 1, padding: 14, borderWidth: 0.5, borderColor: C.hair, borderRadius: 8, backgroundColor: C.bg },
+  kpiLabel: { fontSize: 7.5, color: C.muted, letterSpacing: 1.4, textTransform: "uppercase" },
+  kpiValue: { fontSize: 18, fontFamily: FONT_BOLD, marginTop: 10, letterSpacing: -0.3 },
+  kpiHint:  { fontSize: 8.5, color: C.muted, marginTop: 4 },
+  kpiDelta: { fontSize: 8, fontFamily: FONT_BOLD, marginTop: 6 },
 
   // Rows
-  row: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: C.hair },
-  rowFirst: { borderTopWidth: 0.5, borderTopColor: C.hair },
-  rowName: { fontSize: 10 },
-  rowMeta: { fontSize: 9, color: C.muted, marginTop: 2 },
+  rowGroup: { borderTopWidth: 0.5, borderTopColor: C.hair },
+  row:      { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: C.hair },
+  rowL:     { flex: 1, paddingRight: 14 },
+  rowName:  { fontSize: 10.5, fontFamily: FONT_BOLD },
+  rowMeta:  { fontSize: 8.5, color: C.muted, marginTop: 3, letterSpacing: 0.2 },
   rowValue: { fontSize: 11, fontFamily: FONT_BOLD },
 
+  // Progress
+  progressTrack: { height: 4, backgroundColor: C.hairSoft, borderRadius: 4, marginTop: 8, overflow: "hidden" },
+  progressFill:  { height: 4, borderRadius: 4 },
+
+  // Badge
+  badge:      { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 3, alignSelf: "flex-start" },
+  badgeText:  { fontSize: 7.5, fontFamily: FONT_BOLD, letterSpacing: 0.6, textTransform: "uppercase" },
+
   // Insights
-  insight: { paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: C.hair },
-  insightLabel: { fontSize: 8, color: C.muted, letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 6 },
-  insightTitle: { fontSize: 12, fontFamily: FONT_BOLD, marginBottom: 4 },
-  insightBody: { fontSize: 10, color: C.ink2, lineHeight: 1.5 },
+  insightCard:   { padding: 16, borderWidth: 0.5, borderColor: C.hair, borderRadius: 8, marginBottom: 12, backgroundColor: C.bg },
+  insightHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  insightDot:    { width: 6, height: 6, borderRadius: 3, marginRight: 8 },
+  insightLabel:  { fontSize: 7.5, color: C.muted, letterSpacing: 1.6, textTransform: "uppercase" },
+  insightTitle:  { fontSize: 12.5, fontFamily: FONT_BOLD, marginBottom: 6, letterSpacing: -0.1 },
+  insightBody:   { fontSize: 10, color: C.ink3, lineHeight: 1.6 },
 
   // Closing
-  closingWrap: { flexGrow: 1, justifyContent: "center", alignItems: "center" },
-  closingQuote: { fontSize: 26, fontFamily: FONT_BOLD, textAlign: "center", maxWidth: 380, lineHeight: 1.25 },
-  closingSig: { marginTop: 28, fontSize: 9, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
+  closingBg:   { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  closingWrap: { flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 60 },
+  closingMark: { width: 28, height: 28, borderRadius: 6, backgroundColor: C.brand, marginBottom: 28 },
+  closingQuote:{ fontSize: 24, fontFamily: FONT_BOLD, textAlign: "center", maxWidth: 380, lineHeight: 1.28, letterSpacing: -0.3 },
+  closingNote: { fontSize: 10, color: C.muted, textAlign: "center", marginTop: 18, maxWidth: 320, lineHeight: 1.55 },
+  closingSig:  { position: "absolute", bottom: 56, left: 56, right: 56, flexDirection: "row", justifyContent: "space-between" },
+  closingSigText: { fontSize: 8, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
 });
 
 // ────────────────────────────────────────────────────────────────────────
 // Helpers
 // ────────────────────────────────────────────────────────────────────────
 const fmtBRL = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v ?? 0);
-const fmtPct = (v: number) => `${Math.round(v)}%`;
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number.isFinite(v) ? v : 0);
+const fmtPct = (v: number) => `${Math.round(Math.max(0, Math.min(999, v)))}%`;
+const fmtSignedBRL = (v: number) => (v >= 0 ? "+ " : "− ") + fmtBRL(Math.abs(v));
 const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
-function PageChrome({ label, periodo }: { label: string; periodo: string }) {
+// ────────────────────────────────────────────────────────────────────────
+// Signature visual element — flow curve (used subtly on every page corner)
+// ────────────────────────────────────────────────────────────────────────
+function FlowSignature({ x = 0, y = 0, w = 120, h = 28, opacity = 0.5 }:
+  { x?: number; y?: number; w?: number; h?: number; opacity?: number }) {
+  // Two staggered curves — represents flow + impulse, the FinZap mark.
+  const d1 = `M 0 ${h * 0.7} C ${w * 0.25} ${h * 0.1}, ${w * 0.55} ${h * 0.95}, ${w} ${h * 0.35}`;
+  const d2 = `M 0 ${h * 0.85} C ${w * 0.3} ${h * 0.4}, ${w * 0.6} ${h * 1.05}, ${w} ${h * 0.55}`;
   return React.createElement(
-    View,
-    { style: styles.pageHeader, fixed: true },
-    React.createElement(Text, { style: styles.pageHeaderL }, label),
-    React.createElement(Text, { style: styles.pageHeaderR }, `FinZap · ${periodo}`),
+    Svg, { width: w, height: h, style: { position: "absolute", left: x, top: y, opacity } },
+    React.createElement(Path, { d: d1, stroke: C.brand, strokeWidth: 1, fill: "none" }),
+    React.createElement(Path, { d: d2, stroke: C.brand2, strokeWidth: 0.6, fill: "none", opacity: 0.65 }),
   );
 }
 
-function PageFooter() {
+// Subtle editorial grid background — 6 vertical hairlines barely visible.
+function GridBackground({ w = 595, h = 842, opacity = 0.04 }:
+  { w?: number; h?: number; opacity?: number }) {
+  const cols = 6;
+  const pad = 52;
+  const inner = w - pad * 2;
+  const step = inner / (cols - 1);
+  const lines: any[] = [];
+  for (let i = 0; i < cols; i++) {
+    const x = pad + i * step;
+    lines.push(React.createElement(Line, {
+      key: `c${i}`, x1: x, x2: x, y1: 40, y2: h - 40,
+      stroke: C.ink, strokeWidth: 0.4,
+    }));
+  }
   return React.createElement(
-    View,
-    { style: styles.pageFooter, fixed: true },
-    React.createElement(Text, null, "FinZap"),
-    React.createElement(Text, {
-      render: ({ pageNumber, totalPages }: any) => `${pageNumber} / ${totalPages}`,
+    Svg, { width: w, height: h, style: { position: "absolute", top: 0, left: 0, opacity } },
+    ...lines,
+  );
+}
+
+// Cover backdrop — soft radial glow + signature flow + editorial grid.
+function CoverBackdrop() {
+  return React.createElement(Svg, { width: 595, height: 842, style: styles.coverBg },
+    React.createElement(Defs, null,
+      React.createElement(LinearGradient, { id: "glowG", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+        React.createElement(Stop, { offset: "0%", stopColor: C.glow, stopOpacity: 0.55 }),
+        React.createElement(Stop, { offset: "60%", stopColor: C.glow, stopOpacity: 0.10 }),
+        React.createElement(Stop, { offset: "100%", stopColor: C.bg, stopOpacity: 0 }),
+      ),
+      React.createElement(LinearGradient, { id: "tealG", x1: "0%", y1: "100%", x2: "100%", y2: "0%" },
+        React.createElement(Stop, { offset: "0%", stopColor: C.brand2, stopOpacity: 0.18 }),
+        React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 0 }),
+      ),
+    ),
+    // Soft glow blob (top right)
+    React.createElement(Circle, { cx: 560, cy: 100, r: 240, fill: "url(#glowG)" }),
+    // Teal accent (bottom left)
+    React.createElement(Circle, { cx: 60, cy: 760, r: 220, fill: "url(#tealG)" }),
+    // Editorial grid — vertical hairlines
+    ...(() => {
+      const arr: any[] = [];
+      const pad = 52; const cols = 6; const inner = 595 - pad * 2; const step = inner / (cols - 1);
+      for (let i = 0; i < cols; i++) {
+        const x = pad + i * step;
+        arr.push(React.createElement(Line, { key: `cg${i}`, x1: x, x2: x, y1: 40, y2: 802, stroke: C.ink, strokeWidth: 0.4, opacity: 0.05 }));
+      }
+      return arr;
+    })(),
+    // Signature flow curve, cinematic
+    React.createElement(Path, {
+      d: "M -20 580 C 140 520, 260 720, 420 560 S 660 460, 700 520",
+      stroke: C.brand, strokeWidth: 1.2, fill: "none", opacity: 0.55,
+    }),
+    React.createElement(Path, {
+      d: "M -20 620 C 140 570, 260 760, 420 600 S 660 510, 700 560",
+      stroke: C.brand2, strokeWidth: 0.7, fill: "none", opacity: 0.45,
     }),
   );
 }
 
-// Simple SVG line chart drawn manually
-function LineChart({ data, width = 460, height = 140, color = C.brand }:
-  { data: { label: string; value: number }[]; width?: number; height?: number; color?: string }) {
-  if (!data.length) return null;
-  const padL = 36, padR = 8, padT = 10, padB = 22;
+// Closing backdrop — quieter than cover
+function ClosingBackdrop() {
+  return React.createElement(Svg, { width: 595, height: 842, style: styles.closingBg },
+    React.createElement(Defs, null,
+      React.createElement(LinearGradient, { id: "glowC", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+        React.createElement(Stop, { offset: "0%", stopColor: C.glow, stopOpacity: 0.30 }),
+        React.createElement(Stop, { offset: "100%", stopColor: C.bg, stopOpacity: 0 }),
+      ),
+    ),
+    React.createElement(Circle, { cx: 300, cy: 420, r: 320, fill: "url(#glowC)" }),
+    React.createElement(Path, {
+      d: "M 0 720 C 150 660, 300 820, 450 700 S 595 620, 595 660",
+      stroke: C.brand, strokeWidth: 1, fill: "none", opacity: 0.4,
+    }),
+  );
+}
+
+function PageChrome({ label, periodo }: { label: string; periodo: string }) {
+  return React.createElement(React.Fragment, null,
+    React.createElement(View, { style: styles.pageHeader, fixed: true },
+      React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 8 } },
+        React.createElement(View, { style: { width: 6, height: 6, borderRadius: 1.5, backgroundColor: C.brand } }),
+        React.createElement(Text, { style: styles.pageHeaderL }, label),
+      ),
+      React.createElement(Text, { style: styles.pageHeaderR }, `FinZap · ${periodo}`),
+    ),
+    React.createElement(View, { style: styles.hairline, fixed: true }),
+  );
+}
+
+function PageFooter() {
+  return React.createElement(View, { style: styles.pageFooter, fixed: true },
+    React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 6 } },
+      React.createElement(View, { style: { width: 5, height: 5, borderRadius: 1, backgroundColor: C.brand } }),
+      React.createElement(Text, { style: styles.footerLeft }, "FINZAP · RELATÓRIO INTELIGENTE"),
+    ),
+    React.createElement(Text, {
+      style: styles.footerRight,
+      render: ({ pageNumber, totalPages }: any) => `${String(pageNumber).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`,
+    } as any),
+  );
+}
+
+// Editorial badge — soft, never aggressive
+function Badge({ label, tone = "neutral" }: { label: string; tone?: "neutral" | "pos" | "warn" | "neg" | "info" }) {
+  const map: Record<string, { bg: string; fg: string }> = {
+    neutral: { bg: C.hairSoft, fg: C.ink3 },
+    pos:     { bg: C.brandSoft, fg: C.brand },
+    warn:    { bg: C.warnSoft, fg: C.warn },
+    neg:     { bg: C.negSoft, fg: C.neg },
+    info:    { bg: C.blueSoft, fg: C.blue },
+  };
+  const t = map[tone];
+  return React.createElement(View, { style: [styles.badge, { backgroundColor: t.bg }] },
+    React.createElement(Text, { style: [styles.badgeText, { color: t.fg }] }, label),
+  );
+}
+
+// Slim progress bar — editorial
+function ProgressBar({ pct, color = C.brand, width }: { pct: number; color?: string; width?: number }) {
+  const safe = Math.max(0, Math.min(100, Number.isFinite(pct) ? pct : 0));
+  return React.createElement(View, { style: [styles.progressTrack, width ? { width } : null].filter(Boolean) as any },
+    React.createElement(View, { style: [styles.progressFill, { width: `${safe}%`, backgroundColor: color }] }),
+  );
+}
+
+// Editorial empty-chart placeholder (no fake data)
+function EmptyChart({ width = 491, height = 150, message = "Sem dados suficientes" }:
+  { width?: number; height?: number; message?: string }) {
+  return React.createElement(View, {
+    style: { marginTop: 14, width, height, borderRadius: 8, borderWidth: 0.5, borderColor: C.hair, backgroundColor: C.surface, alignItems: "center", justifyContent: "center" },
+  },
+    React.createElement(Text, { style: { fontSize: 9, color: C.mutedSoft, letterSpacing: 1.4, textTransform: "uppercase" } }, message),
+  );
+}
+
+// Premium area + line chart (Linear / Stripe-grade)
+function AreaLineChart({ data, width = 491, height = 160, color = C.brand, color2 = C.brand2, label = "" }:
+  { data: { label: string; value: number }[]; width?: number; height?: number; color?: string; color2?: string; label?: string }) {
+  if (!data || data.length < 2) return EmptyChart({ width, height, message: "Histórico insuficiente para projeção" });
+  const padL = 38, padR = 12, padT = 14, padB = 26;
   const w = width - padL - padR;
   const h = height - padT - padB;
   const values = data.map(d => d.value);
-  const min = Math.min(...values, 0);
   const max = Math.max(...values, 1);
-  const range = max - min || 1;
-  const stepX = data.length > 1 ? w / (data.length - 1) : 0;
-  const points = data.map((d, i) => {
-    const x = padL + i * stepX;
-    const y = padT + h - ((d.value - min) / range) * h;
-    return { x, y, label: d.label, value: d.value };
-  });
-  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+  const min = Math.min(...values, 0);
+  const range = (max - min) || 1;
+  const stepX = w / (data.length - 1);
+  const pts = data.map((d, i) => ({
+    x: padL + i * stepX,
+    y: padT + h - ((d.value - min) / range) * h,
+    label: d.label,
+    value: d.value,
+  }));
 
-  const gridYs = [0, 0.25, 0.5, 0.75, 1].map(t => padT + h * t);
+  // smooth path (cubic bezier between points)
+  let smooth = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i];
+    const p1 = pts[i + 1];
+    const cx1 = p0.x + stepX * 0.4;
+    const cx2 = p1.x - stepX * 0.4;
+    smooth += ` C ${cx1.toFixed(2)} ${p0.y.toFixed(2)}, ${cx2.toFixed(2)} ${p1.y.toFixed(2)}, ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`;
+  }
+  const areaD = `${smooth} L ${pts[pts.length - 1].x} ${padT + h} L ${pts[0].x} ${padT + h} Z`;
 
   const children: any[] = [];
-  // Grid
-  gridYs.forEach((y, i) =>
-    children.push(React.createElement(Line, {
-      key: `g${i}`, x1: padL, x2: width - padR, y1: y, y2: y,
-      stroke: C.hair, strokeWidth: 0.5,
-    })),
-  );
-  // Path
-  children.push(React.createElement(Path, {
-    key: "p", d: pathD, stroke: color, strokeWidth: 1.4, fill: "none",
-  }));
-  // Dots
-  points.forEach((p, i) =>
-    children.push(React.createElement(Rect, {
-      key: `d${i}`, x: p.x - 1.5, y: p.y - 1.5, width: 3, height: 3, fill: color,
-    })),
-  );
+  children.push(React.createElement(Defs, { key: "defs" },
+    React.createElement(LinearGradient, { id: "areaG", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+      React.createElement(Stop, { offset: "0%", stopColor: color, stopOpacity: 0.28 }),
+      React.createElement(Stop, { offset: "100%", stopColor: color, stopOpacity: 0 }),
+    ),
+  ));
+  // Y grid + labels
+  [0, 0.5, 1].forEach((t, i) => {
+    const y = padT + h * (1 - t);
+    const val = min + range * t;
+    children.push(React.createElement(Line, { key: `g${i}`, x1: padL, x2: width - padR, y1: y, y2: y, stroke: C.hair, strokeWidth: 0.4 }));
+    children.push(React.createElement(Text as any, { key: `yl${i}`, x: padL - 6, y: y + 2.5, style: { fontSize: 6.5, fill: C.mutedSoft, textAnchor: "end" } }, fmtCompactBRL(val)));
+  });
+  // area + line
+  children.push(React.createElement(Path, { key: "a", d: areaD, fill: "url(#areaG)", stroke: "none" }));
+  children.push(React.createElement(Path, { key: "l", d: smooth, stroke: color, strokeWidth: 1.6, fill: "none" }));
+  // dots
+  pts.forEach((p, i) => {
+    children.push(React.createElement(Circle, { key: `d${i}`, cx: p.x, cy: p.y, r: 2.2, fill: C.bg, stroke: color, strokeWidth: 1.2 }));
+  });
   // X labels
-  points.forEach((p, i) =>
-    children.push(React.createElement(
-      // @ts-ignore svg text
-      Svg.Text || (Text as any), { key: `xl${i}`, x: p.x, y: height - 6, style: { fontSize: 7, fill: C.muted, textAnchor: "middle" } }, p.label,
-    )),
+  pts.forEach((p, i) =>
+    children.push(React.createElement(Text as any, { key: `xl${i}`, x: p.x, y: height - 8, style: { fontSize: 7, fill: C.muted, textAnchor: "middle", letterSpacing: 0.4 } }, p.label)),
   );
 
-  return React.createElement(Svg, { width, height, style: { marginTop: 12 } }, ...children);
+  return React.createElement(View, { wrap: false, style: { marginTop: 14 } },
+    React.createElement(Svg, { width, height }, ...children),
+    label ? React.createElement(Text, { style: { fontSize: 7.5, color: C.mutedSoft, letterSpacing: 1.6, textTransform: "uppercase", marginTop: 6 } }, label) : null,
+  );
 }
 
-// Bar chart (paired) — receitas vs despesas
-function BarsChart({ data, width = 460, height = 150 }:
+// Premium grouped bars — receitas vs despesas
+function PairedBarsChart({ data, width = 491, height = 170 }:
   { data: { label: string; income: number; expense: number }[]; width?: number; height?: number }) {
-  if (!data.length) return null;
-  const padL = 36, padR = 8, padT = 10, padB = 22;
+  if (!data || data.length === 0) return EmptyChart({ width, height });
+  const padL = 38, padR = 12, padT = 14, padB = 34;
   const w = width - padL - padR;
   const h = height - padT - padB;
   const max = Math.max(...data.flatMap(d => [d.income, d.expense]), 1);
   const groupW = w / data.length;
-  const barW = Math.min(14, (groupW - 6) / 2);
+  const barW = Math.min(16, (groupW - 10) / 2);
 
   const children: any[] = [];
+  children.push(React.createElement(Defs, { key: "defs" },
+    React.createElement(LinearGradient, { id: "barIn", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+      React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 1 }),
+      React.createElement(Stop, { offset: "100%", stopColor: C.brand, stopOpacity: 0.55 }),
+    ),
+    React.createElement(LinearGradient, { id: "barEx", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+      React.createElement(Stop, { offset: "0%", stopColor: C.neg, stopOpacity: 0.92 }),
+      React.createElement(Stop, { offset: "100%", stopColor: C.neg, stopOpacity: 0.45 }),
+    ),
+  ));
   [0, 0.5, 1].forEach((t, i) => {
     const y = padT + h * (1 - t);
-    children.push(React.createElement(Line, {
-      key: `g${i}`, x1: padL, x2: width - padR, y1: y, y2: y, stroke: C.hair, strokeWidth: 0.5,
-    }));
+    children.push(React.createElement(Line, { key: `g${i}`, x1: padL, x2: width - padR, y1: y, y2: y, stroke: C.hair, strokeWidth: 0.4 }));
+    const val = max * t;
+    children.push(React.createElement(Text as any, { key: `yl${i}`, x: padL - 6, y: y + 2.5, style: { fontSize: 6.5, fill: C.mutedSoft, textAnchor: "end" } }, fmtCompactBRL(val)));
   });
-
   data.forEach((d, i) => {
     const gx = padL + i * groupW + groupW / 2;
-    const x1 = gx - barW - 1;
-    const x2 = gx + 1;
+    const x1 = gx - barW - 2;
+    const x2 = gx + 2;
     const hi = (d.income / max) * h;
     const he = (d.expense / max) * h;
-    children.push(React.createElement(Rect, { key: `i${i}`, x: x1, y: padT + h - hi, width: barW, height: hi, fill: C.brand }));
-    children.push(React.createElement(Rect, { key: `e${i}`, x: x2, y: padT + h - he, width: barW, height: he, fill: C.neg }));
-    children.push(React.createElement(
-      Text as any, { key: `xl${i}`, x: gx, y: height - 6, style: { fontSize: 7, fill: C.muted, textAnchor: "middle" } }, d.label,
-    ));
+    if (hi > 0) children.push(React.createElement(Rect, { key: `i${i}`, x: x1, y: padT + h - hi, width: barW, height: hi, fill: "url(#barIn)", rx: 2 }));
+    if (he > 0) children.push(React.createElement(Rect, { key: `e${i}`, x: x2, y: padT + h - he, width: barW, height: he, fill: "url(#barEx)", rx: 2 }));
+    children.push(React.createElement(Text as any, { key: `xl${i}`, x: gx, y: height - 14, style: { fontSize: 7, fill: C.muted, textAnchor: "middle", letterSpacing: 0.4 } }, d.label));
   });
-  return React.createElement(Svg, { width, height, style: { marginTop: 12 } }, ...children);
+  // legend
+  children.push(React.createElement(Rect, { key: "lg1", x: padL, y: height - 6, width: 6, height: 6, fill: C.brand, rx: 1 }));
+  children.push(React.createElement(Text as any, { key: "ll1", x: padL + 10, y: height - 0.5, style: { fontSize: 7, fill: C.muted } }, "Receitas"));
+  children.push(React.createElement(Rect, { key: "lg2", x: padL + 60, y: height - 6, width: 6, height: 6, fill: C.neg, rx: 1 }));
+  children.push(React.createElement(Text as any, { key: "ll2", x: padL + 70, y: height - 0.5, style: { fontSize: 7, fill: C.muted } }, "Despesas"));
+
+  return React.createElement(View, { wrap: false, style: { marginTop: 14 } },
+    React.createElement(Svg, { width, height }, ...children),
+  );
+}
+
+// Mini inline sparkline for cards/KPIs
+function Sparkline({ data, width = 70, height = 22, color = C.brand }:
+  { data: number[]; width?: number; height?: number; color?: string }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = (max - min) || 1;
+  const stepX = width / (data.length - 1);
+  let d = `M 0 ${(height - ((data[0] - min) / range) * height).toFixed(1)}`;
+  for (let i = 1; i < data.length; i++) {
+    const x = (i * stepX).toFixed(1);
+    const y = (height - ((data[i] - min) / range) * height).toFixed(1);
+    d += ` L ${x} ${y}`;
+  }
+  return React.createElement(Svg, { width, height, style: { marginTop: 4 } },
+    React.createElement(Path, { d, stroke: color, strokeWidth: 1.2, fill: "none" }),
+  );
+}
+
+function fmtCompactBRL(v: number) {
+  const abs = Math.abs(v);
+  if (abs >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `R$ ${(v / 1_000).toFixed(1)}k`;
+  return `R$ ${Math.round(v)}`;
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -224,50 +458,65 @@ function BarsChart({ data, width = 460, height = 150 }:
 function buildDocument(payload: any) {
   const {
     userName, periodo, generatedAt,
-    totals, // { income, expense, balance, free, reserved, committed, initial, final }
-    history, // [{ label, income, expense, balance }]
-    cofrinhos, // [{ nome, saldo, meta, pct }]
-    cards, // [{ nome, limite, usado, pct, fech, venc }]
-    insights, // [{ label, title, body }]
+    totals,
+    history,
+    cofrinhos,
+    cards,
+    insights,
+    deltas, // { incomePct, expensePct, balancePct } vs previous closed month
   } = payload;
 
   const h = (...args: any[]) => React.createElement.apply(React, args as any);
 
+  const deltaBadge = (pct: number | null, invertGood = false) => {
+    if (pct === null || !Number.isFinite(pct)) return h(Text, { style: [styles.kpiDelta, { color: C.mutedSoft }] }, "Sem comparativo");
+    const goodWhenUp = !invertGood;
+    const isGood = pct >= 0 ? goodWhenUp : !goodWhenUp;
+    const sign = pct >= 0 ? "▲" : "▼";
+    return h(Text, { style: [styles.kpiDelta, { color: isGood ? C.brand : C.neg }] }, `${sign} ${Math.abs(pct).toFixed(1)}% vs. mês anterior`);
+  };
+
   // COVER ────────────────────────────────────────────────
-  const cover = h(Page, { size: "A4", style: styles.page },
-    h(View, { style: styles.coverWrap },
+  const cover = h(Page, { size: "A4", style: styles.pageCover },
+    CoverBackdrop(),
+    h(View, { style: styles.coverInner },
       h(View, { style: styles.coverTop },
         h(View, { style: styles.brandRow },
-          h(View, { style: styles.brandDot }),
+          h(View, { style: styles.brandMark }),
           h(Text, { style: styles.brandText }, "FINZAP"),
         ),
-        h(Text, { style: styles.coverEyebrow }, "Relatório · Edição mensal"),
+        h(Text, { style: styles.coverEyebrow }, "Edição mensal · Confidencial"),
       ),
       h(View, null,
-        h(Text, { style: styles.coverEyebrow }, "Relatório financeiro"),
-        h(Text, { style: styles.coverTitle }, periodo),
+        h(Text, { style: styles.coverEyebrow }, "Relatório financeiro inteligente"),
+        h(Text, { style: styles.coverTitle }, "O retrato\ndo seu mês."),
+        h(Text, { style: styles.coverPeriod }, periodo.toUpperCase()),
         h(Text, { style: styles.coverSub },
-          "Uma leitura editorial do seu mês: o que entrou, o que saiu, o que você reservou e o que ficou disponível para decisões.",
+          "Uma leitura editorial e estratégica do que entrou, do que saiu, do que você reservou e do que ficou disponível para decisões.",
         ),
       ),
       h(View, { style: styles.coverMetaGrid },
         h(View, { style: styles.coverMetaCol },
           h(Text, { style: styles.coverMetaLabel }, "Preparado para"),
-          h(Text, { style: styles.coverMetaValue }, userName || "—"),
+          h(Text, { style: styles.coverMetaValue }, userName || "FinZap"),
+          h(Text, { style: styles.coverMetaHint }, "Beneficiário do relatório"),
         ),
         h(View, { style: styles.coverMetaCol },
           h(Text, { style: styles.coverMetaLabel }, "Saldo final"),
           h(Text, { style: styles.coverMetaValue }, fmtBRL(totals.final)),
+          h(Text, { style: styles.coverMetaHint }, "Posição consolidada"),
         ),
         h(View, { style: styles.coverMetaCol },
           h(Text, { style: styles.coverMetaLabel }, "Emitido em"),
           h(Text, { style: styles.coverMetaValue }, generatedAt),
+          h(Text, { style: styles.coverMetaHint }, "Edição única do período"),
         ),
       ),
     ),
   );
 
   // EXECUTIVE SUMMARY ────────────────────────────────────
+  const balanceSpark = history.map((p: any) => Number(p.balance) || 0);
   const sumPage = h(Page, { size: "A4", style: styles.page },
     PageChrome({ label: "Resumo executivo", periodo }),
     h(View, { style: styles.section },
@@ -276,24 +525,24 @@ function buildDocument(payload: any) {
       h(Text, { style: styles.sectionLede },
         "Indicadores principais consolidados a partir das suas transações realizadas e planejadas, cofrinhos e compromissos do período.",
       ),
-      h(View, { style: styles.kpiGrid },
+      h(View, { style: styles.kpiGrid, wrap: false },
         h(View, { style: styles.kpiCard },
           h(Text, { style: styles.kpiLabel }, "Receitas"),
           h(Text, { style: [styles.kpiValue, { color: C.pos }] }, fmtBRL(totals.income)),
-          h(Text, { style: styles.kpiHint }, "Entradas do período"),
+          deltaBadge(deltas?.incomePct ?? null, false),
         ),
         h(View, { style: styles.kpiCard },
           h(Text, { style: styles.kpiLabel }, "Despesas"),
           h(Text, { style: [styles.kpiValue, { color: C.neg }] }, fmtBRL(totals.expense)),
-          h(Text, { style: styles.kpiHint }, "Saídas e compromissos"),
+          deltaBadge(deltas?.expensePct ?? null, true),
         ),
         h(View, { style: styles.kpiCard },
           h(Text, { style: styles.kpiLabel }, "Saldo líquido"),
-          h(Text, { style: styles.kpiValue }, fmtBRL(totals.balance)),
-          h(Text, { style: styles.kpiHint }, "Receitas − despesas"),
+          h(Text, { style: styles.kpiValue }, fmtSignedBRL(totals.balance)),
+          deltaBadge(deltas?.balancePct ?? null, false),
         ),
       ),
-      h(View, { style: [styles.kpiGrid, { marginTop: 12 }] },
+      h(View, { style: [styles.kpiGrid, { marginTop: 10 }], wrap: false },
         h(View, { style: styles.kpiCard },
           h(Text, { style: styles.kpiLabel }, "Saldo livre"),
           h(Text, { style: styles.kpiValue }, fmtBRL(totals.free)),
@@ -311,6 +560,11 @@ function buildDocument(payload: any) {
         ),
       ),
     ),
+    h(View, { style: [styles.section, { marginTop: 4 }], wrap: false },
+      h(Text, { style: styles.sectionEyebrow }, "Trajetória recente"),
+      h(Text, { style: [styles.sectionTitle, { fontSize: 16 }] }, "Como o saldo se moveu"),
+      AreaLineChart({ data: history.map((p: any) => ({ label: p.label, value: p.balance })), label: "Saldo final por mês (últimos 6)" }),
+    ),
     PageFooter(),
   );
 
@@ -318,66 +572,137 @@ function buildDocument(payload: any) {
   const evoPage = h(Page, { size: "A4", style: styles.page },
     PageChrome({ label: "Evolução financeira", periodo }),
     h(View, { style: styles.section, wrap: false },
-      h(Text, { style: styles.sectionEyebrow }, "Histórico · 6 meses"),
-      h(Text, { style: styles.sectionTitle }, "Trajetória do saldo"),
-      h(Text, { style: styles.sectionLede }, "Evolução do saldo final ao longo dos últimos meses fechados, incluindo o atual."),
-      LineChart({ data: history.map((p: any) => ({ label: p.label, value: p.balance })) }),
-    ),
-    h(View, { style: styles.section, wrap: false },
-      h(Text, { style: styles.sectionEyebrow }, "Comparativo"),
+      h(Text, { style: styles.sectionEyebrow }, "Comparativo · 6 meses"),
       h(Text, { style: styles.sectionTitle }, "Receitas vs. despesas"),
-      h(Text, { style: styles.sectionLede }, "Quanto entrou e quanto saiu, mês a mês."),
-      BarsChart({ data: history.map((p: any) => ({ label: p.label, income: p.income, expense: p.expense })) }),
+      h(Text, { style: styles.sectionLede }, "Quanto entrou e quanto saiu, mês a mês. Use este recorte para identificar padrões sazonais e momentos atípicos."),
+      PairedBarsChart({ data: history.map((p: any) => ({ label: p.label, income: p.income, expense: p.expense })) }),
+    ),
+    // Mini comparison cards
+    h(View, { style: [styles.kpiGrid, { marginTop: 16 }], wrap: false },
+      h(View, { style: styles.kpiCard },
+        h(Text, { style: styles.kpiLabel }, "Melhor mês (saldo)"),
+        h(Text, { style: [styles.kpiValue, { fontSize: 14 }] }, bestMonthLabel(history, "balance", true)),
+        h(Text, { style: styles.kpiHint }, "Maior saldo no período"),
+      ),
+      h(View, { style: styles.kpiCard },
+        h(Text, { style: styles.kpiLabel }, "Maior despesa"),
+        h(Text, { style: [styles.kpiValue, { fontSize: 14 }] }, bestMonthLabel(history, "expense", true)),
+        h(Text, { style: styles.kpiHint }, "Mês com maior saída"),
+      ),
+      h(View, { style: styles.kpiCard },
+        h(Text, { style: styles.kpiLabel }, "Tendência"),
+        h(Text, { style: [styles.kpiValue, { fontSize: 14 }] }, trendLabel(history)),
+        h(Text, { style: styles.kpiHint }, "Direção do saldo nos últimos meses"),
+      ),
+    ),
+    h(View, { style: [styles.section, { marginTop: 22 }], wrap: false },
+      h(Text, { style: styles.sectionEyebrow }, "Detalhamento"),
+      h(Text, { style: [styles.sectionTitle, { fontSize: 16 }] }, "Tabela do período"),
+      h(View, { style: styles.rowGroup },
+        ...history.map((p: any, i: number) => h(View, { key: i, style: styles.row, wrap: false },
+          h(View, { style: styles.rowL },
+            h(Text, { style: styles.rowName }, p.label),
+            h(Text, { style: styles.rowMeta }, `Receitas ${fmtBRL(p.income)} · Despesas ${fmtBRL(p.expense)}`),
+          ),
+          h(View, { style: { alignItems: "flex-end" } },
+            h(Text, { style: [styles.rowValue, { color: p.balance >= 0 ? C.brand : C.neg }] }, fmtSignedBRL(p.balance)),
+            h(Text, { style: styles.rowMeta }, "Saldo do período"),
+          ),
+        )),
+      ),
     ),
     PageFooter(),
   );
 
   // COFRINHOS ────────────────────────────────────────────
+  const cofRowsContent = (cofrinhos as any[]).length === 0
+    ? [h(View, { key: "empty", style: { padding: 30, borderWidth: 0.5, borderColor: C.hair, borderRadius: 8, alignItems: "center", backgroundColor: C.surface } },
+        h(Text, { style: { fontSize: 10, color: C.muted, textAlign: "center" } }, "Nenhum cofrinho cadastrado neste período."),
+        h(Text, { style: { fontSize: 8.5, color: C.mutedSoft, marginTop: 6, textAlign: "center" } }, "Crie cofrinhos no app para acompanhar metas e reservas estratégicas."),
+      )]
+    : (cofrinhos as any[]).map((c: any, i: number) => {
+        const hasMeta = c.meta > 0;
+        const tone = !hasMeta ? "neutral" : c.pct >= 100 ? "pos" : c.pct >= 70 ? "info" : c.pct >= 30 ? "neutral" : "warn";
+        const color = !hasMeta ? C.mutedSoft : c.pct >= 100 ? C.brand : c.pct >= 70 ? C.blue : c.pct >= 30 ? C.ink3 : C.warn;
+        const status = !hasMeta ? "Meta não configurada"
+          : c.pct >= 100 ? "Meta concluída"
+          : c.pct >= 70 ? "Próximo da meta"
+          : c.pct >= 30 ? "Em progresso"
+          : "Início de jornada";
+        return h(View, { key: i, style: styles.row, wrap: false },
+          h(View, { style: styles.rowL },
+            h(View, { style: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 } },
+              h(Text, { style: styles.rowName }, c.nome),
+              h(Badge, { label: status, tone }),
+            ),
+            h(Text, { style: styles.rowMeta },
+              hasMeta ? `${fmtBRL(c.saldo)} de ${fmtBRL(c.meta)} · meta ativa` : `${fmtBRL(c.saldo)} reservados`,
+            ),
+            hasMeta
+              ? h(ProgressBar, { pct: c.pct, color, width: 320 })
+              : null,
+          ),
+          h(View, { style: { alignItems: "flex-end", minWidth: 70 } },
+            h(Text, { style: [styles.rowValue, { color }] }, hasMeta ? fmtPct(c.pct) : "—"),
+            h(Text, { style: styles.rowMeta }, hasMeta ? "concluído" : "sem meta"),
+          ),
+        );
+      });
+
   const cofPage = h(Page, { size: "A4", style: styles.page },
     PageChrome({ label: "Cofrinhos", periodo }),
     h(View, { style: styles.section },
-      h(Text, { style: styles.sectionEyebrow }, "Reservas"),
+      h(Text, { style: styles.sectionEyebrow }, "Reservas estratégicas"),
       h(Text, { style: styles.sectionTitle }, "Cofrinhos"),
-      h(Text, { style: styles.sectionLede }, "Progresso de cada reserva em relação à meta configurada."),
+      h(Text, { style: styles.sectionLede }, "Acompanhamento de cada reserva, com leitura editorial do progresso em relação à meta configurada."),
     ),
-    h(View, null,
-      ...((cofrinhos as any[]).length
-        ? cofrinhos.map((c: any, i: number) => h(View, { key: i, style: [styles.row, i === 0 && styles.rowFirst].filter(Boolean), wrap: false },
-            h(View, null,
-              h(Text, { style: styles.rowName }, c.nome),
-              h(Text, { style: styles.rowMeta }, `${fmtBRL(c.saldo)} de ${fmtBRL(c.meta || 0)}`),
-            ),
-            h(Text, { style: styles.rowValue }, c.meta > 0 ? fmtPct(c.pct) : "—"),
-          ))
-        : [h(Text, { key: "empty", style: { fontSize: 10, color: C.muted, marginTop: 12 } }, "Nenhum cofrinho criado.")]
-      ),
-    ),
+    h(View, { style: styles.rowGroup }, ...cofRowsContent),
     PageFooter(),
   );
 
   // CARTÕES ──────────────────────────────────────────────
+  const cardRowsContent = (cards as any[]).length === 0
+    ? [h(View, { key: "empty", style: { padding: 30, borderWidth: 0.5, borderColor: C.hair, borderRadius: 8, alignItems: "center", backgroundColor: C.surface } },
+        h(Text, { style: { fontSize: 10, color: C.muted, textAlign: "center" } }, "Nenhum cartão de crédito cadastrado."),
+        h(Text, { style: { fontSize: 8.5, color: C.mutedSoft, marginTop: 6, textAlign: "center" } }, "Adicione seus cartões para acompanhar limite, fechamento e vencimento."),
+      )]
+    : (cards as any[]).map((c: any, i: number) => {
+        const hasLimit = c.limite > 0;
+        const tone = !hasLimit ? "neutral" : c.pct >= 90 ? "neg" : c.pct >= 70 ? "warn" : c.pct >= 40 ? "info" : "pos";
+        const color = !hasLimit ? C.mutedSoft : c.pct >= 90 ? C.neg : c.pct >= 70 ? C.warn : c.pct >= 40 ? C.blue : C.brand;
+        const status = !hasLimit ? "Limite não configurado"
+          : c.pct >= 90 ? "Limite quase no teto"
+          : c.pct >= 70 ? "Uso elevado"
+          : c.pct >= 40 ? "Uso moderado"
+          : "Uso saudável";
+        return h(View, { key: i, style: styles.row, wrap: false },
+          h(View, { style: styles.rowL },
+            h(View, { style: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 } },
+              h(Text, { style: styles.rowName }, c.nome),
+              h(Badge, { label: status, tone }),
+            ),
+            h(Text, { style: styles.rowMeta },
+              hasLimit ? `Limite ${fmtBRL(c.limite)} · Fecha dia ${c.fech} · Vence dia ${c.venc}` : `Fecha dia ${c.fech} · Vence dia ${c.venc}`,
+            ),
+            hasLimit
+              ? h(ProgressBar, { pct: c.pct, color, width: 320 })
+              : null,
+          ),
+          h(View, { style: { alignItems: "flex-end", minWidth: 80 } },
+            h(Text, { style: styles.rowValue }, fmtBRL(c.usado)),
+            h(Text, { style: styles.rowMeta }, hasLimit ? `${fmtPct(c.pct)} utilizado` : "limite não definido"),
+          ),
+        );
+      });
+
   const cardPage = h(Page, { size: "A4", style: styles.page },
     PageChrome({ label: "Cartões de crédito", periodo }),
     h(View, { style: styles.section },
       h(Text, { style: styles.sectionEyebrow }, "Crédito"),
       h(Text, { style: styles.sectionTitle }, "Cartões"),
-      h(Text, { style: styles.sectionLede }, "Uso atual em relação ao limite, fechamento e vencimento."),
+      h(Text, { style: styles.sectionLede }, "Visão integrada de uso, limite e calendário de fechamento e vencimento de cada cartão ativo."),
     ),
-    h(View, null,
-      ...((cards as any[]).length
-        ? cards.map((c: any, i: number) => h(View, { key: i, style: [styles.row, i === 0 && styles.rowFirst].filter(Boolean), wrap: false },
-            h(View, null,
-              h(Text, { style: styles.rowName }, c.nome),
-              h(Text, { style: styles.rowMeta }, `Limite ${fmtBRL(c.limite)} · Fecha dia ${c.fech} · Vence dia ${c.venc}`),
-            ),
-            h(View, { style: { alignItems: "flex-end" } },
-              h(Text, { style: styles.rowValue }, fmtBRL(c.usado)),
-              h(Text, { style: styles.rowMeta }, `${fmtPct(c.pct)} utilizado`),
-            ),
-          ))
-        : [h(Text, { key: "empty", style: { fontSize: 10, color: C.muted, marginTop: 12 } }, "Nenhum cartão cadastrado.")]
-      ),
-    ),
+    h(View, { style: styles.rowGroup }, ...cardRowsContent),
     PageFooter(),
   );
 
@@ -387,29 +712,59 @@ function buildDocument(payload: any) {
     h(View, { style: styles.section },
       h(Text, { style: styles.sectionEyebrow }, "Leitura estratégica"),
       h(Text, { style: styles.sectionTitle }, "O que os números dizem"),
-      h(Text, { style: styles.sectionLede }, "Padrões e movimentos identificados no seu mês."),
+      h(Text, { style: styles.sectionLede }, "Padrões, variações e oportunidades detectadas no seu mês — pensadas como um analista financeiro pessoal explicaria."),
     ),
     h(View, null,
-      ...insights.map((it: any, i: number) => h(View, { key: i, style: styles.insight, wrap: false },
-        h(Text, { style: styles.insightLabel }, it.label),
-        h(Text, { style: styles.insightTitle }, it.title),
-        h(Text, { style: styles.insightBody }, it.body),
-      )),
+      ...insights.map((it: any, i: number) => {
+        const toneMap: any = { pos: { color: C.brand }, neg: { color: C.neg }, warn: { color: C.warn }, info: { color: C.blue }, neutral: { color: C.ink3 } };
+        const t = toneMap[it.tone || "neutral"];
+        return h(View, { key: i, style: styles.insightCard, wrap: false },
+          h(View, { style: styles.insightHeader },
+            h(View, { style: [styles.insightDot, { backgroundColor: t.color }] }),
+            h(Text, { style: styles.insightLabel }, it.label),
+          ),
+          h(Text, { style: styles.insightTitle }, it.title),
+          h(Text, { style: styles.insightBody }, it.body),
+        );
+      }),
     ),
     PageFooter(),
   );
 
   // CLOSING ──────────────────────────────────────────────
-  const closing = h(Page, { size: "A4", style: styles.page },
+  const closing = h(Page, { size: "A4", style: styles.pageCover },
+    ClosingBackdrop(),
     h(View, { style: styles.closingWrap },
+      h(View, { style: styles.closingMark }),
       h(Text, { style: styles.closingQuote }, "Decisões financeiras melhores começam com clareza."),
-      h(Text, { style: styles.closingSig }, "FinZap"),
+      h(Text, { style: styles.closingNote }, "Este relatório é uma fotografia do seu mês. Reabra-o sempre que precisar de contexto antes de uma decisão importante."),
+    ),
+    h(View, { style: styles.closingSig },
+      h(Text, { style: styles.closingSigText }, "FINZAP"),
+      h(Text, { style: styles.closingSigText }, periodo.toUpperCase()),
     ),
   );
 
   return h(Document, { title: `FinZap · ${periodo}`, author: "FinZap" },
     cover, sumPage, evoPage, cofPage, cardPage, insPage, closing,
   );
+}
+
+function bestMonthLabel(history: any[], key: "balance" | "expense" | "income", maximize: boolean) {
+  if (!history || history.length === 0) return "—";
+  let best = history[0];
+  for (const p of history) {
+    if (maximize ? p[key] > best[key] : p[key] < best[key]) best = p;
+  }
+  return `${best.label} · ${fmtBRL(best[key])}`;
+}
+
+function trendLabel(history: any[]) {
+  if (!history || history.length < 3) return "Histórico curto";
+  const last3 = history.slice(-3).map((p: any) => Number(p.balance) || 0);
+  const slope = (last3[2] - last3[0]) / 2;
+  if (Math.abs(slope) < 50) return "Estável";
+  return slope > 0 ? "Em alta" : "Em queda";
 }
 
 // ────────────────────────────────────────────────────────────────────────
