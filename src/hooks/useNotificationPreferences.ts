@@ -14,6 +14,8 @@ export type NotificationPreferences = {
   sistema_novidades: boolean;
   lembrete_diario: boolean;
   resumo_semanal: boolean;
+  ritmo_financeiro: boolean;
+  atualizacao_diaria: boolean;
   quiet_hours_start: number;
   quiet_hours_end: number;
   timezone: string;
@@ -30,6 +32,8 @@ const DEFAULTS: Omit<NotificationPreferences, 'user_id'> = {
   sistema_novidades: true,
   lembrete_diario: false,
   resumo_semanal: true,
+  ritmo_financeiro: true,
+  atualizacao_diaria: true,
   quiet_hours_start: 22,
   quiet_hours_end: 7,
   timezone: 'America/Sao_Paulo',
