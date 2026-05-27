@@ -874,49 +874,128 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     return { nome: c.nome, saldo, meta, pct: meta ? Math.min(100, (saldo / meta) * 100) : 0 };
   });
 
-  // Insights
+  // Deltas (vs previous month, when available)
   const prev = history.length >= 2 ? history[history.length - 2] : null;
-  const insights: { label: string; title: string; body: string }[] = [];
-  if (prev) {
-    if (prev.expense > 0) {
-      const delta = ((expense - prev.expense) / prev.expense) * 100;
-      if (Math.abs(delta) >= 5) {
-        insights.push({
-          label: delta > 0 ? "Aumento de gastos" : "Redução de gastos",
-          title: `${delta > 0 ? "Despesas subiram" : "Despesas caíram"} ${Math.abs(delta).toFixed(0)}% vs. o mês anterior`,
-          body: `Você gastou ${fmtBRL(expense)} este mês contra ${fmtBRL(prev.expense)} no anterior. ${delta > 0 ? "Vale revisar categorias com maior crescimento." : "Continue mantendo o ritmo — pequenas reduções compõem ao longo do ano."}`,
-        });
-      }
-    }
-    if (prev.balance !== 0) {
-      const dB = balance - prev.balance;
+  const pct = (a: number, b: number) => (b === 0 ? null : ((a - b) / Math.abs(b)) * 100);
+  const deltas = {
+    incomePct:  prev ? pct(income, prev.income) : null,
+    expensePct: prev ? pct(expense, prev.expense) : null,
+    balancePct: prev ? pct(balance, prev.balance) : null,
+  };
+
+  // Insights — varied editorial voice, tagged with tone for visual hierarchy
+  type Insight = { label: string; title: string; body: string; tone: "pos" | "neg" | "warn" | "info" | "neutral" };
+  const insights: Insight[] = [];
+
+  if (prev && prev.expense > 0) {
+    const d = ((expense - prev.expense) / prev.expense) * 100;
+    if (Math.abs(d) >= 5) {
+      const up = d > 0;
       insights.push({
-        label: dB >= 0 ? "Trajetória positiva" : "Atenção ao caixa",
-        title: `Saldo do mês ${dB >= 0 ? "melhorou" : "piorou"} em ${fmtBRL(Math.abs(dB))}`,
-        body: `A variação do saldo entre os dois últimos meses indica ${dB >= 0 ? "fôlego financeiro maior" : "menor margem"} para decisões.`,
+        label: up ? "Aceleração de gastos" : "Disciplina de gastos",
+        tone: up ? "warn" : "pos",
+        title: up
+          ? `Despesas avançaram ${Math.abs(d).toFixed(0)}% sobre o mês anterior`
+          : `Despesas recuaram ${Math.abs(d).toFixed(0)}% — controle visível`,
+        body: up
+          ? `Foram ${fmtBRL(expense)} contra ${fmtBRL(prev.expense)} no período anterior. Vale isolar as categorias que mais cresceram antes de assumir novos compromissos.`
+          : `Você desacelerou para ${fmtBRL(expense)} (de ${fmtBRL(prev.expense)}). Pequenas reduções, sustentadas por alguns ciclos, compõem grandes diferenças anuais.`,
       });
     }
   }
+
+  if (prev) {
+    const dB = balance - prev.balance;
+    if (Math.abs(dB) >= 1) {
+      const up = dB >= 0;
+      insights.push({
+        label: up ? "Trajetória positiva" : "Atenção ao caixa",
+        tone: up ? "pos" : "neg",
+        title: up
+          ? `Saldo do mês ${fmtBRL(dB)} acima do anterior`
+          : `Saldo do mês ${fmtBRL(Math.abs(dB))} abaixo do anterior`,
+        body: up
+          ? "O fôlego financeiro cresceu — momento favorável para reforçar reservas ou antecipar metas planejadas."
+          : "A margem para decisões discricionárias caiu. Reavalie compromissos planejados antes do próximo ciclo.",
+      });
+    }
+  }
+
   if (reserved > 0 && income > 0) {
-    const pct = (reserved / Math.max(income, 1)) * 100;
+    const ratio = (reserved / income) * 100;
+    if (ratio >= 100) {
+      insights.push({
+        label: "Reservas robustas",
+        tone: "pos",
+        title: `Reservas equivalem a ${Math.round(ratio)}% da sua receita mensal`,
+        body: `Você acumula ${fmtBRL(reserved)} em cofrinhos — colchão raro e sinal de maturidade financeira. Vale revisitar o destino das reservas: emergência, oportunidade ou objetivo de médio prazo.`,
+      });
+    } else if (ratio >= 25) {
+      insights.push({
+        label: "Reservas em construção",
+        tone: "info",
+        title: `Reservas representam ${Math.round(ratio)}% da receita do mês`,
+        body: `Você já reservou ${fmtBRL(reserved)}. Manter o ritmo nos próximos ciclos consolida uma base sólida para decisões mais ambiciosas.`,
+      });
+    }
+  }
+
+  if (committed > 0 && balance > 0 && committed > balance * 0.5) {
     insights.push({
-      label: "Reservas",
-      title: `Você tem ${fmtBRL(reserved)} reservados em cofrinhos`,
-      body: `Isso equivale a aproximadamente ${pct.toFixed(0)}% da sua receita mensal. Reservas regulares são o que separa um mês bom de uma trajetória sólida.`,
+      label: "Compromissos planejados",
+      tone: "warn",
+      title: `${fmtBRL(committed)} em compromissos ainda não realizados`,
+      body: "O saldo livre real é menor do que parece à primeira vista. Considere o impacto antes de assumir novas despesas recorrentes ou parcelamentos no cartão.",
     });
   }
-  if (committed > balance && balance > 0) {
+
+  // Cartão crítico
+  const heavyCards = cardsOut.filter((c: any) => c.pct >= 80);
+  if (heavyCards.length > 0) {
     insights.push({
-      label: "Compromissos futuros",
-      title: `Existem ${fmtBRL(committed)} planejados ainda não realizados`,
-      body: "Considere o impacto antes de assumir novos compromissos — o saldo livre real é menor do que parece à primeira vista.",
+      label: "Crédito sob pressão",
+      tone: "warn",
+      title: `${heavyCards.length} cartão(ões) com uso acima de 80% do limite`,
+      body: `Uso elevado de limite reduz a capacidade de absorver imprevistos e pode encarecer o crédito futuro. Vale priorizar liquidação antes de novas compras.`,
     });
   }
+
+  // Cofrinho perto da meta
+  const closeGoals = cofrinhosOut.filter((c: any) => c.meta > 0 && c.pct >= 80 && c.pct < 100);
+  if (closeGoals.length > 0) {
+    insights.push({
+      label: "Metas no horizonte",
+      tone: "info",
+      title: `${closeGoals.length} meta(s) a poucos passos do destino`,
+      body: `Alguns cofrinhos passam de 80% — concluir essas metas no próximo ciclo libera espaço mental para novos objetivos.`,
+    });
+  }
+
+  if (income > 0 && expense > 0) {
+    const savings = ((income - expense) / income) * 100;
+    if (savings >= 30) {
+      insights.push({
+        label: "Taxa de poupança",
+        tone: "pos",
+        title: `Você reteve ${Math.round(savings)}% do que entrou no mês`,
+        body: "Uma taxa de poupança acima de 30% é exceção. Direcionar essa folga para objetivos nomeados (não apenas conta corrente) costuma multiplicar o retorno emocional do dinheiro.",
+      });
+    } else if (savings <= 0) {
+      insights.push({
+        label: "Margem negativa",
+        tone: "neg",
+        title: "As despesas superaram as receitas no período",
+        body: "Mês de margem negativa pede atenção: revisar despesas fixas e reagendar compromissos não-essenciais costuma reverter a curva em um ou dois ciclos.",
+      });
+    }
+  }
+
   if (insights.length === 0) {
     insights.push({
-      label: "Boas práticas",
-      title: "Mês estável, sem variações relevantes",
-      body: "Seguir registrando lançamentos é o que torna o relatório do próximo ciclo ainda mais preciso.",
+      label: "Mês de calibragem",
+      tone: "neutral",
+      title: "Sem variações relevantes em relação ao histórico",
+      body: "Períodos estáveis são oportunidade rara para estruturar o que vem a seguir — revisar metas, ajustar reservas ou planejar um movimento estratégico.",
     });
   }
 
@@ -932,6 +1011,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     cofrinhos: cofrinhosOut,
     cards: cardsOut,
     insights,
+    deltas,
   };
 }
 
