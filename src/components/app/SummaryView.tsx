@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReportModal } from './ReportModal';
 import { Progress } from '@/components/ui/progress';
@@ -17,6 +17,8 @@ import type { BudgetPlan } from '@/hooks/useBudget';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { SmartDashboardHeader } from './SmartDashboardHeader';
 import { FinancialRhythmCard } from './FinancialRhythmCard';
+import { HealthSnapshotGrid } from './HealthSnapshotGrid';
+import { QuickActionsCard } from './QuickActionsCard';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 
 interface SummaryViewProps {
@@ -26,6 +28,7 @@ interface SummaryViewProps {
   balance: number;
   transactions: Transaction[];
   budgetPlans: BudgetPlan[];
+  onNavigate?: (step: number) => void;
 }
 
 const CHART_COLORS = [
@@ -67,7 +70,7 @@ const PieTooltip = ({ active, payload }: any) => {
   );
 };
 
-export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans }: SummaryViewProps) => {
+export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans, onNavigate }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
