@@ -589,6 +589,9 @@ function buildDocument(payload: any) {
 
   const h = (...args: any[]) => React.createElement.apply(React, args as any);
 
+  // Editorial closing quote — chosen contextually from financial signals.
+  const closingQuote = pickClosingQuote({ totals, history, cofrinhos, deltas, periodo });
+
   const deltaBadge = (pct: number | null, invertGood = false) => {
     if (pct === null || !Number.isFinite(pct)) return h(Text, { style: [styles.kpiDelta, { color: C.mutedSoft }] }, "Sem comparativo");
     const goodWhenUp = !invertGood;
@@ -874,7 +877,19 @@ function buildDocument(payload: any) {
         h(FinZapMark, { size: 80 }),
       ),
       h(Text, { style: styles.closingEyebrow }, "— Inteligência financeira —"),
-      h(Text, { style: styles.closingQuote }, "Veja o impacto\nantes da decisão."),
+      h(Text, {
+        style: [
+          styles.closingQuote,
+          closingQuote.text.length > 120
+            ? { fontSize: 21, lineHeight: 1.32, maxWidth: 460 }
+            : closingQuote.text.length > 80
+              ? { fontSize: 25, lineHeight: 1.28, maxWidth: 450 }
+              : null,
+        ],
+      }, `“${closingQuote.text}”`),
+      h(Text, {
+        style: { fontSize: 9, color: D.muted, letterSpacing: 2, textTransform: "uppercase", marginTop: 18, fontFamily: FONT_BOLD },
+      }, `— ${closingQuote.author}`),
       h(Text, { style: styles.closingNote },
         `${(userName || "Você").split(" ")[0]}, clareza financeira não é um destino — é um hábito. Continue alimentando o FinZap e ele continuará devolvendo a leitura mais nítida possível do seu dinheiro.`,
       ),
@@ -904,6 +919,75 @@ function bestMonthLabel(history: any[], key: "balance" | "expense" | "income", m
     if (maximize ? p[key] > best[key] : p[key] < best[key]) best = p;
   }
   return `${best.label} · ${fmtBRL(best[key])}`;
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Editorial closing quote — curated, contextual, never motivational fluff.
+// ────────────────────────────────────────────────────────────────────────
+type ClosingQuote = { text: string; author: string };
+
+const QUOTES: Record<string, ClosingQuote[]> = {
+  // Usuário em evolução / saldo crescendo
+  growth: [
+    { text: "Nós somos o que fazemos repetidamente. A excelência, portanto, não é um ato, mas um hábito.", author: "Aristóteles" },
+    { text: "Pequenas decisões repetidas moldam grandes destinos.", author: "FinZap" },
+    { text: "Constância silenciosa supera intensidade esporádica.", author: "FinZap" },
+    { text: "O tempo recompensa quem decide bem — e pune quem decide tarde.", author: "FinZap" },
+  ],
+  // Usuário disciplinado / economizou / cofrinhos saudáveis
+  discipline: [
+    { text: "O preço da disciplina é sempre menor que o custo do arrependimento.", author: "Jim Rohn" },
+    { text: "Reservar antes de gastar é o gesto mais maduro que o dinheiro conhece.", author: "FinZap" },
+    { text: "Riqueza é o que você não vê — é o consumo que você adiou.", author: "Morgan Housel" },
+    { text: "A liberdade financeira começa onde o impulso termina.", author: "FinZap" },
+  ],
+  // Usuário instável / saldo em queda / gastos altos
+  clarity: [
+    { text: "A clareza financeira reduz decisões emocionais.", author: "FinZap" },
+    { text: "Não se pode melhorar o que não se mede.", author: "Peter Drucker" },
+    { text: "Enxergar o número é o primeiro ato de coragem financeira.", author: "FinZap" },
+    { text: "O futuro financeiro é construído nas escolhas invisíveis do presente.", author: "FinZap" },
+  ],
+  // Estado neutro / estável — reflexão sobre maturidade & tempo
+  maturity: [
+    { text: "Tempo é o único ativo que o dinheiro não compra de volta.", author: "FinZap" },
+    { text: "Maturidade financeira é trocar urgência por estratégia.", author: "FinZap" },
+    { text: "Previsibilidade é uma forma silenciosa de poder.", author: "FinZap" },
+    { text: "O dinheiro é um amplificador: revela quem você decide ser.", author: "FinZap" },
+  ],
+};
+
+function pickClosingQuote(ctx: any): ClosingQuote {
+  const totals = ctx.totals || {};
+  const history = (ctx.history || []) as any[];
+  const cofrinhos = (ctx.cofrinhos || []) as any[];
+  const deltas = ctx.deltas || {};
+  const periodo = String(ctx.periodo || "");
+
+  const income = Number(totals.income || 0);
+  const expense = Number(totals.expense || 0);
+  const balance = Number(totals.balance ?? income - expense);
+  const reserved = cofrinhos.reduce((s, c) => s + Number(c.saldo || 0), 0);
+  const balanceDelta = Number(deltas.balancePct ?? NaN);
+  const expenseDelta = Number(deltas.expensePct ?? NaN);
+
+  let bucket: keyof typeof QUOTES = "maturity";
+  if (Number.isFinite(balanceDelta) && balanceDelta >= 8 && balance > 0) bucket = "growth";
+  else if (reserved > 0 && balance >= 0 && (!Number.isFinite(expenseDelta) || expenseDelta <= 5)) bucket = "discipline";
+  else if ((Number.isFinite(balanceDelta) && balanceDelta <= -8) || balance < 0 || (Number.isFinite(expenseDelta) && expenseDelta >= 15)) bucket = "clarity";
+  else if (history.length >= 3) {
+    const last3 = history.slice(-3).map((p: any) => Number(p.balance) || 0);
+    const slope = (last3[2] - last3[0]) / 2;
+    if (slope > 50) bucket = "growth";
+    else if (slope < -50) bucket = "clarity";
+  }
+
+  const pool = QUOTES[bucket];
+  // Deterministic rotation per period so the same month always renders the same quote,
+  // but consecutive months feel curated and varied.
+  let seed = 0;
+  for (let i = 0; i < periodo.length; i++) seed = (seed * 31 + periodo.charCodeAt(i)) >>> 0;
+  return pool[seed % pool.length];
 }
 
 function trendLabel(history: any[]) {
