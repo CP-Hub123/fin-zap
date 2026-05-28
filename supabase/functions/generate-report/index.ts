@@ -589,6 +589,9 @@ function buildDocument(payload: any) {
 
   const h = (...args: any[]) => React.createElement.apply(React, args as any);
 
+  // Editorial closing quote — chosen contextually from financial signals.
+  const closingQuote = pickClosingQuote({ totals, history, cofrinhos, deltas, periodo });
+
   const deltaBadge = (pct: number | null, invertGood = false) => {
     if (pct === null || !Number.isFinite(pct)) return h(Text, { style: [styles.kpiDelta, { color: C.mutedSoft }] }, "Sem comparativo");
     const goodWhenUp = !invertGood;
@@ -874,7 +877,19 @@ function buildDocument(payload: any) {
         h(FinZapMark, { size: 80 }),
       ),
       h(Text, { style: styles.closingEyebrow }, "— Inteligência financeira —"),
-      h(Text, { style: styles.closingQuote }, "Veja o impacto\nantes da decisão."),
+      h(Text, {
+        style: [
+          styles.closingQuote,
+          closingQuote.text.length > 120
+            ? { fontSize: 21, lineHeight: 1.32, maxWidth: 460 }
+            : closingQuote.text.length > 80
+              ? { fontSize: 25, lineHeight: 1.28, maxWidth: 450 }
+              : null,
+        ],
+      }, `“${closingQuote.text}”`),
+      h(Text, {
+        style: { fontSize: 9, color: D.muted, letterSpacing: 2, textTransform: "uppercase", marginTop: 18, fontFamily: FONT_BOLD },
+      }, `— ${closingQuote.author}`),
       h(Text, { style: styles.closingNote },
         `${(userName || "Você").split(" ")[0]}, clareza financeira não é um destino — é um hábito. Continue alimentando o FinZap e ele continuará devolvendo a leitura mais nítida possível do seu dinheiro.`,
       ),
