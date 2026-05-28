@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { useTransactions } from './useTransactions';
 import { useMonths } from './useMonths';
 import { useRecurringTransactions } from './useRecurringTransactions';
+import { useCofrinhos } from './useCofrinhos';
+import { useCreditCards } from './useCreditCards';
 
 /**
  * FONTE ÚNICA OFICIAL DE SALDO DO FINZAP.
@@ -19,6 +21,8 @@ export const useFinancialBalance = (monthId: string | undefined) => {
   const tx = useTransactions(monthId);
   const { months } = useMonths();
   const { recorrencias } = useRecurringTransactions();
+  const { cofrinhos } = useCofrinhos();
+  const { installments } = useCreditCards();
 
   const month = months.find(m => m.id === monthId);
 
@@ -59,6 +63,28 @@ export const useFinancialBalance = (monthId: string | undefined) => {
 
   const availableReal = currentBalance - commitmentsRemaining + projectedIncomeRemaining;
 
+  // ───────────────── Fonte única de verdade financeira ─────────────────
+  // Saldo total = saldo contábil corrente do mês (igual a currentBalance)
+  // Saldo reservado = soma do saldo protegido em todos os cofrinhos do usuário
+  // Cartões pendentes deste mês = parcelas planejadas/não realizadas do mês
+  // Saldo livre = total - reservado - compromissos restantes - cartões pendentes + receitas futuras
+  // Saldo previsto = projeção ao fim do mês (já considerando ritmo)
+  const saldoReservado = useMemo(
+    () => cofrinhos.reduce((s, c) => s + Number(c.saldo ?? 0), 0),
+    [cofrinhos]
+  );
+
+  const cardsPendingThisMonth = useMemo(() => {
+    if (!monthId) return 0;
+    return installments
+      .filter(i => i.month_id === monthId && i.status !== 'realized')
+      .reduce((s, i) => s + Number(i.amount ?? 0), 0);
+  }, [installments, monthId]);
+
+  const saldoTotal = currentBalance;
+  const saldoLivre =
+    saldoTotal - saldoReservado - commitmentsRemaining - cardsPendingThisMonth + projectedIncomeRemaining;
+
   const projectedEndOfMonth = useMemo(() => {
     if (!isCurrentMonth || !month) return currentBalance;
     const daysInMonth = new Date(month.year, month.month, 0).getDate();
@@ -89,6 +115,13 @@ export const useFinancialBalance = (monthId: string | undefined) => {
     projectedEndOfMonth,
     daysRemaining,
     isCurrentMonth,
+
+    // engine premium (fonte única de verdade)
+    saldoTotal,
+    saldoReservado,
+    cardsPendingThisMonth,
+    saldoLivre,
+    saldoPrevisto: projectedEndOfMonth,
 
     // mutations (forward)
     addTransaction: tx.addTransaction,
