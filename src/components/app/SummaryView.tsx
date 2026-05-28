@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, MONTH_NAMES } from '@/lib/constants';
 import { TrendingUp, TrendingDown, Wallet, AlertTriangle, PieChart as PieIcon, BarChart3, Target, ChevronDown, FileText, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ReportModal } from './ReportModal';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -74,7 +73,6 @@ const PieTooltip = ({ active, payload }: any) => {
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans, onNavigate }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
   // Fonte oficial de saldo final (initial_balance + delta)
   const { currentBalance: finalBalance } = useFinancialBalance(month.id);
   const cofrinhoMap = useMemo(() => {
@@ -201,18 +199,13 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
         <QuickActionsCard
           onAddIncome={() => onNavigate(1)}
           onAddExpense={() => onNavigate(1)}
-          onOpenReport={() => setReportOpen(true)}
           onOpenPlanning={() => onNavigate(3)}
         />
       )}
 
-      {/* Relatório Premium — flagship editorial */}
+      {/* Relatório Premium — em breve */}
       <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setReportOpen(true)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setReportOpen(true); } }}
-        className="group relative w-full overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[hsl(220,40%,8%)] via-[hsl(222,38%,11%)] to-[hsl(222,38%,9%)] dark:from-[hsl(222,42%,6%)] dark:via-[hsl(222,38%,9%)] dark:to-[hsl(222,38%,7%)] p-6 sm:p-7 cursor-pointer transition-all duration-300 hover:shadow-[0_24px_60px_-22px_hsl(var(--primary)/0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 active:scale-[0.995]"
+        className="group relative w-full overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[hsl(220,40%,8%)] via-[hsl(222,38%,11%)] to-[hsl(222,38%,9%)] dark:from-[hsl(222,42%,6%)] dark:via-[hsl(222,38%,9%)] dark:to-[hsl(222,38%,7%)] p-6 sm:p-7 transition-all duration-300"
       >
         {/* Premium glow */}
         <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/35 blur-[110px] opacity-70 transition-opacity duration-500 group-hover:opacity-95" />
@@ -237,6 +230,10 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
               <Sparkles className="h-3 w-3 text-primary" />
               <span className="text-[9.5px] font-semibold uppercase tracking-[0.22em] text-white/90">FinZap Premium</span>
             </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/25 px-2 py-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-300">Em breve</span>
+            </span>
             <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">Edição {MONTH_NAMES[month.month - 1]}</span>
           </div>
 
@@ -259,12 +256,11 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
           <Button
             type="button"
             size="lg"
-            onClick={(e) => { e.stopPropagation(); setReportOpen(true); }}
-            className="relative mt-6 w-full h-12 text-[15px] font-semibold tracking-tight bg-primary text-primary-foreground shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.85)] hover:bg-primary hover:shadow-[0_16px_40px_-12px_hsl(var(--primary)/0.95)] transition-all duration-300 active:scale-[0.98] border border-primary/40"
+            disabled
+            className="relative mt-6 w-full h-12 text-[15px] font-semibold tracking-tight bg-white/10 text-white/50 shadow-none border border-white/10 cursor-not-allowed"
           >
             <span className="relative inline-flex items-center gap-2">
-              Gerar meu relatório inteligente
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              Em breve
             </span>
           </Button>
         </div>
@@ -494,12 +490,6 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
         </CollapsibleContent>
       </Collapsible>
 
-      <ReportModal
-        open={reportOpen}
-        onOpenChange={setReportOpen}
-        monthId={month.id}
-        periodoLabel={`${MONTH_NAMES[month.month - 1]} de ${month.year}`}
-      />
     </div>
   );
 };
