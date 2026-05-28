@@ -19,6 +19,7 @@ import { SmartDashboardHeader } from './SmartDashboardHeader';
 import { FinancialRhythmCard } from './FinancialRhythmCard';
 import { HealthSnapshotGrid } from './HealthSnapshotGrid';
 import { QuickActionsCard } from './QuickActionsCard';
+import { IntelligentBalanceCard } from './IntelligentBalanceCard';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 
 interface SummaryViewProps {
@@ -185,6 +186,9 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
     <div className="space-y-6">
       {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
       <SmartDashboardHeader month={month} />
+
+      {/* Saldo Inteligente — fonte única de verdade (Total · Reservado · Livre · Previsto) */}
+      <IntelligentBalanceCard monthId={month.id} />
 
       {/* Ritmo Financeiro — confiabilidade da projeção (retenção premium) */}
       <FinancialRhythmCard />
