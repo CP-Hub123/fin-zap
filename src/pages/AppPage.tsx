@@ -204,11 +204,11 @@ const AppPage = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate('/meses')} title="Central de Meses">
               <Layers className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate('/cartoes')} title="Cartões">
-              <CreditCard className="h-4 w-4" />
-            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/tutorials')} title="Tutoriais">
               <BookOpen className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setBugReportOpen(true)} title="Reportar bug">
+              <Bug className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/conta')} title="Conta">
               <UserCircle2 className="h-4 w-4" />
@@ -231,9 +231,6 @@ const AppPage = () => {
               <span className="text-sm font-medium text-foreground">Tema</span>
               <ThemeToggle />
             </div>
-            <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { setNewMonthOpen(true); setMobileMenuOpen(false); }}>
-              <Plus className="h-4 w-4 mr-2" /> Novo mês
-            </Button>
             <Button variant="ghost" className="w-full justify-start min-h-[44px]" onClick={() => { navigate('/meses'); setMobileMenuOpen(false); }}>
               <Layers className="h-4 w-4 mr-2" /> Central de Meses
             </Button>
