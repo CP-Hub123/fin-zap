@@ -189,61 +189,98 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
       {/* Ritmo Financeiro — confiabilidade da projeção (retenção premium) */}
       <FinancialRhythmCard />
 
-      {/* Relatório Inteligente — flagship premium */}
+      {/* Saúde financeira — widgets inteligentes */}
+      <HealthSnapshotGrid monthId={month.id} />
+
+      {/* Ações rápidas — atalhos premium */}
+      {onNavigate && (
+        <QuickActionsCard
+          onAddIncome={() => onNavigate(1)}
+          onAddExpense={() => onNavigate(1)}
+          onOpenReport={() => setReportOpen(true)}
+          onOpenPlanning={() => onNavigate(3)}
+        />
+      )}
+
+      {/* Relatório Premium — flagship editorial */}
       <div
         role="button"
         tabIndex={0}
         onClick={() => setReportOpen(true)}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setReportOpen(true); } }}
-        className="group relative w-full overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-primary/[0.07] via-card to-card p-5 cursor-pointer transition-all duration-300 hover:border-primary/40 hover:shadow-[0_10px_40px_-14px_hsl(var(--primary)/0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.995]"
+        className="group relative w-full overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-[hsl(220,40%,8%)] via-[hsl(222,38%,11%)] to-[hsl(222,38%,9%)] dark:from-[hsl(222,42%,6%)] dark:via-[hsl(222,38%,9%)] dark:to-[hsl(222,38%,7%)] p-6 sm:p-7 cursor-pointer transition-all duration-300 hover:shadow-[0_24px_60px_-22px_hsl(var(--primary)/0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 active:scale-[0.995]"
       >
-        <div aria-hidden className="pointer-events-none absolute -top-20 -right-20 h-44 w-44 rounded-full bg-primary/25 blur-3xl opacity-60 transition-opacity duration-500 group-hover:opacity-90" />
-        <div aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/[0.08] to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
-        <div className="relative flex items-start gap-4">
-          <div className="relative shrink-0">
-            <div className="absolute inset-0 rounded-xl bg-primary/40 blur-md opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
-            <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-[1.06]">
-              <Sparkles className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-primary/80">FinZap Premium</p>
-              <span className="text-[10px] text-muted-foreground">·</span>
-              <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Edição mensal</p>
-            </div>
-            <h3 className="mt-1 text-[17px] font-semibold leading-snug tracking-tight">Relatório Inteligente</h3>
-            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-              Entenda seu mês além dos números.
-            </p>
-          </div>
-        </div>
+        {/* Premium glow */}
+        <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/35 blur-[110px] opacity-70 transition-opacity duration-500 group-hover:opacity-95" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-primary/20 blur-[110px] opacity-50" />
+        {/* Editorial grid */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              'linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+        {/* Shimmer */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transition-transform duration-[1400ms] group-hover:translate-x-full" />
 
-        <Button
-          type="button"
-          size="lg"
-          onClick={(e) => { e.stopPropagation(); setReportOpen(true); }}
-          className="relative mt-5 w-full h-12 text-[15px] font-semibold tracking-tight bg-gradient-to-br from-primary to-primary/85 text-primary-foreground shadow-[0_8px_24px_-10px_hsl(var(--primary)/0.7)] hover:shadow-[0_12px_32px_-10px_hsl(var(--primary)/0.85)] hover:from-primary hover:to-primary transition-all duration-300 active:scale-[0.98]"
-        >
-          <span className="relative inline-flex items-center gap-2">
-            Ver meu relatório
-            <Sparkles className="h-4 w-4 opacity-90 transition-transform duration-300 group-hover:rotate-12" />
-          </span>
-        </Button>
+        <div className="relative">
+          {/* Eyebrow */}
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-2.5 py-1 backdrop-blur-md">
+              <Sparkles className="h-3 w-3 text-primary" />
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.22em] text-white/90">FinZap Premium</span>
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">Edição {MONTH_NAMES[month.month - 1]}</span>
+          </div>
+
+          {/* Headline */}
+          <h3 className="mt-5 text-[22px] sm:text-[26px] font-semibold leading-[1.15] tracking-tight text-white">
+            Seu mês financeiro em nível premium
+          </h3>
+          <p className="mt-2.5 text-[13px] sm:text-sm leading-relaxed text-white/65 max-w-xl">
+            Transforme seus dados em um relatório visual inteligente, com análises, evolução e insights do FinZap.
+          </p>
+
+          {/* Feature line */}
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-white/55">
+            <span className="inline-flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Análises automáticas</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Evolução do saldo</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-1 w-1 rounded-full bg-primary" /> Insights inteligentes</span>
+          </div>
+
+          {/* CTA */}
+          <Button
+            type="button"
+            size="lg"
+            onClick={(e) => { e.stopPropagation(); setReportOpen(true); }}
+            className="relative mt-6 w-full h-12 text-[15px] font-semibold tracking-tight bg-primary text-primary-foreground shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.85)] hover:bg-primary hover:shadow-[0_16px_40px_-12px_hsl(var(--primary)/0.95)] transition-all duration-300 active:scale-[0.98] border border-primary/40"
+          >
+            <span className="relative inline-flex items-center gap-2">
+              Gerar meu relatório inteligente
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+            </span>
+          </Button>
+        </div>
       </div>
 
-      {/* Análise detalhada */}
+      {/* Central financeira avançada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
-        <CollapsibleTrigger className="group w-full flex items-center justify-between pt-2 pb-1 text-left">
-          <div>
-            <h2 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.14em]">
-              Análise detalhada
-            </h2>
-            <p className="text-xs text-muted-foreground/70 mt-0.5">
-              {analyticsOpen ? 'Toque para ocultar gráficos' : 'Receitas, despesas, orçamento e evolução'}
+        <CollapsibleTrigger className="group w-full flex items-center justify-between rounded-2xl border border-border/60 bg-card/60 px-4 py-3.5 text-left transition-colors hover:bg-card">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={2.2} />
+              <h2 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
+                Central financeira avançada
+              </h2>
+            </div>
+            <p className="text-[12px] text-muted-foreground/80 mt-1 truncate">
+              {analyticsOpen ? 'Toque para recolher' : 'Receitas, despesas, orçamento e evolução do saldo'}
             </p>
           </div>
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${analyticsOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 ${analyticsOpen ? 'rotate-180' : ''}`} />
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-4 data-[state=open]:animate-fade-in">
 
