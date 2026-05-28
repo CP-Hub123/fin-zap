@@ -62,6 +62,19 @@ const C = {
   glow:      "#9BE7CB",
 };
 
+// Dark closing palette — cinematic editorial finish
+const D = {
+  bg:     "#06080C",
+  bg2:    "#0B1118",
+  ink:    "#F8FAFC",
+  muted:  "#94A3B8",
+  mutedSoft: "#64748B",
+  hair:   "#1E293B",
+  brand:  "#3FD597",
+  brand2: "#1FAFAA",
+  blue:   "#5B8DEF",
+};
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 56,
@@ -83,13 +96,17 @@ const styles = StyleSheet.create({
   coverBg:    { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   coverInner: { flexGrow: 1, padding: 56, justifyContent: "space-between" },
   coverTop:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  brandRow:   { flexDirection: "row", alignItems: "center", gap: 8 },
-  brandMark:  { width: 12, height: 12, borderRadius: 3, backgroundColor: C.brand },
-  brandText:  { fontSize: 11, fontFamily: FONT_BOLD, letterSpacing: 2 },
+  brandRow:   { flexDirection: "row", alignItems: "center", gap: 7 },
+  brandText:  { fontSize: 13, fontFamily: FONT_BOLD, letterSpacing: 1.2 },
+  brandTextFin:{ color: C.ink },
+  brandTextZap:{ color: C.brand },
+  coverIntelligence: { fontSize: 7.5, color: C.muted, letterSpacing: 2.4, textTransform: "uppercase", marginTop: 3 },
   coverEyebrow: { fontSize: 8.5, color: C.muted, letterSpacing: 2.2, textTransform: "uppercase" },
-  coverTitle: { fontSize: 52, fontFamily: FONT_BOLD, lineHeight: 1.02, marginTop: 14, letterSpacing: -0.5 },
+  coverTitle: { fontSize: 48, fontFamily: FONT_BOLD, lineHeight: 1.04, marginTop: 14, letterSpacing: -0.6 },
   coverPeriod:{ fontSize: 14, color: C.brand, marginTop: 12, fontFamily: FONT_BOLD, letterSpacing: 0.4 },
-  coverSub:   { fontSize: 12, color: C.ink3, marginTop: 16, maxWidth: 360, lineHeight: 1.55 },
+  coverSub:   { fontSize: 11.5, color: C.ink3, marginTop: 16, maxWidth: 380, lineHeight: 1.6 },
+  coverForLine: { fontSize: 10, color: C.muted, marginTop: 22, letterSpacing: 1.6, textTransform: "uppercase" },
+  coverForName: { fontSize: 18, fontFamily: FONT_BOLD, marginTop: 4, letterSpacing: -0.2 },
 
   coverMetaGrid:  { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: C.hair, paddingTop: 18 },
   coverMetaCol:   { flex: 1, paddingRight: 12 },
@@ -103,14 +120,16 @@ const styles = StyleSheet.create({
   pageHeaderR: { fontSize: 7.5, color: C.muted, letterSpacing: 1.2 },
   hairline:    { height: 0.5, backgroundColor: C.hair, marginBottom: 26 },
 
-  pageFooter:  { position: "absolute", left: 52, right: 52, bottom: 28, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  pageFooter:  { position: "absolute", left: 52, right: 52, bottom: 24, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   footerLeft:  { fontSize: 7.5, color: C.muted, letterSpacing: 1.6 },
   footerRight: { fontSize: 7.5, color: C.muted, letterSpacing: 0.4 },
+  footerCenter:{ fontSize: 7.5, color: C.mutedSoft, letterSpacing: 1.4 },
 
   section: { marginBottom: 28 },
   sectionEyebrow: { fontSize: 7.5, color: C.brand, letterSpacing: 1.8, textTransform: "uppercase", marginBottom: 8, fontFamily: FONT_BOLD },
   sectionTitle:   { fontSize: 22, fontFamily: FONT_BOLD, marginBottom: 6, letterSpacing: -0.3 },
   sectionLede:    { fontSize: 10, color: C.ink3, maxWidth: 460, lineHeight: 1.55 },
+  personalIntro:  { fontSize: 11, color: C.ink2, lineHeight: 1.6, marginTop: 14, maxWidth: 460, fontFamily: FONT_OBL },
 
   // KPI cards
   kpiGrid: { flexDirection: "row", gap: 10, marginTop: 16 },
@@ -144,14 +163,23 @@ const styles = StyleSheet.create({
   insightTitle:  { fontSize: 12.5, fontFamily: FONT_BOLD, marginBottom: 6, letterSpacing: -0.1 },
   insightBody:   { fontSize: 10, color: C.ink3, lineHeight: 1.6 },
 
-  // Closing
+  // Closing (dark editorial)
+  closingPage: { padding: 0, fontFamily: FONT, color: D.ink, backgroundColor: D.bg },
   closingBg:   { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-  closingWrap: { flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 60 },
-  closingMark: { width: 28, height: 28, borderRadius: 6, backgroundColor: C.brand, marginBottom: 28 },
-  closingQuote:{ fontSize: 24, fontFamily: FONT_BOLD, textAlign: "center", maxWidth: 380, lineHeight: 1.28, letterSpacing: -0.3 },
-  closingNote: { fontSize: 10, color: C.muted, textAlign: "center", marginTop: 18, maxWidth: 320, lineHeight: 1.55 },
-  closingSig:  { position: "absolute", bottom: 56, left: 56, right: 56, flexDirection: "row", justifyContent: "space-between" },
-  closingSigText: { fontSize: 8, color: C.muted, letterSpacing: 2, textTransform: "uppercase" },
+  closingTop:  { position: "absolute", top: 56, left: 56, right: 56, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  closingTopText: { fontSize: 7.5, color: D.muted, letterSpacing: 2.4, textTransform: "uppercase" },
+  closingWrap: { flexGrow: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 60 },
+  closingEyebrow: { fontSize: 8, color: D.brand, letterSpacing: 2.6, textTransform: "uppercase", marginBottom: 24, fontFamily: FONT_BOLD },
+  closingQuote:{ fontSize: 30, fontFamily: FONT_BOLD, textAlign: "center", color: D.ink, maxWidth: 440, lineHeight: 1.22, letterSpacing: -0.6 },
+  closingNote: { fontSize: 10.5, color: D.muted, textAlign: "center", marginTop: 22, maxWidth: 360, lineHeight: 1.7 },
+  closingDivider: { width: 36, height: 1, backgroundColor: D.brand, marginTop: 32, opacity: 0.7 },
+  closingFooter:  { position: "absolute", bottom: 48, left: 56, right: 56, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
+  closingFooterCol: { },
+  closingFooterBrand: { fontSize: 14, fontFamily: FONT_BOLD, letterSpacing: 1, color: D.ink },
+  closingFooterTag: { fontSize: 7.5, color: D.mutedSoft, letterSpacing: 2, textTransform: "uppercase", marginTop: 4 },
+  closingFooterRight: { alignItems: "flex-end" },
+  closingFooterUrl: { fontSize: 10, color: D.brand, fontFamily: FONT_BOLD, letterSpacing: 0.4 },
+  closingFooterMeta: { fontSize: 7.5, color: D.mutedSoft, letterSpacing: 1.4, textTransform: "uppercase", marginTop: 4 },
 });
 
 // ────────────────────────────────────────────────────────────────────────
@@ -256,11 +284,33 @@ function ClosingBackdrop() {
   );
 }
 
+function BrandLockup({ light = false }: { light?: boolean }) {
+  const inkColor = light ? D.ink : C.ink;
+  return React.createElement(View, { style: styles.brandRow },
+    // Mark: stylized "Z" lightning inside a rounded square — proprietary FinZap motif.
+    React.createElement(Svg, { width: 14, height: 14 },
+      React.createElement(Defs, null,
+        React.createElement(LinearGradient, { id: light ? "lockupGL" : "lockupG", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+          React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 1 }),
+          React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 1 }),
+        ),
+      ),
+      React.createElement(Rect, { x: 0, y: 0, width: 14, height: 14, rx: 3.2, fill: light ? `url(#lockupGL)` : `url(#lockupG)` }),
+      React.createElement(Path, { d: "M 9.2 3.4 L 4.8 7.4 L 7.2 7.4 L 4.8 10.6 L 9.2 6.6 L 6.8 6.6 Z", fill: "#FFFFFF" }),
+    ),
+    React.createElement(Text, { style: [styles.brandText, { color: inkColor }] },
+      React.createElement(Text, { style: { color: inkColor } }, "Fin"),
+      React.createElement(Text, { style: { color: C.brand } }, "Zap"),
+    ),
+  );
+}
+
 function PageChrome({ label, periodo }: { label: string; periodo: string }) {
   return React.createElement(React.Fragment, null,
     React.createElement(View, { style: styles.pageHeader, fixed: true },
-      React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 8 } },
-        React.createElement(View, { style: { width: 6, height: 6, borderRadius: 1.5, backgroundColor: C.brand } }),
+      React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
+        BrandLockup({}),
+        React.createElement(View, { style: { width: 0.5, height: 10, backgroundColor: C.hair } }),
         React.createElement(Text, { style: styles.pageHeaderL }, label),
       ),
       React.createElement(Text, { style: styles.pageHeaderR }, `FinZap · ${periodo}`),
@@ -271,10 +321,11 @@ function PageChrome({ label, periodo }: { label: string; periodo: string }) {
 
 function PageFooter() {
   return React.createElement(View, { style: styles.pageFooter, fixed: true },
-    React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 6 } },
+    React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 8 } },
       React.createElement(View, { style: { width: 5, height: 5, borderRadius: 1, backgroundColor: C.brand } }),
-      React.createElement(Text, { style: styles.footerLeft }, "FINZAP · RELATÓRIO INTELIGENTE"),
+      React.createElement(Text, { style: styles.footerLeft }, "FINZAP · INTELLIGENCE REPORT"),
     ),
+    React.createElement(Text, { style: styles.footerCenter }, "finzap.app"),
     React.createElement(Text, {
       style: styles.footerRight,
       render: ({ pageNumber, totalPages }: any) => `${String(pageNumber).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`,
