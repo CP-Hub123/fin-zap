@@ -19,8 +19,10 @@ import {
   Defs,
   LinearGradient,
   Stop,
+  Image,
   renderToBuffer,
 } from "npm:@react-pdf/renderer@3.4.4";
+import { FINZAP_ICON_DATA_URI, FINZAP_LOGO_DATA_URI } from "./brand-assets.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
