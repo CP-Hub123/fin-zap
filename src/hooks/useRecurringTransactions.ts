@@ -4,12 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
+import { useFinzapInvalidate } from './useFinzapInvalidate';
 
 export type RecurringTransaction = Tables<'recurring_transactions'>;
 
 export const useRecurringTransactions = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const invalidateFinancial = useFinzapInvalidate();
 
   const query = useQuery({
     queryKey: ['recurring_transactions', user?.id],
@@ -32,7 +34,7 @@ export const useRecurringTransactions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      invalidateFinancial();
       toast.success('Recorrência criada');
     },
     onError: (e: any) => toast.error('Erro ao criar recorrência', { description: e?.message }),
@@ -63,7 +65,7 @@ export const useRecurringTransactions = () => {
       toast.error('Erro ao atualizar', { description: e?.message });
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      invalidateFinancial();
       if (data && 'ativo' in data) {
         toast.success(data.ativo ? 'Recorrência ativada' : 'Recorrência pausada');
       } else {
@@ -87,7 +89,7 @@ export const useRecurringTransactions = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      invalidateFinancial();
       toast.success('Recorrência removida');
     },
     onError: (e: any) => toast.error('Erro ao excluir', { description: e?.message }),
@@ -104,10 +106,7 @@ export const useRecurringTransactions = () => {
     },
     onSuccess: (count) => {
       if (count > 0) {
-        queryClient.invalidateQueries({ queryKey: ['transactions'] });
-        queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
-        queryClient.invalidateQueries({ queryKey: ['months'] });
-        queryClient.invalidateQueries({ queryKey: ['recurring_transactions'] });
+        invalidateFinancial();
       }
     },
   });
