@@ -1,11 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { useFinzapInvalidate } from './useFinzapInvalidate';
 
 export type BudgetPlan = Tables<'budget_plans'>;
 
 export const useBudget = (monthId: string | undefined) => {
-  const queryClient = useQueryClient();
+  const invalidateFinancial = useFinzapInvalidate();
 
   const budgetQuery = useQuery({
     queryKey: ['budget_plans', monthId],
@@ -27,7 +28,7 @@ export const useBudget = (monthId: string | undefined) => {
         .upsert(data, { onConflict: 'month_id,category' });
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budget_plans', monthId] }),
+    onSuccess: () => invalidateFinancial(),
   });
 
   return { budgetPlans: budgetQuery.data ?? [], isLoading: budgetQuery.isLoading, upsertBudget };

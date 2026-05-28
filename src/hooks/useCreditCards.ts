@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useFinzapInvalidate } from './useFinzapInvalidate';
 
 export interface CreditCard {
   id: string;
@@ -43,7 +44,7 @@ export interface CardInstallment {
 
 export const useCreditCards = () => {
   const { user } = useAuth();
-  const qc = useQueryClient();
+  const invalidateFinancial = useFinzapInvalidate();
 
   const cardsQ = useQuery({
     queryKey: ['credit_cards', user?.id],
@@ -86,13 +87,7 @@ export const useCreditCards = () => {
     },
   });
 
-  const invalidateAll = () => {
-    qc.invalidateQueries({ queryKey: ['credit_cards'] });
-    qc.invalidateQueries({ queryKey: ['credit_card_purchases'] });
-    qc.invalidateQueries({ queryKey: ['credit_card_installments'] });
-    qc.invalidateQueries({ queryKey: ['transactions'] });
-    qc.invalidateQueries({ queryKey: ['months'] });
-  };
+  const invalidateAll = () => invalidateFinancial();
 
   const createCard = useMutation({
     mutationFn: async (input: Omit<CreditCard, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'ordem'> & { ordem?: number }) => {

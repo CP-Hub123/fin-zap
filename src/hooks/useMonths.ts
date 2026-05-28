@@ -1,13 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables } from '@/integrations/supabase/types';
+import { useFinzapInvalidate } from './useFinzapInvalidate';
 
 export type Month = Tables<'months'>;
 
 export const useMonths = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const invalidateFinancial = useFinzapInvalidate();
 
   const monthsQuery = useQuery({
     queryKey: ['months', user?.id],
@@ -33,7 +34,7 @@ export const useMonths = () => {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['months'] }),
+    onSuccess: () => invalidateFinancial(),
   });
 
   const updateMonthStatus = useMutation({
@@ -44,7 +45,7 @@ export const useMonths = () => {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['months'] }),
+    onSuccess: () => invalidateFinancial(),
   });
 
   const updateMonth = useMutation({
@@ -55,7 +56,7 @@ export const useMonths = () => {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['months'] }),
+    onSuccess: () => invalidateFinancial(),
   });
 
   const deleteMonth = useMutation({
@@ -64,9 +65,7 @@ export const useMonths = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['months'] });
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+      invalidateFinancial();
     },
   });
 

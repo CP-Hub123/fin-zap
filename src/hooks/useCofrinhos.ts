@@ -3,12 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
+import { useFinzapInvalidate } from './useFinzapInvalidate';
 
 export type Cofrinho = Tables<'cofrinhos'>;
 
 export const useCofrinhos = () => {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const invalidateFinancial = useFinzapInvalidate();
 
   const query = useQuery({
     queryKey: ['cofrinhos', user?.id],
@@ -36,7 +38,7 @@ export const useCofrinhos = () => {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['cofrinhos'] }),
+    onSuccess: () => invalidateFinancial(),
   });
 
   const updateCofrinho = useMutation({
@@ -45,7 +47,7 @@ export const useCofrinhos = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['cofrinhos'] });
+      invalidateFinancial();
       toast.success('Cofrinho atualizado');
     },
     onError: (e: any) => toast.error('Erro ao atualizar', { description: e?.message }),
@@ -57,9 +59,7 @@ export const useCofrinhos = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['cofrinhos'] });
-      qc.invalidateQueries({ queryKey: ['transactions'] });
-      qc.invalidateQueries({ queryKey: ['recurring_transactions'] });
+      invalidateFinancial();
       toast.success('Cofrinho removido');
     },
     onError: (e: any) => toast.error('Erro ao excluir cofrinho', { description: e?.message }),
@@ -78,8 +78,7 @@ export const useCofrinhos = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['cofrinhos'] });
-      qc.invalidateQueries({ queryKey: ['transactions'] });
+      invalidateFinancial();
     },
   });
 
@@ -92,7 +91,7 @@ export const useCofrinhos = () => {
       return data as number;
     },
     onSuccess: (count) => {
-      if (count && count > 0) qc.invalidateQueries({ queryKey: ['cofrinhos'] });
+      if (count && count > 0) invalidateFinancial();
     },
   });
 

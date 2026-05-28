@@ -1,14 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { FinancialDataService } from '@/services/FinancialDataService';
+import { useFinzapInvalidate } from './useFinzapInvalidate';
 
 export type Transaction = Tables<'transactions'>;
 
 export const useTransactions = (monthId: string | undefined) => {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
+  const invalidateFinancial = useFinzapInvalidate();
 
   const transactionsQuery = useQuery({
     queryKey: ['transactions', monthId],
@@ -26,8 +27,7 @@ export const useTransactions = (monthId: string | undefined) => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions', monthId] });
-      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+      invalidateFinancial();
     },
   });
 
@@ -37,8 +37,7 @@ export const useTransactions = (monthId: string | undefined) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions', monthId] });
-      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+      invalidateFinancial();
     },
   });
 
@@ -48,8 +47,7 @@ export const useTransactions = (monthId: string | undefined) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions', monthId] });
-      queryClient.invalidateQueries({ queryKey: ['cofrinhos'] });
+      invalidateFinancial();
     },
   });
 
