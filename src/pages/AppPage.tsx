@@ -283,7 +283,7 @@ const AppPage = () => {
         {selectedMonth && <NudgeBanner month={selectedMonth} transactions={transactions} />}
 
         {selectedMonth && currentStep === 0 && (
-          <SummaryView month={selectedMonth} totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} transactions={transactions} budgetPlans={[]} />
+          <SummaryView month={selectedMonth} totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} transactions={transactions} budgetPlans={[]} onNavigate={setCurrentStep} />
         )}
 
         {selectedMonth && currentStep === 1 && (
