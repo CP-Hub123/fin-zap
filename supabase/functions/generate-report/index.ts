@@ -19,8 +19,10 @@ import {
   Defs,
   LinearGradient,
   Stop,
+  Image,
   renderToBuffer,
 } from "npm:@react-pdf/renderer@3.4.4";
+import { FINZAP_ICON_DATA_URI, FINZAP_LOGO_DATA_URI } from "./brand-assets.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -323,49 +325,33 @@ function ClosingBackdrop() {
 }
 
 function BrandLockup({ light = false }: { light?: boolean }) {
-  const inkColor = light ? D.ink : C.ink;
-  // Official FinZap mark: blue parallelogram (top) + green tail (bottom)
-  return React.createElement(View, { style: styles.brandRow },
-    React.createElement(Svg, { width: 12, height: 16, viewBox: "0 0 60 100" },
-      // Blue top half (parallelogram)
-      React.createElement(Path, {
-        d: "M 22 4 L 50 4 L 38 50 L 10 50 Z",
-        fill: C.brand,
-      }),
-      // Green bottom tail (triangle)
-      React.createElement(Path, {
-        d: "M 30 40 L 54 40 L 18 98 Z",
-        fill: C.brand2,
-      }),
-    ),
-    React.createElement(Text, { style: [styles.brandText, { color: inkColor }] },
-      React.createElement(Text, { style: { color: inkColor } }, "Fin"),
-      React.createElement(Text, { style: { color: C.brand } }, "Zap"),
-    ),
-  );
+  // Official FinZap lockup — used exactly as provided by the brand.
+  // We never recompose or restyle the wordmark.
+  // The dark closing page uses an inverted backdrop; the lockup itself
+  // is rendered against a subtle pill so the official black wordmark stays legible.
+  const img = React.createElement(Image, {
+    src: FINZAP_LOGO_DATA_URI,
+    style: { width: 84, height: 28, objectFit: "contain" },
+  } as any);
+  if (light) {
+    return React.createElement(View, {
+      style: {
+        paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6,
+        backgroundColor: "#FFFFFF",
+      },
+    }, img);
+  }
+  return React.createElement(View, { style: { flexDirection: "row", alignItems: "center" } }, img);
 }
 
 // Large, hero version of the official FinZap mark — used on cover & closing.
-function FinZapMark({ size = 64, glow = true }: { size?: number; glow?: boolean }) {
-  const w = size * 0.62;
-  const h = size;
-  return React.createElement(View, { style: { width: w, height: h, position: "relative" } },
-    glow
-      ? React.createElement(Svg, { width: w * 2.2, height: h * 1.6,
-          style: { position: "absolute", left: -w * 0.6, top: -h * 0.3 } },
-          React.createElement(Defs, null,
-            React.createElement(LinearGradient, { id: "markGlow", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
-              React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 0.30 }),
-              React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 0 }),
-            ),
-          ),
-          React.createElement(Circle, { cx: w * 1.1, cy: h * 0.8, r: h * 0.85, fill: "url(#markGlow)" }),
-        )
-      : null,
-    React.createElement(Svg, { width: w, height: h, viewBox: "0 0 60 100" },
-      React.createElement(Path, { d: "M 22 4 L 50 4 L 38 50 L 10 50 Z", fill: C.brand }),
-      React.createElement(Path, { d: "M 30 40 L 54 40 L 18 98 Z", fill: C.brand2 }),
-    ),
+function FinZapMark({ size = 64 }: { size?: number; glow?: boolean }) {
+  // Official FinZap icon — used exactly as provided.
+  return React.createElement(View, { style: { width: size, height: size } },
+    React.createElement(Image, {
+      src: FINZAP_ICON_DATA_URI,
+      style: { width: size, height: size, objectFit: "contain" },
+    } as any),
   );
 }
 
@@ -404,9 +390,12 @@ function PageFooter() {
   return React.createElement(View, { style: styles.pageFooter, fixed: true },
     React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 8 } },
       React.createElement(View, { style: { width: 5, height: 5, borderRadius: 1, backgroundColor: C.brand } }),
-      React.createElement(Text, { style: styles.footerLeft }, "FINZAP · INTELLIGENCE REPORT"),
+      React.createElement(Image, {
+        src: FINZAP_LOGO_DATA_URI,
+        style: { width: 52, height: 16, objectFit: "contain" },
+      } as any),
     ),
-    React.createElement(Text, { style: styles.footerCenter }, "finzap.app"),
+    React.createElement(Text, { style: styles.footerCenter }, "Veja o impacto antes da decisão."),
     React.createElement(Text, {
       style: styles.footerRight,
       render: ({ pageNumber, totalPages }: any) => `${String(pageNumber).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`,
@@ -615,7 +604,6 @@ function buildDocument(payload: any) {
       h(View, { style: styles.coverTop },
         h(View, null,
           BrandLockup({}),
-          h(Text, { style: styles.coverIntelligence }, "FinZap Intelligence Report"),
         ),
         h(View, { style: { flexDirection: "row", gap: 6 } },
           h(PremiumSeal, { label: "FinZap Premium" }),
@@ -623,9 +611,8 @@ function buildDocument(payload: any) {
         ),
       ),
       h(View, null,
-        // Hero mark with glow
         h(View, { style: { marginBottom: 28 } },
-          h(FinZapMark, { size: 72, glow: true }),
+          h(FinZapMark, { size: 72 }),
         ),
         h(Text, { style: styles.coverEyebrow }, "Dossiê financeiro inteligente"),
         h(Text, { style: styles.coverTitle }, "O retrato\ndo seu mês."),
@@ -648,9 +635,9 @@ function buildDocument(payload: any) {
           h(Text, { style: styles.coverMetaHint }, "Edição única do período"),
         ),
         h(View, { style: styles.coverMetaCol },
-          h(Text, { style: styles.coverMetaLabel }, "Assinatura"),
-          h(Text, { style: styles.coverMetaValue }, "finzap.app"),
-          h(Text, { style: styles.coverMetaHint }, "Documento proprietário"),
+          h(Text, { style: styles.coverMetaLabel }, "Princípio"),
+          h(Text, { style: styles.coverMetaValue }, "Veja o impacto"),
+          h(Text, { style: styles.coverMetaHint }, "antes da decisão."),
         ),
       ),
     ),
@@ -879,12 +866,12 @@ function buildDocument(payload: any) {
   const closing = h(Page, { size: "A4", style: styles.closingPage },
     ClosingBackdrop(),
     h(View, { style: styles.closingTop },
-      h(Text, { style: styles.closingTopText }, "FinZap Intelligence Report"),
+      h(Text, { style: styles.closingTopText }, "Relatório do mês"),
       h(Text, { style: styles.closingTopText }, periodo.toUpperCase()),
     ),
     h(View, { style: styles.closingWrap },
       h(View, { style: { marginBottom: 28 } },
-        h(FinZapMark, { size: 80, glow: true }),
+        h(FinZapMark, { size: 80 }),
       ),
       h(Text, { style: styles.closingEyebrow }, "— Inteligência financeira —"),
       h(Text, { style: styles.closingQuote }, "Veja o impacto\nantes da decisão."),
@@ -896,10 +883,10 @@ function buildDocument(payload: any) {
     h(View, { style: styles.closingFooter },
       h(View, { style: styles.closingFooterCol },
         BrandLockup({ light: true }),
-        h(Text, { style: styles.closingFooterTag }, "Inteligência financeira moderna"),
+        h(Text, { style: styles.closingFooterTag }, "Identidade visual oficial"),
       ),
       h(View, { style: styles.closingFooterRight },
-        h(Text, { style: styles.closingFooterUrl }, "finzap.app"),
+        h(Text, { style: styles.closingFooterUrl }, periodo),
         h(Text, { style: styles.closingFooterMeta }, `Edição · ${periodo}`),
       ),
     ),
