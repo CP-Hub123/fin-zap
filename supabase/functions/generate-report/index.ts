@@ -324,22 +324,65 @@ function ClosingBackdrop() {
 
 function BrandLockup({ light = false }: { light?: boolean }) {
   const inkColor = light ? D.ink : C.ink;
+  // Official FinZap mark: blue parallelogram (top) + green tail (bottom)
   return React.createElement(View, { style: styles.brandRow },
-    // Mark: stylized "Z" lightning inside a rounded square — proprietary FinZap motif.
-    React.createElement(Svg, { width: 14, height: 14 },
-      React.createElement(Defs, null,
-        React.createElement(LinearGradient, { id: light ? "lockupGL" : "lockupG", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
-          React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 1 }),
-          React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 1 }),
-        ),
-      ),
-      React.createElement(Rect, { x: 0, y: 0, width: 14, height: 14, rx: 3.2, fill: light ? `url(#lockupGL)` : `url(#lockupG)` }),
-      React.createElement(Path, { d: "M 9.2 3.4 L 4.8 7.4 L 7.2 7.4 L 4.8 10.6 L 9.2 6.6 L 6.8 6.6 Z", fill: "#FFFFFF" }),
+    React.createElement(Svg, { width: 12, height: 16, viewBox: "0 0 60 100" },
+      // Blue top half (parallelogram)
+      React.createElement(Path, {
+        d: "M 22 4 L 50 4 L 38 50 L 10 50 Z",
+        fill: C.brand,
+      }),
+      // Green bottom tail (triangle)
+      React.createElement(Path, {
+        d: "M 30 40 L 54 40 L 18 98 Z",
+        fill: C.brand2,
+      }),
     ),
     React.createElement(Text, { style: [styles.brandText, { color: inkColor }] },
       React.createElement(Text, { style: { color: inkColor } }, "Fin"),
       React.createElement(Text, { style: { color: C.brand } }, "Zap"),
     ),
+  );
+}
+
+// Large, hero version of the official FinZap mark — used on cover & closing.
+function FinZapMark({ size = 64, glow = true }: { size?: number; glow?: boolean }) {
+  const w = size * 0.62;
+  const h = size;
+  return React.createElement(View, { style: { width: w, height: h, position: "relative" } },
+    glow
+      ? React.createElement(Svg, { width: w * 2.2, height: h * 1.6,
+          style: { position: "absolute", left: -w * 0.6, top: -h * 0.3 } },
+          React.createElement(Defs, null,
+            React.createElement(LinearGradient, { id: "markGlow", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+              React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 0.30 }),
+              React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 0 }),
+            ),
+          ),
+          React.createElement(Circle, { cx: w * 1.1, cy: h * 0.8, r: h * 0.85, fill: "url(#markGlow)" }),
+        )
+      : null,
+    React.createElement(Svg, { width: w, height: h, viewBox: "0 0 60 100" },
+      React.createElement(Path, { d: "M 22 4 L 50 4 L 38 50 L 10 50 Z", fill: C.brand }),
+      React.createElement(Path, { d: "M 30 40 L 54 40 L 18 98 Z", fill: C.brand2 }),
+    ),
+  );
+}
+
+// Premium seal — small editorial chip used on cover ("FinZap Premium" / "Relatório Inteligente")
+function PremiumSeal({ label, dark = false }: { label: string; dark?: boolean }) {
+  return React.createElement(View, {
+    style: {
+      flexDirection: "row", alignItems: "center", gap: 6,
+      paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999,
+      borderWidth: 0.6, borderColor: dark ? "rgba(255,255,255,0.18)" : C.hair,
+      backgroundColor: dark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
+    },
+  },
+    React.createElement(View, { style: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.brand } }),
+    React.createElement(Text, {
+      style: { fontSize: 7.5, fontFamily: FONT_BOLD, letterSpacing: 1.6, textTransform: "uppercase", color: dark ? D.ink : C.ink2 },
+    }, label),
   );
 }
 
