@@ -562,7 +562,7 @@ function buildDocument(payload: any) {
     const goodWhenUp = !invertGood;
     const isGood = pct >= 0 ? goodWhenUp : !goodWhenUp;
     const sign = pct >= 0 ? "▲" : "▼";
-    return h(Text, { style: [styles.kpiDelta, { color: isGood ? C.brand : C.neg }] }, `${sign} ${Math.abs(pct).toFixed(1)}% vs. mês anterior`);
+    return h(Text, { style: [styles.kpiDelta, { color: isGood ? C.pos : C.neg }] }, `${sign} ${Math.abs(pct).toFixed(1)}% vs. mês anterior`);
   };
 
   // COVER ────────────────────────────────────────────────
@@ -763,7 +763,7 @@ function buildDocument(payload: any) {
     : (cards as any[]).map((c: any, i: number) => {
         const hasLimit = c.limite > 0;
         const tone = !hasLimit ? "neutral" : c.pct >= 90 ? "neg" : c.pct >= 70 ? "warn" : c.pct >= 40 ? "info" : "pos";
-        const color = !hasLimit ? C.mutedSoft : c.pct >= 90 ? C.neg : c.pct >= 70 ? C.warn : c.pct >= 40 ? C.blue : C.brand;
+        const color = !hasLimit ? C.mutedSoft : c.pct >= 90 ? C.neg : c.pct >= 70 ? C.warn : c.pct >= 40 ? C.blue : C.pos;
         const status = !hasLimit ? "Limite não configurado"
           : c.pct >= 90 ? "Limite quase no teto"
           : c.pct >= 70 ? "Uso elevado"
@@ -810,7 +810,7 @@ function buildDocument(payload: any) {
     ),
     h(View, null,
       ...insights.map((it: any, i: number) => {
-        const toneMap: any = { pos: { color: C.brand }, neg: { color: C.neg }, warn: { color: C.warn }, info: { color: C.blue }, neutral: { color: C.ink3 } };
+        const toneMap: any = { pos: { color: C.pos }, neg: { color: C.neg }, warn: { color: C.warn }, info: { color: C.blue }, neutral: { color: C.ink3 } };
         const t = toneMap[it.tone || "neutral"];
         return h(View, { key: i, style: styles.insightCard, wrap: false },
           h(View, { style: styles.insightHeader },
