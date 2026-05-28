@@ -237,19 +237,19 @@ function CoverBackdrop() {
   return React.createElement(Svg, { width: 595, height: 842, style: styles.coverBg },
     React.createElement(Defs, null,
       React.createElement(LinearGradient, { id: "glowG", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
-        React.createElement(Stop, { offset: "0%", stopColor: C.glow, stopOpacity: 0.55 }),
-        React.createElement(Stop, { offset: "60%", stopColor: C.glow, stopOpacity: 0.10 }),
+        React.createElement(Stop, { offset: "0%", stopColor: C.glow, stopOpacity: 0.65 }),
+        React.createElement(Stop, { offset: "55%", stopColor: C.glow, stopOpacity: 0.14 }),
         React.createElement(Stop, { offset: "100%", stopColor: C.bg, stopOpacity: 0 }),
       ),
       React.createElement(LinearGradient, { id: "tealG", x1: "0%", y1: "100%", x2: "100%", y2: "0%" },
-        React.createElement(Stop, { offset: "0%", stopColor: C.brand2, stopOpacity: 0.18 }),
+        React.createElement(Stop, { offset: "0%", stopColor: C.brand2, stopOpacity: 0.22 }),
         React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 0 }),
       ),
     ),
-    // Soft glow blob (top right)
-    React.createElement(Circle, { cx: 560, cy: 100, r: 240, fill: "url(#glowG)" }),
-    // Teal accent (bottom left)
-    React.createElement(Circle, { cx: 60, cy: 760, r: 220, fill: "url(#tealG)" }),
+    // Proprietary blue glow (top right)
+    React.createElement(Circle, { cx: 560, cy: 110, r: 260, fill: "url(#glowG)" }),
+    // Green accent (bottom left)
+    React.createElement(Circle, { cx: 70, cy: 770, r: 240, fill: "url(#tealG)" }),
     // Editorial grid — vertical hairlines
     ...(() => {
       const arr: any[] = [];
@@ -260,14 +260,14 @@ function CoverBackdrop() {
       }
       return arr;
     })(),
-    // Signature flow curve, cinematic
+    // Signature flow curves (blue + green, cinematic)
     React.createElement(Path, {
       d: "M -20 580 C 140 520, 260 720, 420 560 S 660 460, 700 520",
       stroke: C.brand, strokeWidth: 1.2, fill: "none", opacity: 0.55,
     }),
     React.createElement(Path, {
       d: "M -20 620 C 140 570, 260 760, 420 600 S 660 510, 700 560",
-      stroke: C.brand2, strokeWidth: 0.7, fill: "none", opacity: 0.45,
+      stroke: C.brand2, strokeWidth: 0.7, fill: "none", opacity: 0.5,
     }),
   );
 }
