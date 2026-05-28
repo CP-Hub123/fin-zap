@@ -49,17 +49,22 @@ const C = {
   bg:        "#FFFFFF",
   surface:   "#F8FAFC",
   surface2:  "#F4F7FB",
-  brand:     "#0F8A5F",      // FinZap deep green
-  brandSoft: "#E6F4EE",
-  brand2:    "#127E7A",      // teal accent (signature)
-  blue:      "#1D4ED8",
-  blueSoft:  "#E8EEFB",
-  pos:       "#0F8A5F",
+  // Official FinZap identity
+  brand:     "#2F6BEA",      // FinZap Blue (primary identity)
+  brandSoft: "#E8EFFD",
+  brand2:    "#22B872",      // FinZap Green (accent / positive)
+  brand2Soft:"#E4F6EC",
+  blue:      "#2F6BEA",
+  blueSoft:  "#E8EFFD",
+  green:     "#22B872",
+  greenSoft: "#E4F6EC",
+  pos:       "#1E9E63",      // financial positive (FinZap green, slightly deepened for AA)
   neg:       "#B42318",
   negSoft:   "#FDECEC",
   warn:      "#B54708",
   warnSoft:  "#FEF5E7",
-  glow:      "#9BE7CB",
+  glow:      "#7EA8FF",      // proprietary blue glow
+  glowGreen: "#9BE7CB",      // secondary green glow
 };
 
 // Dark closing palette — cinematic editorial finish
@@ -70,8 +75,8 @@ const D = {
   muted:  "#94A3B8",
   mutedSoft: "#64748B",
   hair:   "#1E293B",
-  brand:  "#3FD597",
-  brand2: "#1FAFAA",
+  brand:  "#5B8DEF",   // FinZap Blue, lifted for dark bg
+  brand2: "#3FD597",   // FinZap Green, lifted for dark bg
   blue:   "#5B8DEF",
 };
 
