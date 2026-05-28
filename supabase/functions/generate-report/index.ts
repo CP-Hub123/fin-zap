@@ -375,7 +375,7 @@ function PageFooter() {
 function Badge({ label, tone = "neutral" }: { label: string; tone?: "neutral" | "pos" | "warn" | "neg" | "info" }) {
   const map: Record<string, { bg: string; fg: string }> = {
     neutral: { bg: C.hairSoft, fg: C.ink3 },
-    pos:     { bg: C.brandSoft, fg: C.brand },
+    pos:     { bg: C.greenSoft, fg: C.pos },
     warn:    { bg: C.warnSoft, fg: C.warn },
     neg:     { bg: C.negSoft, fg: C.neg },
     info:    { bg: C.blueSoft, fg: C.blue },
@@ -480,8 +480,8 @@ function PairedBarsChart({ data, width = 491, height = 170 }:
   const children: any[] = [];
   children.push(React.createElement(Defs, { key: "defs" },
     React.createElement(LinearGradient, { id: "barIn", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
-      React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 1 }),
-      React.createElement(Stop, { offset: "100%", stopColor: C.brand, stopOpacity: 0.55 }),
+      React.createElement(Stop, { offset: "0%", stopColor: C.green, stopOpacity: 1 }),
+      React.createElement(Stop, { offset: "100%", stopColor: C.green, stopOpacity: 0.55 }),
     ),
     React.createElement(LinearGradient, { id: "barEx", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
       React.createElement(Stop, { offset: "0%", stopColor: C.neg, stopOpacity: 0.92 }),
@@ -505,7 +505,7 @@ function PairedBarsChart({ data, width = 491, height = 170 }:
     children.push(React.createElement(Text as any, { key: `xl${i}`, x: gx, y: height - 14, style: { fontSize: 7, fill: C.muted, textAnchor: "middle", letterSpacing: 0.4 } }, d.label));
   });
   // legend
-  children.push(React.createElement(Rect, { key: "lg1", x: padL, y: height - 6, width: 6, height: 6, fill: C.brand, rx: 1 }));
+  children.push(React.createElement(Rect, { key: "lg1", x: padL, y: height - 6, width: 6, height: 6, fill: C.green, rx: 1 }));
   children.push(React.createElement(Text as any, { key: "ll1", x: padL + 10, y: height - 0.5, style: { fontSize: 7, fill: C.muted } }, "Receitas"));
   children.push(React.createElement(Rect, { key: "lg2", x: padL + 60, y: height - 6, width: 6, height: 6, fill: C.neg, rx: 1 }));
   children.push(React.createElement(Text as any, { key: "ll2", x: padL + 70, y: height - 0.5, style: { fontSize: 7, fill: C.muted } }, "Despesas"));
