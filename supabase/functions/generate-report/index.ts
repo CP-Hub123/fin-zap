@@ -49,17 +49,22 @@ const C = {
   bg:        "#FFFFFF",
   surface:   "#F8FAFC",
   surface2:  "#F4F7FB",
-  brand:     "#0F8A5F",      // FinZap deep green
-  brandSoft: "#E6F4EE",
-  brand2:    "#127E7A",      // teal accent (signature)
-  blue:      "#1D4ED8",
-  blueSoft:  "#E8EEFB",
-  pos:       "#0F8A5F",
+  // Official FinZap identity
+  brand:     "#2F6BEA",      // FinZap Blue (primary identity)
+  brandSoft: "#E8EFFD",
+  brand2:    "#22B872",      // FinZap Green (accent / positive)
+  brand2Soft:"#E4F6EC",
+  blue:      "#2F6BEA",
+  blueSoft:  "#E8EFFD",
+  green:     "#22B872",
+  greenSoft: "#E4F6EC",
+  pos:       "#1E9E63",      // financial positive (FinZap green, slightly deepened for AA)
   neg:       "#B42318",
   negSoft:   "#FDECEC",
   warn:      "#B54708",
   warnSoft:  "#FEF5E7",
-  glow:      "#9BE7CB",
+  glow:      "#7EA8FF",      // proprietary blue glow
+  glowGreen: "#9BE7CB",      // secondary green glow
 };
 
 // Dark closing palette — cinematic editorial finish
@@ -70,8 +75,8 @@ const D = {
   muted:  "#94A3B8",
   mutedSoft: "#64748B",
   hair:   "#1E293B",
-  brand:  "#3FD597",
-  brand2: "#1FAFAA",
+  brand:  "#5B8DEF",   // FinZap Blue, lifted for dark bg
+  brand2: "#3FD597",   // FinZap Green, lifted for dark bg
   blue:   "#5B8DEF",
 };
 
@@ -232,19 +237,19 @@ function CoverBackdrop() {
   return React.createElement(Svg, { width: 595, height: 842, style: styles.coverBg },
     React.createElement(Defs, null,
       React.createElement(LinearGradient, { id: "glowG", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
-        React.createElement(Stop, { offset: "0%", stopColor: C.glow, stopOpacity: 0.55 }),
-        React.createElement(Stop, { offset: "60%", stopColor: C.glow, stopOpacity: 0.10 }),
+        React.createElement(Stop, { offset: "0%", stopColor: C.glow, stopOpacity: 0.65 }),
+        React.createElement(Stop, { offset: "55%", stopColor: C.glow, stopOpacity: 0.14 }),
         React.createElement(Stop, { offset: "100%", stopColor: C.bg, stopOpacity: 0 }),
       ),
       React.createElement(LinearGradient, { id: "tealG", x1: "0%", y1: "100%", x2: "100%", y2: "0%" },
-        React.createElement(Stop, { offset: "0%", stopColor: C.brand2, stopOpacity: 0.18 }),
+        React.createElement(Stop, { offset: "0%", stopColor: C.brand2, stopOpacity: 0.22 }),
         React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 0 }),
       ),
     ),
-    // Soft glow blob (top right)
-    React.createElement(Circle, { cx: 560, cy: 100, r: 240, fill: "url(#glowG)" }),
-    // Teal accent (bottom left)
-    React.createElement(Circle, { cx: 60, cy: 760, r: 220, fill: "url(#tealG)" }),
+    // Proprietary blue glow (top right)
+    React.createElement(Circle, { cx: 560, cy: 110, r: 260, fill: "url(#glowG)" }),
+    // Green accent (bottom left)
+    React.createElement(Circle, { cx: 70, cy: 770, r: 240, fill: "url(#tealG)" }),
     // Editorial grid — vertical hairlines
     ...(() => {
       const arr: any[] = [];
@@ -255,14 +260,14 @@ function CoverBackdrop() {
       }
       return arr;
     })(),
-    // Signature flow curve, cinematic
+    // Signature flow curves (blue + green, cinematic)
     React.createElement(Path, {
       d: "M -20 580 C 140 520, 260 720, 420 560 S 660 460, 700 520",
       stroke: C.brand, strokeWidth: 1.2, fill: "none", opacity: 0.55,
     }),
     React.createElement(Path, {
       d: "M -20 620 C 140 570, 260 760, 420 600 S 660 510, 700 560",
-      stroke: C.brand2, strokeWidth: 0.7, fill: "none", opacity: 0.45,
+      stroke: C.brand2, strokeWidth: 0.7, fill: "none", opacity: 0.5,
     }),
   );
 }
@@ -319,22 +324,65 @@ function ClosingBackdrop() {
 
 function BrandLockup({ light = false }: { light?: boolean }) {
   const inkColor = light ? D.ink : C.ink;
+  // Official FinZap mark: blue parallelogram (top) + green tail (bottom)
   return React.createElement(View, { style: styles.brandRow },
-    // Mark: stylized "Z" lightning inside a rounded square — proprietary FinZap motif.
-    React.createElement(Svg, { width: 14, height: 14 },
-      React.createElement(Defs, null,
-        React.createElement(LinearGradient, { id: light ? "lockupGL" : "lockupG", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
-          React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 1 }),
-          React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 1 }),
-        ),
-      ),
-      React.createElement(Rect, { x: 0, y: 0, width: 14, height: 14, rx: 3.2, fill: light ? `url(#lockupGL)` : `url(#lockupG)` }),
-      React.createElement(Path, { d: "M 9.2 3.4 L 4.8 7.4 L 7.2 7.4 L 4.8 10.6 L 9.2 6.6 L 6.8 6.6 Z", fill: "#FFFFFF" }),
+    React.createElement(Svg, { width: 12, height: 16, viewBox: "0 0 60 100" },
+      // Blue top half (parallelogram)
+      React.createElement(Path, {
+        d: "M 22 4 L 50 4 L 38 50 L 10 50 Z",
+        fill: C.brand,
+      }),
+      // Green bottom tail (triangle)
+      React.createElement(Path, {
+        d: "M 30 40 L 54 40 L 18 98 Z",
+        fill: C.brand2,
+      }),
     ),
     React.createElement(Text, { style: [styles.brandText, { color: inkColor }] },
       React.createElement(Text, { style: { color: inkColor } }, "Fin"),
       React.createElement(Text, { style: { color: C.brand } }, "Zap"),
     ),
+  );
+}
+
+// Large, hero version of the official FinZap mark — used on cover & closing.
+function FinZapMark({ size = 64, glow = true }: { size?: number; glow?: boolean }) {
+  const w = size * 0.62;
+  const h = size;
+  return React.createElement(View, { style: { width: w, height: h, position: "relative" } },
+    glow
+      ? React.createElement(Svg, { width: w * 2.2, height: h * 1.6,
+          style: { position: "absolute", left: -w * 0.6, top: -h * 0.3 } },
+          React.createElement(Defs, null,
+            React.createElement(LinearGradient, { id: "markGlow", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+              React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 0.30 }),
+              React.createElement(Stop, { offset: "100%", stopColor: C.brand2, stopOpacity: 0 }),
+            ),
+          ),
+          React.createElement(Circle, { cx: w * 1.1, cy: h * 0.8, r: h * 0.85, fill: "url(#markGlow)" }),
+        )
+      : null,
+    React.createElement(Svg, { width: w, height: h, viewBox: "0 0 60 100" },
+      React.createElement(Path, { d: "M 22 4 L 50 4 L 38 50 L 10 50 Z", fill: C.brand }),
+      React.createElement(Path, { d: "M 30 40 L 54 40 L 18 98 Z", fill: C.brand2 }),
+    ),
+  );
+}
+
+// Premium seal — small editorial chip used on cover ("FinZap Premium" / "Relatório Inteligente")
+function PremiumSeal({ label, dark = false }: { label: string; dark?: boolean }) {
+  return React.createElement(View, {
+    style: {
+      flexDirection: "row", alignItems: "center", gap: 6,
+      paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999,
+      borderWidth: 0.6, borderColor: dark ? "rgba(255,255,255,0.18)" : C.hair,
+      backgroundColor: dark ? "rgba(255,255,255,0.04)" : "#FFFFFF",
+    },
+  },
+    React.createElement(View, { style: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.brand } }),
+    React.createElement(Text, {
+      style: { fontSize: 7.5, fontFamily: FONT_BOLD, letterSpacing: 1.6, textTransform: "uppercase", color: dark ? D.ink : C.ink2 },
+    }, label),
   );
 }
 
@@ -370,7 +418,7 @@ function PageFooter() {
 function Badge({ label, tone = "neutral" }: { label: string; tone?: "neutral" | "pos" | "warn" | "neg" | "info" }) {
   const map: Record<string, { bg: string; fg: string }> = {
     neutral: { bg: C.hairSoft, fg: C.ink3 },
-    pos:     { bg: C.brandSoft, fg: C.brand },
+    pos:     { bg: C.greenSoft, fg: C.pos },
     warn:    { bg: C.warnSoft, fg: C.warn },
     neg:     { bg: C.negSoft, fg: C.neg },
     info:    { bg: C.blueSoft, fg: C.blue },
@@ -475,8 +523,8 @@ function PairedBarsChart({ data, width = 491, height = 170 }:
   const children: any[] = [];
   children.push(React.createElement(Defs, { key: "defs" },
     React.createElement(LinearGradient, { id: "barIn", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
-      React.createElement(Stop, { offset: "0%", stopColor: C.brand, stopOpacity: 1 }),
-      React.createElement(Stop, { offset: "100%", stopColor: C.brand, stopOpacity: 0.55 }),
+      React.createElement(Stop, { offset: "0%", stopColor: C.green, stopOpacity: 1 }),
+      React.createElement(Stop, { offset: "100%", stopColor: C.green, stopOpacity: 0.55 }),
     ),
     React.createElement(LinearGradient, { id: "barEx", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
       React.createElement(Stop, { offset: "0%", stopColor: C.neg, stopOpacity: 0.92 }),
@@ -500,7 +548,7 @@ function PairedBarsChart({ data, width = 491, height = 170 }:
     children.push(React.createElement(Text as any, { key: `xl${i}`, x: gx, y: height - 14, style: { fontSize: 7, fill: C.muted, textAnchor: "middle", letterSpacing: 0.4 } }, d.label));
   });
   // legend
-  children.push(React.createElement(Rect, { key: "lg1", x: padL, y: height - 6, width: 6, height: 6, fill: C.brand, rx: 1 }));
+  children.push(React.createElement(Rect, { key: "lg1", x: padL, y: height - 6, width: 6, height: 6, fill: C.green, rx: 1 }));
   children.push(React.createElement(Text as any, { key: "ll1", x: padL + 10, y: height - 0.5, style: { fontSize: 7, fill: C.muted } }, "Receitas"));
   children.push(React.createElement(Rect, { key: "lg2", x: padL + 60, y: height - 6, width: 6, height: 6, fill: C.neg, rx: 1 }));
   children.push(React.createElement(Text as any, { key: "ll2", x: padL + 70, y: height - 0.5, style: { fontSize: 7, fill: C.muted } }, "Despesas"));
@@ -557,7 +605,7 @@ function buildDocument(payload: any) {
     const goodWhenUp = !invertGood;
     const isGood = pct >= 0 ? goodWhenUp : !goodWhenUp;
     const sign = pct >= 0 ? "▲" : "▼";
-    return h(Text, { style: [styles.kpiDelta, { color: isGood ? C.brand : C.neg }] }, `${sign} ${Math.abs(pct).toFixed(1)}% vs. mês anterior`);
+    return h(Text, { style: [styles.kpiDelta, { color: isGood ? C.pos : C.neg }] }, `${sign} ${Math.abs(pct).toFixed(1)}% vs. mês anterior`);
   };
 
   // COVER ────────────────────────────────────────────────
@@ -569,14 +617,21 @@ function buildDocument(payload: any) {
           BrandLockup({}),
           h(Text, { style: styles.coverIntelligence }, "FinZap Intelligence Report"),
         ),
-        h(Text, { style: styles.coverEyebrow }, "Edição mensal · Confidencial"),
+        h(View, { style: { flexDirection: "row", gap: 6 } },
+          h(PremiumSeal, { label: "FinZap Premium" }),
+          h(PremiumSeal, { label: "Relatório Inteligente" }),
+        ),
       ),
       h(View, null,
-        h(Text, { style: styles.coverEyebrow }, "Relatório financeiro inteligente"),
+        // Hero mark with glow
+        h(View, { style: { marginBottom: 28 } },
+          h(FinZapMark, { size: 72, glow: true }),
+        ),
+        h(Text, { style: styles.coverEyebrow }, "Dossiê financeiro inteligente"),
         h(Text, { style: styles.coverTitle }, "O retrato\ndo seu mês."),
         h(Text, { style: styles.coverPeriod }, periodo.toUpperCase()),
         h(Text, { style: styles.coverSub },
-          `Uma leitura inteligente do seu comportamento financeiro em ${periodo}. Receitas, despesas, reservas e compromissos lidos como um analista pessoal leria.`,
+          `Uma leitura estratégica do seu comportamento financeiro em ${periodo}. Receitas, despesas, reservas e compromissos analisados como um consultor pessoal leria — para você ver o impacto antes da decisão.`,
         ),
         h(Text, { style: styles.coverForLine }, "Preparado para"),
         h(Text, { style: styles.coverForName }, userName || "FinZap"),
@@ -584,7 +639,7 @@ function buildDocument(payload: any) {
       h(View, { style: styles.coverMetaGrid },
         h(View, { style: styles.coverMetaCol },
           h(Text, { style: styles.coverMetaLabel }, "Saldo final"),
-          h(Text, { style: styles.coverMetaValue }, fmtBRL(totals.final)),
+          h(Text, { style: [styles.coverMetaValue, { color: C.brand }] }, fmtBRL(totals.final)),
           h(Text, { style: styles.coverMetaHint }, "Posição consolidada"),
         ),
         h(View, { style: styles.coverMetaCol },
@@ -758,7 +813,7 @@ function buildDocument(payload: any) {
     : (cards as any[]).map((c: any, i: number) => {
         const hasLimit = c.limite > 0;
         const tone = !hasLimit ? "neutral" : c.pct >= 90 ? "neg" : c.pct >= 70 ? "warn" : c.pct >= 40 ? "info" : "pos";
-        const color = !hasLimit ? C.mutedSoft : c.pct >= 90 ? C.neg : c.pct >= 70 ? C.warn : c.pct >= 40 ? C.blue : C.brand;
+        const color = !hasLimit ? C.mutedSoft : c.pct >= 90 ? C.neg : c.pct >= 70 ? C.warn : c.pct >= 40 ? C.blue : C.pos;
         const status = !hasLimit ? "Limite não configurado"
           : c.pct >= 90 ? "Limite quase no teto"
           : c.pct >= 70 ? "Uso elevado"
@@ -805,7 +860,7 @@ function buildDocument(payload: any) {
     ),
     h(View, null,
       ...insights.map((it: any, i: number) => {
-        const toneMap: any = { pos: { color: C.brand }, neg: { color: C.neg }, warn: { color: C.warn }, info: { color: C.blue }, neutral: { color: C.ink3 } };
+        const toneMap: any = { pos: { color: C.pos }, neg: { color: C.neg }, warn: { color: C.warn }, info: { color: C.blue }, neutral: { color: C.ink3 } };
         const t = toneMap[it.tone || "neutral"];
         return h(View, { key: i, style: styles.insightCard, wrap: false },
           h(View, { style: styles.insightHeader },
@@ -828,10 +883,13 @@ function buildDocument(payload: any) {
       h(Text, { style: styles.closingTopText }, periodo.toUpperCase()),
     ),
     h(View, { style: styles.closingWrap },
-      h(Text, { style: styles.closingEyebrow }, "— Encerramento editorial —"),
+      h(View, { style: { marginBottom: 28 } },
+        h(FinZapMark, { size: 80, glow: true }),
+      ),
+      h(Text, { style: styles.closingEyebrow }, "— Inteligência financeira —"),
       h(Text, { style: styles.closingQuote }, "Veja o impacto\nantes da decisão."),
       h(Text, { style: styles.closingNote },
-        `${(userName || "Você").split(" ")[0]}, este relatório é uma fotografia do seu mês — releia antes de cada decisão que merece clareza.`,
+        `${(userName || "Você").split(" ")[0]}, clareza financeira não é um destino — é um hábito. Continue alimentando o FinZap e ele continuará devolvendo a leitura mais nítida possível do seu dinheiro.`,
       ),
       h(View, { style: styles.closingDivider }),
     ),
