@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables } from '@/integrations/supabase/types';
@@ -8,7 +8,6 @@ export type Month = Tables<'months'>;
 
 export const useMonths = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const invalidateFinancial = useFinzapInvalidate();
 
   const monthsQuery = useQuery({
