@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -44,7 +44,6 @@ export interface CardInstallment {
 
 export const useCreditCards = () => {
   const { user } = useAuth();
-  const qc = useQueryClient();
   const invalidateFinancial = useFinzapInvalidate();
 
   const cardsQ = useQuery({
