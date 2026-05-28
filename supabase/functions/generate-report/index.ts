@@ -267,19 +267,52 @@ function CoverBackdrop() {
   );
 }
 
-// Closing backdrop — quieter than cover
+// Closing backdrop — dark cinematic finish with proprietary flow signature.
 function ClosingBackdrop() {
   return React.createElement(Svg, { width: 595, height: 842, style: styles.closingBg },
     React.createElement(Defs, null,
-      React.createElement(LinearGradient, { id: "glowC", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
-        React.createElement(Stop, { offset: "0%", stopColor: C.glow, stopOpacity: 0.30 }),
-        React.createElement(Stop, { offset: "100%", stopColor: C.bg, stopOpacity: 0 }),
+      React.createElement(LinearGradient, { id: "darkBg", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+        React.createElement(Stop, { offset: "0%", stopColor: D.bg2, stopOpacity: 1 }),
+        React.createElement(Stop, { offset: "100%", stopColor: D.bg, stopOpacity: 1 }),
+      ),
+      React.createElement(LinearGradient, { id: "glowGreen", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+        React.createElement(Stop, { offset: "0%", stopColor: D.brand, stopOpacity: 0.55 }),
+        React.createElement(Stop, { offset: "60%", stopColor: D.brand, stopOpacity: 0.10 }),
+        React.createElement(Stop, { offset: "100%", stopColor: D.bg, stopOpacity: 0 }),
+      ),
+      React.createElement(LinearGradient, { id: "glowTeal", x1: "100%", y1: "0%", x2: "0%", y2: "100%" },
+        React.createElement(Stop, { offset: "0%", stopColor: D.brand2, stopOpacity: 0.45 }),
+        React.createElement(Stop, { offset: "100%", stopColor: D.bg, stopOpacity: 0 }),
       ),
     ),
-    React.createElement(Circle, { cx: 300, cy: 420, r: 320, fill: "url(#glowC)" }),
+    // Solid dark base
+    React.createElement(Rect, { x: 0, y: 0, width: 595, height: 842, fill: "url(#darkBg)" }),
+    // Editorial grid — very subtle vertical hairlines
+    ...(() => {
+      const arr: any[] = [];
+      const pad = 52; const cols = 6; const inner = 595 - pad * 2; const step = inner / (cols - 1);
+      for (let i = 0; i < cols; i++) {
+        const x = pad + i * step;
+        arr.push(React.createElement(Line, { key: `dg${i}`, x1: x, x2: x, y1: 40, y2: 802, stroke: D.ink, strokeWidth: 0.4, opacity: 0.04 }));
+      }
+      return arr;
+    })(),
+    // Soft glow blob (top-left)
+    React.createElement(Circle, { cx: 80, cy: 160, r: 260, fill: "url(#glowGreen)" }),
+    // Teal glow (bottom-right)
+    React.createElement(Circle, { cx: 520, cy: 700, r: 240, fill: "url(#glowTeal)" }),
+    // Proprietary flow signature — large, cinematic
     React.createElement(Path, {
-      d: "M 0 720 C 150 660, 300 820, 450 700 S 595 620, 595 660",
-      stroke: C.brand, strokeWidth: 1, fill: "none", opacity: 0.4,
+      d: "M -40 480 C 140 380, 280 640, 440 460 S 660 360, 720 420",
+      stroke: D.brand, strokeWidth: 1.4, fill: "none", opacity: 0.55,
+    }),
+    React.createElement(Path, {
+      d: "M -40 520 C 140 430, 280 690, 440 500 S 660 410, 720 470",
+      stroke: D.brand2, strokeWidth: 0.8, fill: "none", opacity: 0.5,
+    }),
+    React.createElement(Path, {
+      d: "M -40 560 C 140 480, 280 740, 440 540 S 660 460, 720 520",
+      stroke: D.brand, strokeWidth: 0.5, fill: "none", opacity: 0.3,
     }),
   );
 }
