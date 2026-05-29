@@ -45,6 +45,54 @@ const AdminNotifications = () => {
   });
   const ctr = stats && stats.delivered > 0 ? Math.round((stats.clicked / stats.delivered) * 100) : 0;
 
+  // Top notification types by CTR (last 30 days)
+  const since30 = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+  const { data: typeBreakdown = [] } = useQuery({
+    queryKey: ['admin-notif-types'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('notifications_log')
+        .select('type, delivered_at, clicked_at')
+        .gte('sent_at', since30)
+        .limit(5000);
+      const map = new Map<string, { sent: number; delivered: number; clicked: number }>();
+      for (const n of data ?? []) {
+        const cur = map.get(n.type) ?? { sent: 0, delivered: 0, clicked: 0 };
+        cur.sent += 1;
+        if (n.delivered_at) cur.delivered += 1;
+        if (n.clicked_at) cur.clicked += 1;
+        map.set(n.type, cur);
+      }
+      return Array.from(map.entries())
+        .map(([type, s]) => ({
+          type,
+          ...s,
+          ctr: s.delivered > 0 ? Math.round((s.clicked / s.delivered) * 100) : 0,
+        }))
+        .sort((a, b) => b.ctr - a.ctr || b.sent - a.sent)
+        .slice(0, 10);
+    },
+  });
+
+  // Silent users — subscribed but no click in 30d
+  const { data: silentInfo } = useQuery({
+    queryKey: ['admin-notif-silent'],
+    queryFn: async () => {
+      const { data: subs } = await supabase.from('push_subscriptions').select('user_id').limit(5000);
+      const subUsers = new Set((subs ?? []).map((s: any) => s.user_id));
+      const { data: clicked } = await supabase
+        .from('notifications_log')
+        .select('user_id')
+        .gte('sent_at', since30)
+        .not('clicked_at', 'is', null)
+        .limit(5000);
+      const clickedUsers = new Set((clicked ?? []).map((c: any) => c.user_id));
+      let silent = 0;
+      for (const u of subUsers) if (!clickedUsers.has(u)) silent += 1;
+      return { silent, total: subUsers.size };
+    },
+  });
+
   return (
     <div>
       <PageHeader title="Notificações" description="Métricas dos últimos 7 dias." />
@@ -55,6 +103,42 @@ const AdminNotifications = () => {
         <KpiCard label="Cliques" value={`${ctr}%`} icon={Activity} accent="bg-violet-500/10 text-violet-500" />
         <KpiCard label="Inscrições" value={stats?.subs ?? '—'} icon={Bell} accent="bg-blue-500/10 text-blue-500" />
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div className="lg:col-span-2 rounded-xl border bg-card p-5">
+          <div className="flex items-baseline justify-between mb-3">
+            <h3 className="text-sm font-semibold">Tipos mais eficientes</h3>
+            <span className="text-[11px] text-muted-foreground uppercase tracking-wider">30 dias</span>
+          </div>
+          {typeBreakdown.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-6 text-center">Sem dados suficientes.</p>
+          ) : (
+            <div className="space-y-2">
+              {typeBreakdown.map((t) => (
+                <div key={t.type} className="flex items-center gap-3 text-sm">
+                  <span className="font-medium flex-1 truncate">{t.type}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums w-20 text-right">{t.sent} envios</span>
+                  <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-violet-500" style={{ width: `${Math.min(100, t.ctr)}%` }} />
+                  </div>
+                  <span className="text-xs font-semibold tabular-nums w-10 text-right">{t.ctr}%</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <h3 className="text-sm font-semibold mb-3">Usuários silenciosos</h3>
+          <p className="text-3xl font-semibold tracking-tight">
+            {silentInfo?.silent ?? '—'}
+            <span className="text-sm text-muted-foreground font-normal"> / {silentInfo?.total ?? '—'}</span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-2 leading-snug">
+            Inscritos sem nenhum clique em notificação nos últimos 30 dias.
+          </p>
+        </div>
+      </div>
+
       <div className="rounded-xl border bg-card overflow-hidden">
         <Table>
           <TableHeader>

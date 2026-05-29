@@ -60,6 +60,40 @@ Deno.serve(async (req) => {
   const dailyCounts = new Map<string, number>();
   const cap24hStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
+  // Per-user preferences cache (for quiet hours + timezone).
+  type PrefRow = {
+    quiet_hours_start: number;
+    quiet_hours_end: number;
+    timezone: string | null;
+  };
+  const prefsCache = new Map<string, PrefRow | null>();
+  async function loadPrefs(userId: string): Promise<PrefRow | null> {
+    if (prefsCache.has(userId)) return prefsCache.get(userId)!;
+    const { data } = await supabase
+      .from("notification_preferences")
+      .select("quiet_hours_start, quiet_hours_end, timezone")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const row = (data as PrefRow | null) ?? null;
+    prefsCache.set(userId, row);
+    return row;
+  }
+
+  function isInQuietHours(prefs: PrefRow | null): boolean {
+    if (!prefs) return false;
+    const tz = prefs.timezone || "America/Sao_Paulo";
+    const hourLocal = parseInt(
+      new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", hour12: false }).format(new Date()),
+      10,
+    );
+    const s = prefs.quiet_hours_start ?? 22;
+    const e = prefs.quiet_hours_end ?? 7;
+    if (s === e) return false;
+    // Crossing midnight (e.g. 22 → 7)
+    if (s > e) return hourLocal >= s || hourLocal < e;
+    return hourLocal >= s && hourLocal < e;
+  }
+
   async function loadDailyCount(userId: string): Promise<number> {
     if (dailyCounts.has(userId)) return dailyCounts.get(userId)!;
     const { count } = await supabase
@@ -75,6 +109,14 @@ Deno.serve(async (req) => {
 
   async function dispatch(args: PushArgs) {
     const isCritical = args.priority === "critical" || args.category === "alerta";
+    if (!isCritical) {
+      const prefs = await loadPrefs(args.user_id);
+      if (isInQuietHours(prefs)) {
+        cappedCount++;
+        console.log(`[scheduler] quiet_hours user=${args.user_id} type=${args.type}`);
+        return;
+      }
+    }
     if (!isCritical) {
       const n = await loadDailyCount(args.user_id);
       if (n >= DAILY_CAP) {
@@ -481,6 +523,129 @@ Deno.serve(async (req) => {
             priority: "low",
             url: "/app",
             dedupe_key: `calmer:${uid}:${monthKey}`,
+          });
+        }
+      }
+    }
+
+    // ---- 8. Month closing approaching (3 days and 1 day before end of month) ----
+    {
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+      const dayOfMonth = today.getDate();
+      const daysLeft = lastDay - dayOfMonth;
+      const trigger = daysLeft === 3 ? "3d" : daysLeft === 1 ? "1d" : null;
+      if (trigger && hourSP === 10) {
+        const { data: openMonths } = await supabase
+          .from("months")
+          .select("user_id, id")
+          .eq("month", today.getMonth() + 1)
+          .eq("year", today.getFullYear())
+          .neq("status", "closed");
+        for (const m of openMonths ?? []) {
+          const body = trigger === "3d"
+            ? "Faltam 3 dias para o fechamento deste mês. Revise antes de virar a página."
+            : "Amanhã encerra o mês. Um último olhar mantém seu histórico nítido.";
+          await dispatch({
+            user_id: m.user_id,
+            title: trigger === "3d" ? "Fechamento se aproxima" : "Fechamento amanhã",
+            body,
+            type: "month_closing",
+            category: "insight",
+            priority: trigger === "1d" ? "high" : "normal",
+            url: "/app",
+            dedupe_key: `month_closing:${m.user_id}:${monthKey}:${trigger}`,
+          });
+        }
+      }
+    }
+
+    // ---- 9. Rhythm snapshot + drop detection (every run, lightweight) ----
+    {
+      const { data: usersWithSubs } = await supabase
+        .from("push_subscriptions")
+        .select("user_id")
+        .limit(5000);
+      const uniqUsers = Array.from(new Set((usersWithSubs ?? []).map((r: any) => r.user_id)));
+      const since14 = new Date(today.getTime() - 14 * 86400000).toISOString();
+
+      for (const uid of uniqUsers) {
+        const { data: lastTxRow } = await supabase
+          .from("transactions")
+          .select("created_at")
+          .eq("user_id", uid)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!lastTxRow?.created_at) continue;
+
+        const lastTs = new Date(lastTxRow.created_at as string).getTime();
+        const daysSince = Math.floor((today.getTime() - lastTs) / 86400000);
+
+        const { data: recent14 } = await supabase
+          .from("transactions")
+          .select("created_at")
+          .eq("user_id", uid)
+          .gte("created_at", since14)
+          .limit(500);
+        const activeDays = new Set(
+          (recent14 ?? []).map((t: any) => (t.created_at as string).slice(0, 10)),
+        ).size;
+
+        const { count: recCount } = await supabase
+          .from("recurring_transactions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", uid)
+          .eq("ativo", true);
+
+        // Rhythm score 0–100: weighted blend
+        const recencyScore = Math.max(0, 100 - daysSince * 12); // -12 pts/day
+        const activityScore = Math.min(100, activeDays * 14); // 7+ active days = 98
+        const rhythm_score = Math.round(recencyScore * 0.6 + activityScore * 0.4);
+
+        // Predictability score 0–100
+        const recurringScore = Math.min(100, (recCount ?? 0) * 20); // 5+ = 100
+        const predictability_score = Math.round(
+          activityScore * 0.4 + recurringScore * 0.4 + recencyScore * 0.2,
+        );
+
+        const inactivity_level =
+          daysSince >= 14 ? "critico" :
+          daysSince >= 7  ? "risco"   :
+          daysSince >= 4  ? "atencao" : "ok";
+
+        // Load previous snapshot to detect drops
+        const { data: prev } = await supabase
+          .from("financial_rhythm_state")
+          .select("predictability_score")
+          .eq("user_id", uid)
+          .maybeSingle();
+
+        await supabase.from("financial_rhythm_state").upsert({
+          user_id: uid,
+          last_transaction_at: new Date(lastTs).toISOString(),
+          rhythm_score,
+          predictability_score,
+          previous_predictability_score: prev?.predictability_score ?? null,
+          inactivity_level,
+          updated_at: new Date().toISOString(),
+        });
+
+        // Drop detection: only once/week, only if drop > 15 pts and current < 60
+        const dropAmount = (prev?.predictability_score ?? predictability_score) - predictability_score;
+        if (dropAmount >= 15 && predictability_score < 60) {
+          const isoWeek = `${today.getFullYear()}-W${Math.ceil(
+            ((today.getTime() - new Date(today.getFullYear(), 0, 1).getTime()) / 86400000 +
+              new Date(today.getFullYear(), 0, 1).getDay() + 1) / 7,
+          )}`;
+          await dispatch({
+            user_id: uid,
+            title: "Sua previsibilidade caiu",
+            body: "O FinZap notou uma queda na consistência das suas atualizações. Registrar agora restaura a clareza.",
+            type: "predictability_drop",
+            category: "atualizacao_diaria",
+            priority: "normal",
+            url: "/app",
+            dedupe_key: `pred_drop:${uid}:${isoWeek}`,
           });
         }
       }

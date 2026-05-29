@@ -434,6 +434,42 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_rhythm_state: {
+        Row: {
+          inactivity_level: string
+          last_notification_at: string | null
+          last_open_at: string | null
+          last_transaction_at: string | null
+          predictability_score: number
+          previous_predictability_score: number | null
+          rhythm_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          inactivity_level?: string
+          last_notification_at?: string | null
+          last_open_at?: string | null
+          last_transaction_at?: string | null
+          predictability_score?: number
+          previous_predictability_score?: number | null
+          rhythm_score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          inactivity_level?: string
+          last_notification_at?: string | null
+          last_open_at?: string | null
+          last_transaction_at?: string | null
+          predictability_score?: number
+          previous_predictability_score?: number | null
+          rhythm_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       monthly_closures: {
         Row: {
           closed_at: string
