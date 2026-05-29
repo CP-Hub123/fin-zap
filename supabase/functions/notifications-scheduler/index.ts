@@ -60,6 +60,40 @@ Deno.serve(async (req) => {
   const dailyCounts = new Map<string, number>();
   const cap24hStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
+  // Per-user preferences cache (for quiet hours + timezone).
+  type PrefRow = {
+    quiet_hours_start: number;
+    quiet_hours_end: number;
+    timezone: string | null;
+  };
+  const prefsCache = new Map<string, PrefRow | null>();
+  async function loadPrefs(userId: string): Promise<PrefRow | null> {
+    if (prefsCache.has(userId)) return prefsCache.get(userId)!;
+    const { data } = await supabase
+      .from("notification_preferences")
+      .select("quiet_hours_start, quiet_hours_end, timezone")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const row = (data as PrefRow | null) ?? null;
+    prefsCache.set(userId, row);
+    return row;
+  }
+
+  function isInQuietHours(prefs: PrefRow | null): boolean {
+    if (!prefs) return false;
+    const tz = prefs.timezone || "America/Sao_Paulo";
+    const hourLocal = parseInt(
+      new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", hour12: false }).format(new Date()),
+      10,
+    );
+    const s = prefs.quiet_hours_start ?? 22;
+    const e = prefs.quiet_hours_end ?? 7;
+    if (s === e) return false;
+    // Crossing midnight (e.g. 22 → 7)
+    if (s > e) return hourLocal >= s || hourLocal < e;
+    return hourLocal >= s && hourLocal < e;
+  }
+
   async function loadDailyCount(userId: string): Promise<number> {
     if (dailyCounts.has(userId)) return dailyCounts.get(userId)!;
     const { count } = await supabase
@@ -75,6 +109,14 @@ Deno.serve(async (req) => {
 
   async function dispatch(args: PushArgs) {
     const isCritical = args.priority === "critical" || args.category === "alerta";
+    if (!isCritical) {
+      const prefs = await loadPrefs(args.user_id);
+      if (isInQuietHours(prefs)) {
+        cappedCount++;
+        console.log(`[scheduler] quiet_hours user=${args.user_id} type=${args.type}`);
+        return;
+      }
+    }
     if (!isCritical) {
       const n = await loadDailyCount(args.user_id);
       if (n >= DAILY_CAP) {
