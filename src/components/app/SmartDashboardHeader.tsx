@@ -4,6 +4,7 @@ import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 import { useInsights } from '@/hooks/useInsights';
+import { useAIInsight } from '@/hooks/useAIInsight';
 import { getPreset, getStatusLevel, STATUS_META } from '@/lib/cofrinhoPresets';
 import {
   Sparkles, ShieldCheck, AlertTriangle, AlertCircle,
@@ -40,6 +41,7 @@ export const SmartDashboardHeader = ({ month }: Props) => {
   const { cofrinhos } = useCofrinhos();
   const { recorrencias } = useRecurringTransactions();
   const { insights } = useInsights(month);
+  const { insight: aiInsight } = useAIInsight(month);
 
   // Fonte ÚNICA de saldo
   const fb = useFinancialBalance(month.id);
@@ -80,6 +82,15 @@ export const SmartDashboardHeader = ({ month }: Props) => {
 
   // Insight principal (heurística)
   const insightPrincipal = useMemo(() => {
+    // 1º — Insight contextual gerado pela IA (Gemini) quando disponível
+    if (aiInsight) {
+      const sev =
+        aiInsight.level === 'critical' ? 'critical'
+        : aiInsight.level === 'warning' ? 'attention'
+        : aiInsight.level === 'positive' ? 'safe'
+        : 'info';
+      return { sev: sev as keyof typeof INSIGHT_STYLE, title: aiInsight.title, text: aiInsight.message };
+    }
     if (insights.length > 0) {
       const top = insights[0];
       const sev = (top.severity === 'critical' ? 'critical' : top.severity === 'warning' ? 'attention' : 'info') as keyof typeof INSIGHT_STYLE;
@@ -95,7 +106,7 @@ export const SmartDashboardHeader = ({ month }: Props) => {
       return { sev: 'attention' as const, title: 'Os gastos exigem atenção', text: 'Seu ritmo de gasto está alto frente ao saldo disponível. Reduza gastos opcionais.' };
     }
     return { sev: 'safe' as const, title: 'Seu mês está estável', text: `Mantendo este ritmo, você terminará com ${formatCurrency(projecaoFimMes)} livres.` };
-  }, [insights, status, projecaoFimMes, isCurrentMonth]);
+  }, [aiInsight, insights, status, projecaoFimMes, isCurrentMonth]);
 
   const InsightIcon = INSIGHT_STYLE[insightPrincipal.sev].icon;
 

@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_insights_cache: {
+        Row: {
+          context_hash: string
+          context_snapshot: Json | null
+          created_at: string
+          level: string
+          message: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_hash: string
+          context_snapshot?: Json | null
+          created_at?: string
+          level: string
+          message: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_hash?: string
+          context_snapshot?: Json | null
+          created_at?: string
+          level?: string
+          message?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       budget_plans: {
         Row: {
           category: string
