@@ -30,7 +30,11 @@ export interface AIInsight {
  *
  * Não cria UI nova — é consumido pelo card de Insights já existente.
  */
-export const useAIInsight = (month: Month | undefined): { insight: AIInsight | null; isLoading: boolean } => {
+export const useAIInsight = (month: Month | undefined): {
+  insight: AIInsight | null;
+  isLoading: boolean;
+  forceRefresh?: () => Promise<AIInsight | null>;
+} => {
   const { user } = useAuth();
   const fb = useFinancialBalance(month?.id);
   const { cofrinhos } = useCofrinhos();
