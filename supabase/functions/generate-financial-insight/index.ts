@@ -13,6 +13,7 @@ const SUPABASE_ANON_KEY =
   Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const GEMINI_MODEL = "google/gemini-3-flash-preview";
 
 // Acceptable insight levels
 const LEVELS = ["positive", "neutral", "warning", "critical"] as const;
@@ -127,7 +128,7 @@ async function callGemini(ctx: Context): Promise<{ title: string; message: strin
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
+      model: GEMINI_MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildPrompt(ctx) },
@@ -232,6 +233,9 @@ Deno.serve(async (req) => {
           message: cached.message,
           level: cached.level,
           cached: true,
+          source: "cache",
+          model: GEMINI_MODEL,
+          generated_at: cached.updated_at,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -252,6 +256,9 @@ Deno.serve(async (req) => {
             level: cached.level,
             cached: true,
             stale: true,
+            source: "cache-stale",
+            model: GEMINI_MODEL,
+            generated_at: cached.updated_at,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
@@ -272,7 +279,14 @@ Deno.serve(async (req) => {
       updated_at: new Date().toISOString(),
     });
 
-    return new Response(JSON.stringify({ ...insight, cached: false }), {
+    const nowIso = new Date().toISOString();
+    return new Response(JSON.stringify({
+      ...insight,
+      cached: false,
+      source: "gemini",
+      model: GEMINI_MODEL,
+      generated_at: nowIso,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
