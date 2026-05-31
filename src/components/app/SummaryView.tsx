@@ -15,6 +15,7 @@ import type { Transaction } from '@/hooks/useTransactions';
 import type { BudgetPlan } from '@/hooks/useBudget';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { SmartDashboardHeader } from './SmartDashboardHeader';
+import { AIInsightDiagnostics } from './AIInsightDiagnostics';
 import { FinancialRhythmCard } from './FinancialRhythmCard';
 import { HealthSnapshotGrid } from './HealthSnapshotGrid';
 import { QuickActionsCard } from './QuickActionsCard';
@@ -184,6 +185,7 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
     <div className="space-y-6">
       {/* Cabeçalho inteligente: situação real + insight + próximos impactos + cofrinhos */}
       <SmartDashboardHeader month={month} />
+      <AIInsightDiagnostics month={month} />
 
       {/* Saldo Inteligente — fonte única de verdade (Total · Reservado · Livre · Previsto) */}
       <IntelligentBalanceCard monthId={month.id} />

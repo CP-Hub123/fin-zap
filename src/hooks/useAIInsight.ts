@@ -16,6 +16,9 @@ export interface AIInsight {
   level: AILevel;
   cached?: boolean;
   stale?: boolean;
+  source?: 'gemini' | 'cache' | 'cache-stale';
+  model?: string;
+  generated_at?: string;
 }
 
 /**
@@ -27,7 +30,11 @@ export interface AIInsight {
  *
  * Não cria UI nova — é consumido pelo card de Insights já existente.
  */
-export const useAIInsight = (month: Month | undefined): { insight: AIInsight | null; isLoading: boolean } => {
+export const useAIInsight = (month: Month | undefined): {
+  insight: AIInsight | null;
+  isLoading: boolean;
+  forceRefresh?: () => Promise<AIInsight | null>;
+} => {
   const { user } = useAuth();
   const fb = useFinancialBalance(month?.id);
   const { cofrinhos } = useCofrinhos();
@@ -115,6 +122,12 @@ export const useAIInsight = (month: Month | undefined): { insight: AIInsight | n
     gcTime: 60 * 60 * 1000,
     retry: 1,
     queryFn: async (): Promise<AIInsight | null> => {
+      console.log('[ai-insight] invoking edge fn', {
+        userId: user?.id,
+        mesRef: context?.mesRef,
+        saldoAtual: context?.saldoAtual,
+        debounceKey,
+      });
       const { data, error } = await supabase.functions.invoke('generate-financial-insight', {
         body: { context },
       });
@@ -122,10 +135,35 @@ export const useAIInsight = (month: Month | undefined): { insight: AIInsight | n
         console.warn('[ai-insight] edge fn error', error);
         return null;
       }
-      if (!data || data.error) return null;
+      if (!data || data.error) {
+        console.warn('[ai-insight] empty/error payload', data);
+        return null;
+      }
+      console.log('[ai-insight] received', {
+        source: data.source,
+        model: data.model,
+        cached: data.cached,
+        stale: data.stale,
+        generated_at: data.generated_at,
+        level: data.level,
+      });
       return data as AIInsight;
     },
   });
 
-  return { insight: query.data ?? null, isLoading: query.isLoading };
+  const forceRefresh = async (): Promise<AIInsight | null> => {
+    if (!context) return null;
+    console.log('[ai-insight] FORCE refresh', { mesRef: context.mesRef });
+    const { data, error } = await supabase.functions.invoke('generate-financial-insight', {
+      body: { context, force: true },
+    });
+    if (error) {
+      console.warn('[ai-insight] force error', error);
+      return null;
+    }
+    await query.refetch();
+    return data as AIInsight;
+  };
+
+  return { insight: query.data ?? null, isLoading: query.isLoading, forceRefresh };
 };
