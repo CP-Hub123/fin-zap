@@ -1027,7 +1027,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     supa.from("transactions").select("type,amount,status,impacta_saldo,cofrinho_id,card_purchase_id").eq("user_id", userId).eq("month_id", monthId),
     supa.from("cofrinhos").select("nome,saldo,meta_valor,orcamento_mensal").eq("user_id", userId).order("ordem"),
     supa.from("credit_cards").select("id,nome,limite,fechamento_dia,vencimento_dia").eq("user_id", userId).eq("ativo", true).order("ordem"),
-    supa.from("credit_card_purchases").select("card_id,valor_total").eq("user_id", userId),
+    supa.from("credit_card_purchases").select("id,card_id,valor_total").eq("user_id", userId),
     supa.from("monthly_closures").select("month_id,total_income,total_expense,final_balance").in("month_id",
       // closures for last months — fetched after we list months below; placeholder for now
       [monthId],
@@ -1058,7 +1058,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
       };
     }
     // compute from realized transactions
-    const mtx = (histTx || []).filter((t: any) => t.month_id === m.id && t.status === "realized" && t.impacta_saldo);
+    const mtx = (histTx || []).filter((t: any) => t.month_id === m.id && t.status === "realized" && t.impacta_saldo !== false);
     const income = mtx.filter((t: any) => t.type === "income").reduce((s: number, t: any) => s + Number(t.amount), 0);
     const expense = mtx.filter((t: any) => t.type === "expense").reduce((s: number, t: any) => s + Number(t.amount), 0);
     return {
@@ -1068,8 +1068,8 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     };
   });
 
-  // Current month totals
-  const realized = (txs || []).filter((t: any) => t.impacta_saldo);
+  // Current month totals — `impacta_saldo` é alinhado com o Dashboard (engine canônica).
+  const realized = (txs || []).filter((t: any) => t.impacta_saldo !== false);
   const income = realized.filter((t: any) => t.type === "income").reduce((s: number, t: any) => s + Number(t.amount), 0);
   const expense = realized.filter((t: any) => t.type === "expense").reduce((s: number, t: any) => s + Number(t.amount), 0);
   const balance = income - expense;
@@ -1081,10 +1081,16 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     .reduce((s: number, t: any) => s + Number(t.amount), 0);
   const free = Math.max(0, final - reserved);
 
-  // Cards usage (sum of purchases for currently active cards)
+  // Cards usage — fix P0 #3: soma apenas parcelas faturadas no mês corrente,
+  // alinhada com a visão do Dashboard (sem incluir histórico de cartão irrestrito).
+  const purchaseToCard = new Map<string, string>();
+  (cardPurchases || []).forEach((p: any) => { if (p?.id && p?.card_id) purchaseToCard.set(p.id, p.card_id); });
   const usadoByCard = new Map<string, number>();
-  (cardPurchases || []).forEach((p: any) => {
-    usadoByCard.set(p.card_id, (usadoByCard.get(p.card_id) || 0) + Number(p.valor_total || 0));
+  (txs || []).forEach((t: any) => {
+    if (t.type !== "expense" || !t.card_purchase_id) return;
+    const cid = purchaseToCard.get(t.card_purchase_id);
+    if (!cid) return;
+    usadoByCard.set(cid, (usadoByCard.get(cid) || 0) + Number(t.amount || 0));
   });
   const cardsOut = (cards || []).map((c: any) => {
     const usado = usadoByCard.get(c.id) || 0;

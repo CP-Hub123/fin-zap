@@ -4,6 +4,12 @@ import { useMonths } from './useMonths';
 import { useRecurringTransactions } from './useRecurringTransactions';
 import { useCofrinhos } from './useCofrinhos';
 import { useCreditCards } from './useCreditCards';
+import {
+  computeUpcomingRecurring,
+  computeCardsPendingThisMonth,
+  computeBalances,
+  computeSaldoPrevisto,
+} from '@/lib/financialEngine';
 
 /**
  * FONTE ÚNICA OFICIAL DE SALDO DO FINZAP.
@@ -22,20 +28,33 @@ export const useFinancialBalance = (monthId: string | undefined) => {
   const { months } = useMonths();
   const { recorrencias } = useRecurringTransactions();
   const { cofrinhos } = useCofrinhos();
-  const { installments } = useCreditCards();
+  const { installments, purchases } = useCreditCards();
 
   const month = months.find(m => m.id === monthId);
 
   const initialBalance = Number(month?.initial_balance ?? 0);
   const totalIncome = tx.totalIncome;
   const totalExpense = tx.totalExpense;
+  // delta/currentBalance vêm da engine canônica (totals já respeitam impacta_saldo)
   const delta = totalIncome - totalExpense;
   const currentBalance = initialBalance + delta;
 
-  // Compromissos futuros e receitas futuras do mês corrente
-  const { commitmentsRemaining, projectedIncomeRemaining, daysRemaining, isCurrentMonth } = useMemo(() => {
+  // Compromissos futuros e receitas futuras do mês corrente (engine canônica)
+  const {
+    commitmentsRemaining,
+    commitmentsRemainingFree,
+    projectedIncomeRemaining,
+    daysRemaining,
+    isCurrentMonth,
+  } = useMemo(() => {
     if (!month) {
-      return { commitmentsRemaining: 0, projectedIncomeRemaining: 0, daysRemaining: 0, isCurrentMonth: false };
+      return {
+        commitmentsRemaining: 0,
+        commitmentsRemainingFree: 0,
+        projectedIncomeRemaining: 0,
+        daysRemaining: 0,
+        isCurrentMonth: false,
+      };
     }
     const now = new Date();
     const isCurrent = month.year === now.getFullYear() && month.month === now.getMonth() + 1;
@@ -44,21 +63,22 @@ export const useFinancialBalance = (monthId: string | undefined) => {
     const remaining = Math.max(0, daysInMonth - today);
 
     if (!isCurrent) {
-      return { commitmentsRemaining: 0, projectedIncomeRemaining: 0, daysRemaining: remaining, isCurrentMonth: false };
+      return {
+        commitmentsRemaining: 0,
+        commitmentsRemainingFree: 0,
+        projectedIncomeRemaining: 0,
+        daysRemaining: remaining,
+        isCurrentMonth: false,
+      };
     }
-
-    let commit = 0;
-    let income = 0;
-    recorrencias.forEach(r => {
-      if (!r.ativo || !r.proxima_execucao) return;
-      const target = new Date(r.proxima_execucao + 'T12:00:00');
-      if (target.getFullYear() !== now.getFullYear() || target.getMonth() !== now.getMonth()) return;
-      if (target.getTime() < now.getTime()) return; // já executada / no passado
-      const val = Number(r.valor);
-      if (r.tipo === 'despesa') commit += val;
-      else income += val;
-    });
-    return { commitmentsRemaining: commit, projectedIncomeRemaining: income, daysRemaining: remaining, isCurrentMonth: true };
+    const eng = computeUpcomingRecurring(recorrencias as any, now);
+    return {
+      commitmentsRemaining: eng.commitmentsRemaining,
+      commitmentsRemainingFree: eng.commitmentsRemainingFree,
+      projectedIncomeRemaining: eng.projectedIncomeRemaining,
+      daysRemaining: remaining,
+      isCurrentMonth: true,
+    };
   }, [month, recorrencias]);
 
   const availableReal = currentBalance - commitmentsRemaining + projectedIncomeRemaining;
@@ -74,25 +94,44 @@ export const useFinancialBalance = (monthId: string | undefined) => {
     [cofrinhos]
   );
 
-  const cardsPendingThisMonth = useMemo(() => {
-    if (!monthId) return 0;
-    return installments
-      .filter(i => i.month_id === monthId && i.status !== 'realized')
-      .reduce((s, i) => s + Number(i.amount ?? 0), 0);
-  }, [installments, monthId]);
+  // Mapa compra→cofrinho para segregar parcelas vinculadas a reservas
+  const purchaseToCofrinho = useMemo(() => {
+    const m = new Map<string, string | null>();
+    (purchases || []).forEach((p: any) => m.set(p.id, p.cofrinho_id ?? null));
+    return m;
+  }, [purchases]);
 
-  const saldoTotal = currentBalance;
-  const saldoLivre =
-    saldoTotal - saldoReservado - commitmentsRemaining - cardsPendingThisMonth + projectedIncomeRemaining;
+  const cardsPendingBreakdown = useMemo(
+    () => computeCardsPendingThisMonth(installments as any, monthId, purchaseToCofrinho),
+    [installments, monthId, purchaseToCofrinho],
+  );
+  const cardsPendingThisMonth = cardsPendingBreakdown.total;
+
+  // Fix P0 #1: saldoLivre NÃO subtrai compromissos/cartões vinculados a cofrinho
+  // (eles serão pagos contra `saldoReservado` quando executados).
+  const { saldoTotal, saldoLivre } = computeBalances({
+    initialBalance,
+    totalIncome,
+    totalExpense,
+    saldoReservado,
+    commitmentsRemainingFree,
+    projectedIncomeRemaining,
+    cardsPendingFree: cardsPendingBreakdown.free,
+  });
 
   const projectedEndOfMonth = useMemo(() => {
     if (!isCurrentMonth || !month) return currentBalance;
     const daysInMonth = new Date(month.year, month.month, 0).getDate();
-    const today = daysInMonth - daysRemaining;
-    const burn = today > 0 ? totalExpense / today : 0;
-    // pondera 50% do ritmo para gastos NÃO recorrentes do restante do mês
-    return availableReal - burn * daysRemaining * 0.5;
-  }, [isCurrentMonth, month, daysRemaining, totalExpense, availableReal, currentBalance]);
+    const daysElapsed = daysInMonth - daysRemaining;
+    return computeSaldoPrevisto({
+      isCurrentMonth,
+      saldoLivre,
+      saldoTotal,
+      totalExpense,
+      daysElapsed,
+      daysRemaining,
+    });
+  }, [isCurrentMonth, month, daysRemaining, totalExpense, saldoLivre, saldoTotal, currentBalance]);
 
   return {
     month,
