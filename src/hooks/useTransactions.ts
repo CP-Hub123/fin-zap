@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { FinancialDataService } from '@/services/FinancialDataService';
 import { useFinzapInvalidate } from './useFinzapInvalidate';
+import { computeMonthTotals } from '@/lib/financialEngine';
 
 export type Transaction = Tables<'transactions'>;
 
@@ -54,9 +55,8 @@ export const useTransactions = (monthId: string | undefined) => {
   const transactions = transactionsQuery.data ?? [];
   const incomes = transactions.filter(t => t.type === 'income');
   const expenses = transactions.filter(t => t.type === 'expense');
-  const totalIncome = incomes.reduce((sum, t) => sum + Number(t.amount), 0);
-  const totalExpense = expenses.reduce((sum, t) => sum + Number(t.amount), 0);
-  const balance = totalIncome - totalExpense;
+  // Totais canônicos (fix P0 #2): respeitam `impacta_saldo` — alinhado com o PDF.
+  const { totalIncome, totalExpense, delta: balance } = computeMonthTotals(transactions as any);
 
   return {
     transactions, incomes, expenses, totalIncome, totalExpense, balance,
