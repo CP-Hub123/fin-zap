@@ -1058,7 +1058,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
       };
     }
     // compute from realized transactions
-    const mtx = (histTx || []).filter((t: any) => t.month_id === m.id && t.status === "realized" && t.impacta_saldo);
+    const mtx = (histTx || []).filter((t: any) => t.month_id === m.id && t.status === "realized" && t.impacta_saldo !== false);
     const income = mtx.filter((t: any) => t.type === "income").reduce((s: number, t: any) => s + Number(t.amount), 0);
     const expense = mtx.filter((t: any) => t.type === "expense").reduce((s: number, t: any) => s + Number(t.amount), 0);
     return {
