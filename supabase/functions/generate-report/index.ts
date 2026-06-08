@@ -84,7 +84,7 @@ const D = {
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 56,
+    paddingTop: 96,
     paddingBottom: 56,
     paddingHorizontal: 52,
     fontFamily: FONT,
@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
 
   // Cover
   coverBg:    { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-  coverInner: { flexGrow: 1, padding: 56, justifyContent: "space-between" },
-  coverTop:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  coverInner: { flexGrow: 1, padding: 60 },
+  coverTop:   { flexDirection: "row", justifyContent: "flex-start", alignItems: "center" },
   brandRow:   { flexDirection: "row", alignItems: "center", gap: 7 },
   brandText:  { fontSize: 13, fontFamily: FONT_BOLD, letterSpacing: 1.2 },
   brandTextFin:{ color: C.ink },
@@ -121,10 +121,11 @@ const styles = StyleSheet.create({
   coverMetaValue: { fontSize: 12, fontFamily: FONT_BOLD, marginTop: 6 },
   coverMetaHint:  { fontSize: 8, color: C.muted, marginTop: 2 },
 
-  // Generic page chrome
-  pageHeader:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 10, marginBottom: 26 },
-  pageHeaderL: { fontSize: 7.5, color: C.muted, letterSpacing: 1.8, textTransform: "uppercase" },
-  pageHeaderR: { fontSize: 7.5, color: C.muted, letterSpacing: 1.2 },
+  // Page chrome — matches master template (green/blue wave band + lockup row)
+  pageHeaderBand: { position: "absolute", top: 0, left: 0, right: 0, height: 110 },
+  pageHeaderRow:  { position: "absolute", top: 34, left: 52, right: 52, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pageHeaderL: { fontSize: 8, color: C.muted, letterSpacing: 1.8, textTransform: "uppercase" },
+  pageHeaderR: { fontSize: 8, color: C.mutedSoft, letterSpacing: 1.2 },
   hairline:    { height: 0.5, backgroundColor: C.hair, marginBottom: 26 },
 
   pageFooter:  { position: "absolute", left: 52, right: 52, bottom: 24, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
@@ -325,20 +326,14 @@ function ClosingBackdrop() {
 }
 
 function BrandLockup({ light = false }: { light?: boolean }) {
-  // Official FinZap lockup — used exactly as provided by the brand.
-  // We never recompose or restyle the wordmark.
-  // The dark closing page uses an inverted backdrop; the lockup itself
-  // is rendered against a subtle pill so the official black wordmark stays legible.
+  // Official FinZap lockup — used exactly as in the master template.
   const img = React.createElement(Image, {
     src: FINZAP_LOGO_DATA_URI,
-    style: { width: 84, height: 28, objectFit: "contain" },
+    style: { width: 78, height: 26, objectFit: "contain" },
   } as any);
   if (light) {
     return React.createElement(View, {
-      style: {
-        paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6,
-        backgroundColor: "#FFFFFF",
-      },
+      style: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, backgroundColor: "#FFFFFF" },
     }, img);
   }
   return React.createElement(View, { style: { flexDirection: "row", alignItems: "center" } }, img);
@@ -373,28 +368,36 @@ function PremiumSeal({ label, dark = false }: { label: string; dark?: boolean })
 }
 
 function PageChrome({ label, periodo }: { label: string; periodo: string }) {
-  return React.createElement(React.Fragment, null,
-    React.createElement(View, { style: styles.pageHeader, fixed: true },
-      React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
-        BrandLockup({}),
-        React.createElement(View, { style: { width: 0.5, height: 10, backgroundColor: C.hair } }),
-        React.createElement(Text, { style: styles.pageHeaderL }, label),
-      ),
-      React.createElement(Text, { style: styles.pageHeaderR }, `FinZap · ${periodo}`),
+  // Top wave band — green base + soft blue overlay, lifted from the master template.
+  const band = React.createElement(Svg, { width: 595, height: 110, style: styles.pageHeaderBand, fixed: true } as any,
+    React.createElement(Path, {
+      d: "M 0 0 L 595 0 L 595 70 C 480 110, 360 60, 240 80 C 140 96, 60 70, 0 88 Z",
+      fill: C.green,
+    }),
+    React.createElement(Path, {
+      d: "M 0 0 L 595 0 L 595 50 C 470 90, 340 40, 220 64 C 130 82, 60 56, 0 72 Z",
+      fill: C.brand, opacity: 0.85,
+    }),
+  );
+  const row = React.createElement(View, { style: styles.pageHeaderRow, fixed: true } as any,
+    React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
+      // Logo lives inside a small white pill so the official lockup stays legible above the band.
+      React.createElement(View, {
+        style: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: "#FFFFFF" },
+      }, BrandLockup({})),
+      React.createElement(View, { style: { width: 0.5, height: 12, backgroundColor: "rgba(255,255,255,0.55)" } }),
+      React.createElement(Text, { style: [styles.pageHeaderL, { color: "#FFFFFF" }] }, (label || "").toUpperCase()),
     ),
+    React.createElement(Text, { style: [styles.pageHeaderR, { color: "rgba(255,255,255,0.7)" }] }, `FinZap · ${periodo.toUpperCase()}`),
+  );
+  return React.createElement(React.Fragment, null, band, row,
     React.createElement(View, { style: styles.hairline, fixed: true }),
   );
 }
 
 function PageFooter() {
   return React.createElement(View, { style: styles.pageFooter, fixed: true },
-    React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 8 } },
-      React.createElement(View, { style: { width: 5, height: 5, borderRadius: 1, backgroundColor: C.brand } }),
-      React.createElement(Image, {
-        src: FINZAP_LOGO_DATA_URI,
-        style: { width: 52, height: 16, objectFit: "contain" },
-      } as any),
-    ),
+    React.createElement(View, { style: { width: 6, height: 6, backgroundColor: C.brand } }),
     React.createElement(Text, { style: styles.footerCenter }, "Veja o impacto antes da decisão."),
     React.createElement(Text, {
       style: styles.footerRight,
@@ -602,42 +605,41 @@ function buildDocument(payload: any) {
 
   // COVER ────────────────────────────────────────────────
   const cover = h(Page, { size: "A4", style: styles.pageCover },
-    CoverBackdrop(),
     h(View, { style: styles.coverInner },
+      // Top — icon only (per master template, no wordmark on cover top)
       h(View, { style: styles.coverTop },
-        h(View, null,
-          BrandLockup({}),
-        ),
-        h(View, { style: { flexDirection: "row", gap: 6 } },
-          h(PremiumSeal, { label: "FinZap Premium" }),
-          h(PremiumSeal, { label: "Relatório Inteligente" }),
-        ),
+        h(FinZapMark, { size: 44 }),
       ),
-      h(View, null,
-        h(View, { style: { marginBottom: 28 } },
-          h(FinZapMark, { size: 72 }),
-        ),
+      // Eyebrow row
+      h(View, { style: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 90 } },
         h(Text, { style: styles.coverEyebrow }, "Dossiê financeiro inteligente"),
-        h(Text, { style: styles.coverTitle }, "O retrato\ndo seu mês."),
-        h(Text, { style: styles.coverPeriod }, periodo.toUpperCase()),
-        h(Text, { style: styles.coverSub },
-          `Uma leitura estratégica do seu comportamento financeiro em ${periodo}. Receitas, despesas, reservas e compromissos analisados como um consultor pessoal leria — para você ver o impacto antes da decisão.`,
-        ),
+        h(Text, { style: { fontSize: 11, color: C.brand, fontFamily: FONT_BOLD, letterSpacing: 0.4 } }, `[${periodo}]`),
+      ),
+      // Hero title
+      h(View, { style: { marginTop: 36 } },
+        h(Text, { style: styles.coverTitle }, "O retrato"),
+        h(Text, { style: [styles.coverTitle, { marginTop: 26 }] }, "do seu mês."),
+      ),
+      // Intro paragraph
+      h(Text, { style: styles.coverSub },
+        `Uma leitura estratégica do seu comportamento financeiro em ${periodo}. Receitas, despesas, reservas e compromissos analisados como um consultor pessoal leria, para você ver o impacto antes da decisão.`,
+      ),
+      // Prepared-for block
+      h(View, { style: { marginTop: 56 } },
         h(Text, { style: styles.coverForLine }, "Preparado para"),
         h(Text, { style: styles.coverForName }, userName || "FinZap"),
       ),
-      h(View, { style: styles.coverMetaGrid },
-        h(View, { style: styles.coverMetaCol },
-          h(Text, { style: styles.coverMetaLabel }, "Saldo final"),
-          h(Text, { style: [styles.coverMetaValue, { color: C.brand }] }, fmtBRL(totals.final)),
-          h(Text, { style: styles.coverMetaHint }, "Posição consolidada"),
-        ),
-        h(View, { style: styles.coverMetaCol },
+      // Spacer pushes the footer row to the bottom
+      h(View, { style: { flexGrow: 1 } }),
+      // Hairline + footer (emitido em / princípio)
+      h(View, { style: { height: 0.5, backgroundColor: C.hair, marginBottom: 18 } }),
+      h(View, { style: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" } },
+        h(View, null,
           h(Text, { style: styles.coverMetaLabel }, "Emitido em"),
           h(Text, { style: styles.coverMetaValue }, generatedAt),
           h(Text, { style: styles.coverMetaHint }, "Edição única do período"),
         ),
-        h(View, { style: styles.coverMetaCol },
+        h(View, { style: { alignItems: "flex-end" } },
           h(Text, { style: styles.coverMetaLabel }, "Princípio"),
           h(Text, { style: styles.coverMetaValue }, "Veja o impacto"),
           h(Text, { style: styles.coverMetaHint }, "antes da decisão."),
@@ -870,40 +872,30 @@ function buildDocument(payload: any) {
     ClosingBackdrop(),
     h(View, { style: styles.closingTop },
       h(Text, { style: styles.closingTopText }, "Relatório do mês"),
-      h(Text, { style: styles.closingTopText }, periodo.toUpperCase()),
+      h(Text, { style: styles.closingTopText }, periodo),
     ),
     h(View, { style: styles.closingWrap },
-      h(View, { style: { marginBottom: 28 } },
-        h(FinZapMark, { size: 80 }),
+      h(View, { style: { marginBottom: 26 } },
+        h(FinZapMark, { size: 56 }),
       ),
       h(Text, { style: styles.closingEyebrow }, "— Inteligência financeira —"),
       h(Text, {
         style: [
           styles.closingQuote,
           closingQuote.text.length > 120
-            ? { fontSize: 21, lineHeight: 1.32, maxWidth: 460 }
+            ? { fontSize: 22, lineHeight: 1.28, maxWidth: 460 }
             : closingQuote.text.length > 80
-              ? { fontSize: 25, lineHeight: 1.28, maxWidth: 450 }
+              ? { fontSize: 26, lineHeight: 1.24, maxWidth: 450 }
               : null,
         ],
       }, `“${closingQuote.text}”`),
       h(Text, {
-        style: { fontSize: 9, color: D.muted, letterSpacing: 2, textTransform: "uppercase", marginTop: 18, fontFamily: FONT_BOLD },
-      }, `— ${closingQuote.author}`),
+        style: { fontSize: 9, color: D.muted, letterSpacing: 2.4, textTransform: "uppercase", marginTop: 18, fontFamily: FONT_BOLD },
+      }, "FINZAP"),
       h(Text, { style: styles.closingNote },
-        `${(userName || "Você").split(" ")[0]}, clareza financeira não é um destino — é um hábito. Continue alimentando o FinZap e ele continuará devolvendo a leitura mais nítida possível do seu dinheiro.`,
+        `${userName || "Você"}, clareza financeira não é um destino, é um hábito. Continue alimentando o FinZap e ele continuará devolvendo a leitura mais nítida possível do seu dinheiro.`,
       ),
       h(View, { style: styles.closingDivider }),
-    ),
-    h(View, { style: styles.closingFooter },
-      h(View, { style: styles.closingFooterCol },
-        BrandLockup({ light: true }),
-        h(Text, { style: styles.closingFooterTag }, "Identidade visual oficial"),
-      ),
-      h(View, { style: styles.closingFooterRight },
-        h(Text, { style: styles.closingFooterUrl }, periodo),
-        h(Text, { style: styles.closingFooterMeta }, `Edição · ${periodo}`),
-      ),
     ),
   );
 
