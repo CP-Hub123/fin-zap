@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
 
   // Cover
   coverBg:    { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-  coverInner: { flexGrow: 1, padding: 56, justifyContent: "space-between" },
-  coverTop:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  coverInner: { flexGrow: 1, padding: 60 },
+  coverTop:   { flexDirection: "row", justifyContent: "flex-start", alignItems: "center" },
   brandRow:   { flexDirection: "row", alignItems: "center", gap: 7 },
   brandText:  { fontSize: 13, fontFamily: FONT_BOLD, letterSpacing: 1.2 },
   brandTextFin:{ color: C.ink },
