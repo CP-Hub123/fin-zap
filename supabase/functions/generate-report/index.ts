@@ -325,20 +325,14 @@ function ClosingBackdrop() {
 }
 
 function BrandLockup({ light = false }: { light?: boolean }) {
-  // Official FinZap lockup — used exactly as provided by the brand.
-  // We never recompose or restyle the wordmark.
-  // The dark closing page uses an inverted backdrop; the lockup itself
-  // is rendered against a subtle pill so the official black wordmark stays legible.
+  // Official FinZap lockup — used exactly as in the master template.
   const img = React.createElement(Image, {
     src: FINZAP_LOGO_DATA_URI,
-    style: { width: 84, height: 28, objectFit: "contain" },
+    style: { width: 78, height: 26, objectFit: "contain" },
   } as any);
   if (light) {
     return React.createElement(View, {
-      style: {
-        paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6,
-        backgroundColor: "#FFFFFF",
-      },
+      style: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, backgroundColor: "#FFFFFF" },
     }, img);
   }
   return React.createElement(View, { style: { flexDirection: "row", alignItems: "center" } }, img);
