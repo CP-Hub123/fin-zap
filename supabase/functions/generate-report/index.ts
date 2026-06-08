@@ -368,15 +368,29 @@ function PremiumSeal({ label, dark = false }: { label: string; dark?: boolean })
 }
 
 function PageChrome({ label, periodo }: { label: string; periodo: string }) {
-  return React.createElement(React.Fragment, null,
-    React.createElement(View, { style: styles.pageHeader, fixed: true },
-      React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
-        BrandLockup({}),
-        React.createElement(View, { style: { width: 0.5, height: 10, backgroundColor: C.hair } }),
-        React.createElement(Text, { style: styles.pageHeaderL }, label),
-      ),
-      React.createElement(Text, { style: styles.pageHeaderR }, `FinZap · ${periodo}`),
+  // Top wave band — green base + soft blue overlay, lifted from the master template.
+  const band = React.createElement(Svg, { width: 595, height: 110, style: styles.pageHeaderBand, fixed: true } as any,
+    React.createElement(Path, {
+      d: "M 0 0 L 595 0 L 595 70 C 480 110, 360 60, 240 80 C 140 96, 60 70, 0 88 Z",
+      fill: C.green,
+    }),
+    React.createElement(Path, {
+      d: "M 0 0 L 595 0 L 595 50 C 470 90, 340 40, 220 64 C 130 82, 60 56, 0 72 Z",
+      fill: C.brand, opacity: 0.85,
+    }),
+  );
+  const row = React.createElement(View, { style: styles.pageHeaderRow, fixed: true } as any,
+    React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 10 } },
+      // Logo lives inside a small white pill so the official lockup stays legible above the band.
+      React.createElement(View, {
+        style: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: "#FFFFFF" },
+      }, BrandLockup({})),
+      React.createElement(View, { style: { width: 0.5, height: 12, backgroundColor: "rgba(255,255,255,0.55)" } }),
+      React.createElement(Text, { style: [styles.pageHeaderL, { color: "#FFFFFF" }] }, (label || "").toUpperCase()),
     ),
+    React.createElement(Text, { style: [styles.pageHeaderR, { color: "rgba(255,255,255,0.7)" }] }, `FinZap · ${periodo.toUpperCase()}`),
+  );
+  return React.createElement(React.Fragment, null, band, row,
     React.createElement(View, { style: styles.hairline, fixed: true }),
   );
 }
