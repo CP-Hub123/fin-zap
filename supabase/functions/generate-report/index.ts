@@ -397,13 +397,7 @@ function PageChrome({ label, periodo }: { label: string; periodo: string }) {
 
 function PageFooter() {
   return React.createElement(View, { style: styles.pageFooter, fixed: true },
-    React.createElement(View, { style: { flexDirection: "row", alignItems: "center", gap: 8 } },
-      React.createElement(View, { style: { width: 5, height: 5, borderRadius: 1, backgroundColor: C.brand } }),
-      React.createElement(Image, {
-        src: FINZAP_LOGO_DATA_URI,
-        style: { width: 52, height: 16, objectFit: "contain" },
-      } as any),
-    ),
+    React.createElement(View, { style: { width: 6, height: 6, backgroundColor: C.brand } }),
     React.createElement(Text, { style: styles.footerCenter }, "Veja o impacto antes da decisão."),
     React.createElement(Text, {
       style: styles.footerRight,
