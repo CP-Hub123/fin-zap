@@ -872,40 +872,30 @@ function buildDocument(payload: any) {
     ClosingBackdrop(),
     h(View, { style: styles.closingTop },
       h(Text, { style: styles.closingTopText }, "Relatório do mês"),
-      h(Text, { style: styles.closingTopText }, periodo.toUpperCase()),
+      h(Text, { style: styles.closingTopText }, periodo),
     ),
     h(View, { style: styles.closingWrap },
-      h(View, { style: { marginBottom: 28 } },
-        h(FinZapMark, { size: 80 }),
+      h(View, { style: { marginBottom: 26 } },
+        h(FinZapMark, { size: 56 }),
       ),
       h(Text, { style: styles.closingEyebrow }, "— Inteligência financeira —"),
       h(Text, {
         style: [
           styles.closingQuote,
           closingQuote.text.length > 120
-            ? { fontSize: 21, lineHeight: 1.32, maxWidth: 460 }
+            ? { fontSize: 22, lineHeight: 1.28, maxWidth: 460 }
             : closingQuote.text.length > 80
-              ? { fontSize: 25, lineHeight: 1.28, maxWidth: 450 }
+              ? { fontSize: 26, lineHeight: 1.24, maxWidth: 450 }
               : null,
         ],
       }, `“${closingQuote.text}”`),
       h(Text, {
-        style: { fontSize: 9, color: D.muted, letterSpacing: 2, textTransform: "uppercase", marginTop: 18, fontFamily: FONT_BOLD },
-      }, `— ${closingQuote.author}`),
+        style: { fontSize: 9, color: D.muted, letterSpacing: 2.4, textTransform: "uppercase", marginTop: 18, fontFamily: FONT_BOLD },
+      }, "FINZAP"),
       h(Text, { style: styles.closingNote },
-        `${(userName || "Você").split(" ")[0]}, clareza financeira não é um destino — é um hábito. Continue alimentando o FinZap e ele continuará devolvendo a leitura mais nítida possível do seu dinheiro.`,
+        `${userName || "Você"}, clareza financeira não é um destino, é um hábito. Continue alimentando o FinZap e ele continuará devolvendo a leitura mais nítida possível do seu dinheiro.`,
       ),
       h(View, { style: styles.closingDivider }),
-    ),
-    h(View, { style: styles.closingFooter },
-      h(View, { style: styles.closingFooterCol },
-        BrandLockup({ light: true }),
-        h(Text, { style: styles.closingFooterTag }, "Identidade visual oficial"),
-      ),
-      h(View, { style: styles.closingFooterRight },
-        h(Text, { style: styles.closingFooterUrl }, periodo),
-        h(Text, { style: styles.closingFooterMeta }, `Edição · ${periodo}`),
-      ),
     ),
   );
 
