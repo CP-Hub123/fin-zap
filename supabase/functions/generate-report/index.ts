@@ -84,7 +84,7 @@ const D = {
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 56,
+    paddingTop: 96,
     paddingBottom: 56,
     paddingHorizontal: 52,
     fontFamily: FONT,
@@ -121,10 +121,11 @@ const styles = StyleSheet.create({
   coverMetaValue: { fontSize: 12, fontFamily: FONT_BOLD, marginTop: 6 },
   coverMetaHint:  { fontSize: 8, color: C.muted, marginTop: 2 },
 
-  // Generic page chrome
-  pageHeader:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 10, marginBottom: 26 },
-  pageHeaderL: { fontSize: 7.5, color: C.muted, letterSpacing: 1.8, textTransform: "uppercase" },
-  pageHeaderR: { fontSize: 7.5, color: C.muted, letterSpacing: 1.2 },
+  // Page chrome — matches master template (green/blue wave band + lockup row)
+  pageHeaderBand: { position: "absolute", top: 0, left: 0, right: 0, height: 110 },
+  pageHeaderRow:  { position: "absolute", top: 34, left: 52, right: 52, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pageHeaderL: { fontSize: 8, color: C.muted, letterSpacing: 1.8, textTransform: "uppercase" },
+  pageHeaderR: { fontSize: 8, color: C.mutedSoft, letterSpacing: 1.2 },
   hairline:    { height: 0.5, backgroundColor: C.hair, marginBottom: 26 },
 
   pageFooter:  { position: "absolute", left: 52, right: 52, bottom: 24, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
