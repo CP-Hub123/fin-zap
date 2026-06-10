@@ -234,10 +234,6 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
               <Sparkles className="h-3 w-3 text-primary" />
               <span className="text-[9.5px] font-semibold uppercase tracking-[0.22em] text-white/90">FinZap Premium</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/25 px-2 py-0.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-300">Em breve</span>
-            </span>
             <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">Edição {MONTH_NAMES[month.month - 1]}</span>
           </div>
 
