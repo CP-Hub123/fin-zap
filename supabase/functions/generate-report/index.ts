@@ -1271,6 +1271,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     generatedAt,
     totals: { income, expense, balance, free, reserved, committed, initial, final },
     history,
+    biggestExpenseAmount,
     cofrinhos: cofrinhosOut,
     cards: cardsOut,
     insights,
