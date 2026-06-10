@@ -584,6 +584,7 @@ function buildDocument(payload: any) {
     userName, periodo, generatedAt,
     totals,
     history,
+    biggestExpenseAmount,
     cofrinhos,
     cards,
     insights,
@@ -722,8 +723,14 @@ function buildDocument(payload: any) {
       ),
       h(View, { style: styles.kpiCard },
         h(Text, { style: styles.kpiLabel }, "Maior despesa"),
-        h(Text, { style: [styles.kpiValue, { fontSize: 14 }] }, bestMonthLabel(history, "expense", true)),
-        h(Text, { style: styles.kpiHint }, "Mês com maior saída"),
+        h(Text, { style: [styles.kpiValue, { fontSize: 14 }] },
+          (() => {
+            // Prioriza a maior despesa única do mês corrente (nunca R$ 0,00 quando há despesa).
+            if (Number(biggestExpenseAmount) > 0) return fmtBRL(Number(biggestExpenseAmount));
+            return bestMonthLabel(history, "expense", true);
+          })(),
+        ),
+        h(Text, { style: styles.kpiHint }, Number(biggestExpenseAmount) > 0 ? "Maior saída do mês" : "Mês com maior saída"),
       ),
       h(View, { style: styles.kpiCard },
         h(Text, { style: styles.kpiLabel }, "Tendência"),
@@ -1039,7 +1046,39 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
   const closuresByMonth = new Map<string, any>();
   (histClosures || []).forEach((c: any) => closuresByMonth.set(c.month_id, c));
 
+  // ───────────────────────────────────────────────────────────────
+  // FONTE ÚNICA DE VERDADE FINANCEIRA DO RELATÓRIO
+  // Alinhada a src/lib/financialEngine.ts → computeMonthTotals:
+  //   - considera apenas `impacta_saldo !== false`
+  //   - NÃO filtra por status (planned + realized contam, igual ao Dashboard)
+  // Todo cálculo de receita/despesa/saldo do PDF deve passar por aqui.
+  // ───────────────────────────────────────────────────────────────
+  const computeSnapshot = (transactions: any[]) => {
+    const impacta = (transactions || []).filter((t: any) => t.impacta_saldo !== false);
+    const inc = impacta
+      .filter((t: any) => t.type === "income")
+      .reduce((s: number, t: any) => s + Number(t.amount || 0), 0);
+    const exp = impacta
+      .filter((t: any) => t.type === "expense")
+      .reduce((s: number, t: any) => s + Number(t.amount || 0), 0);
+    return { income: inc, expense: exp, balance: inc - exp };
+  };
+
+  // Snapshot canônico do mês corrente — UMA ÚNICA VEZ.
+  const snapshot = computeSnapshot(txs || []);
+  const income = snapshot.income;
+  const expense = snapshot.expense;
+  const balance = snapshot.balance;
+
   const history = (monthsList || []).slice().reverse().map((m: any) => {
+    // Mês corrente: sempre reutiliza o snapshot (garante igualdade com KPIs do Resumo).
+    if (m.id === monthId) {
+      return {
+        label: `${MONTHS_PT[m.month - 1].slice(0, 3)}/${String(m.year).slice(2)}`,
+        income, expense,
+        balance: Number(m.initial_balance || 0) + balance,
+      };
+    }
     const closed = closuresByMonth.get(m.id);
     if (closed) {
       return {
@@ -1049,29 +1088,31 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
         balance: Number(closed.final_balance || 0),
       };
     }
-    // compute from realized transactions
-    const mtx = (histTx || []).filter((t: any) => t.month_id === m.id && t.status === "realized" && t.impacta_saldo !== false);
-    const income = mtx.filter((t: any) => t.type === "income").reduce((s: number, t: any) => s + Number(t.amount), 0);
-    const expense = mtx.filter((t: any) => t.type === "expense").reduce((s: number, t: any) => s + Number(t.amount), 0);
+    // Mês passado não fechado: usa o MESMO critério canônico (impacta_saldo).
+    const mtx = (histTx || []).filter((t: any) => t.month_id === m.id);
+    const snap = computeSnapshot(mtx);
     return {
       label: `${MONTHS_PT[m.month - 1].slice(0, 3)}/${String(m.year).slice(2)}`,
-      income, expense,
-      balance: Number(m.initial_balance || 0) + income - expense,
+      income: snap.income,
+      expense: snap.expense,
+      balance: Number(m.initial_balance || 0) + snap.balance,
     };
   });
 
-  // Current month totals — `impacta_saldo` é alinhado com o Dashboard (engine canônica).
-  const realized = (txs || []).filter((t: any) => t.impacta_saldo !== false);
-  const income = realized.filter((t: any) => t.type === "income").reduce((s: number, t: any) => s + Number(t.amount), 0);
-  const expense = realized.filter((t: any) => t.type === "expense").reduce((s: number, t: any) => s + Number(t.amount), 0);
-  const balance = income - expense;
   const initial = Number(month.initial_balance || 0);
   const final = initial + balance;
   const reserved = (cofrinhos || []).reduce((s: number, c: any) => s + Number(c.saldo || 0), 0);
-  // committed = soma de parcelas planejadas (cartão) + recorrências planejadas
-  const committed = (txs || []).filter((t: any) => t.status === "planned" && t.type === "expense")
+  // committed = parcelas planejadas (cartão) + recorrências planejadas — respeita impacta_saldo.
+  const committed = (txs || [])
+    .filter((t: any) => t.status === "planned" && t.type === "expense" && t.impacta_saldo !== false)
     .reduce((s: number, t: any) => s + Number(t.amount), 0);
   const free = Math.max(0, final - reserved);
+
+  // Maior despesa única do mês corrente — usado como fallback antes do "mês com maior saída".
+  const biggestExpenseTx = (txs || [])
+    .filter((t: any) => t.type === "expense" && t.impacta_saldo !== false)
+    .reduce((max: any, t: any) => (Number(t.amount || 0) > Number(max?.amount || 0) ? t : max), null);
+  const biggestExpenseAmount = Number(biggestExpenseTx?.amount || 0);
 
   // Cards usage — fix P0 #3: soma apenas parcelas faturadas no mês corrente,
   // alinhada com a visão do Dashboard (sem incluir histórico de cartão irrestrito).
@@ -1237,6 +1278,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     generatedAt,
     totals: { income, expense, balance, free, reserved, committed, initial, final },
     history,
+    biggestExpenseAmount,
     cofrinhos: cofrinhosOut,
     cards: cardsOut,
     insights,
