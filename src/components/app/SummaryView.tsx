@@ -203,6 +203,7 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
         <QuickActionsCard
           onAddIncome={() => onNavigate(1)}
           onAddExpense={() => onNavigate(1)}
+          onOpenReport={() => setReportOpen(true)}
           onOpenPlanning={() => onNavigate(3)}
         />
       )}
