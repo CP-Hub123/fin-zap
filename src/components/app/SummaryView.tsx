@@ -21,6 +21,7 @@ import { HealthSnapshotGrid } from './HealthSnapshotGrid';
 import { QuickActionsCard } from './QuickActionsCard';
 import { IntelligentBalanceCard } from './IntelligentBalanceCard';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
+import { ReportModal } from './ReportModal';
 
 interface SummaryViewProps {
   month: Month;
@@ -74,6 +75,7 @@ const PieTooltip = ({ active, payload }: any) => {
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans, onNavigate }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   // Fonte oficial de saldo final (initial_balance + delta)
   const { currentBalance: finalBalance } = useFinancialBalance(month.id);
   const cofrinhoMap = useMemo(() => {
@@ -232,10 +234,6 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
               <Sparkles className="h-3 w-3 text-primary" />
               <span className="text-[9.5px] font-semibold uppercase tracking-[0.22em] text-white/90">FinZap Premium</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/25 px-2 py-0.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-300">Em breve</span>
-            </span>
             <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">Edição {MONTH_NAMES[month.month - 1]}</span>
           </div>
 
@@ -258,15 +256,22 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
           <Button
             type="button"
             size="lg"
-            disabled
-            className="relative mt-6 w-full h-12 text-[15px] font-semibold tracking-tight bg-white/10 text-white/50 shadow-none border border-white/10 cursor-not-allowed"
+            onClick={() => setReportOpen(true)}
+            className="relative mt-6 w-full h-12 text-[15px] font-semibold tracking-tight bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
           >
             <span className="relative inline-flex items-center gap-2">
-              Em breve
+              <FileText className="h-4 w-4" /> Gerar Relatório PDF
             </span>
           </Button>
         </div>
       </div>
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        monthId={month.id}
+        periodoLabel={`${MONTH_NAMES[month.month - 1]} de ${month.year}`}
+      />
 
       {/* Central financeira avançada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">

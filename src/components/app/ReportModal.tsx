@@ -37,7 +37,9 @@ function smartFilename(periodoLabel?: string) {
 
 export const ReportModal = ({ open, onOpenChange, monthId, periodoLabel }: Props) => {
   const { session } = useAuth();
-  const { isFree } = usePlan();
+  const { isFree: _isFreeOriginal } = usePlan();
+  // TEMP: liberado para todos os usuários autenticados (validação do novo layout do PDF).
+  const isFree = false;
   const [stage, setStage] = useState<Stage>("idle");
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [filename, setFilename] = useState<string>(() => smartFilename(periodoLabel));
