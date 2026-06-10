@@ -21,6 +21,7 @@ import { HealthSnapshotGrid } from './HealthSnapshotGrid';
 import { QuickActionsCard } from './QuickActionsCard';
 import { IntelligentBalanceCard } from './IntelligentBalanceCard';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
+import { ReportModal } from './ReportModal';
 
 interface SummaryViewProps {
   month: Month;
@@ -74,6 +75,7 @@ const PieTooltip = ({ active, payload }: any) => {
 export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans, onNavigate }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   // Fonte oficial de saldo final (initial_balance + delta)
   const { currentBalance: finalBalance } = useFinancialBalance(month.id);
   const cofrinhoMap = useMemo(() => {
