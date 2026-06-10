@@ -260,15 +260,22 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
           <Button
             type="button"
             size="lg"
-            disabled
-            className="relative mt-6 w-full h-12 text-[15px] font-semibold tracking-tight bg-white/10 text-white/50 shadow-none border border-white/10 cursor-not-allowed"
+            onClick={() => setReportOpen(true)}
+            className="relative mt-6 w-full h-12 text-[15px] font-semibold tracking-tight bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
           >
             <span className="relative inline-flex items-center gap-2">
-              Em breve
+              <FileText className="h-4 w-4" /> Gerar Relatório PDF
             </span>
           </Button>
         </div>
       </div>
+
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        monthId={month.id}
+        periodoLabel={`${MONTH_NAMES[month.month - 1]} de ${month.year}`}
+      />
 
       {/* Central financeira avançada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
