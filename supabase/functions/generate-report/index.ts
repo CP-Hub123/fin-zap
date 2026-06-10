@@ -584,6 +584,7 @@ function buildDocument(payload: any) {
     userName, periodo, generatedAt,
     totals,
     history,
+    biggestExpenseAmount,
     cofrinhos,
     cards,
     insights,
@@ -722,8 +723,14 @@ function buildDocument(payload: any) {
       ),
       h(View, { style: styles.kpiCard },
         h(Text, { style: styles.kpiLabel }, "Maior despesa"),
-        h(Text, { style: [styles.kpiValue, { fontSize: 14 }] }, bestMonthLabel(history, "expense", true)),
-        h(Text, { style: styles.kpiHint }, "Mês com maior saída"),
+        h(Text, { style: [styles.kpiValue, { fontSize: 14 }] },
+          (() => {
+            // Prioriza a maior despesa única do mês corrente (nunca R$ 0,00 quando há despesa).
+            if (Number(biggestExpenseAmount) > 0) return fmtBRL(Number(biggestExpenseAmount));
+            return bestMonthLabel(history, "expense", true);
+          })(),
+        ),
+        h(Text, { style: styles.kpiHint }, Number(biggestExpenseAmount) > 0 ? "Maior saída do mês" : "Mês com maior saída"),
       ),
       h(View, { style: styles.kpiCard },
         h(Text, { style: styles.kpiLabel }, "Tendência"),
