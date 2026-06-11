@@ -7,7 +7,6 @@ import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { useSubscription } from '@/hooks/useSubscription';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useNotificationTriggers } from '@/hooks/useNotificationTriggers';
-import { useAutoExecutarRecorrencias } from '@/hooks/useRecurringTransactions';
 import { Stepper } from '@/components/layout/Stepper';
 import { MonthSelector } from '@/components/app/MonthSelector';
 import { SummaryView } from '@/components/app/SummaryView';
@@ -54,13 +53,10 @@ const AppPage = () => {
   const { months, isLoading: monthsLoading, createMonth, updateMonthStatus } = useMonths();
   const selectedMonth = months.find(m => m.id === selectedMonthId);
   const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
-  const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, fecharMes, transferir } = useCofrinhos();
+  const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, transferir } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
   const [pushSubscribing, setPushSubscribing] = useState(false);
-
-  // Executa recorrências mensais automaticamente ao carregar o app
-  useAutoExecutarRecorrencias();
 
   // Automatic notification triggers
   useNotificationTriggers({
@@ -69,17 +65,6 @@ const AppPage = () => {
     subscription: subscription ?? null,
     monthId: selectedMonthId,
   });
-
-  // Fechamento automático de cofrinhos: 1x por dia (guard em localStorage)
-  useEffect(() => {
-    if (!user) return;
-    const key = `finzap:lastMonthCloseExecution:${user.id}`;
-    const today = new Date().toISOString().slice(0, 10);
-    if (localStorage.getItem(key) === today) return;
-    localStorage.setItem(key, today);
-    fecharMes.mutate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
 
   // Banner contextual de notificações (substitui window.confirm) — só após ter mês.
   useEffect(() => {

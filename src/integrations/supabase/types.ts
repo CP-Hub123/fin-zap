@@ -1039,9 +1039,18 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      executar_recorrencias_usuario_admin: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       fechar_mes_cofrinhos: { Args: { _user_id: string }; Returns: number }
+      fechar_mes_cofrinhos_admin: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       has_active_subscription: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      run_monthly_autotasks: { Args: never; Returns: Json }
       transferir_entre_cofrinhos: {
         Args: {
           _descricao?: string
