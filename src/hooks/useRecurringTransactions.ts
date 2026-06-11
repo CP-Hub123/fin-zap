@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -119,21 +118,4 @@ export const useRecurringTransactions = () => {
     remove,
     executar,
   };
-};
-
-/** Hook utilitário: executa recorrências automaticamente ao carregar o app. */
-export const useAutoExecutarRecorrencias = () => {
-  const { user } = useAuth();
-  const { executar } = useRecurringTransactions();
-
-  useEffect(() => {
-    if (!user) return;
-    // Guard diário: executar no máximo 1x por dia por usuário
-    const key = `finzap:lastRecurringExec:${user.id}`;
-    const today = new Date().toISOString().slice(0, 10);
-    if (localStorage.getItem(key) === today) return;
-    localStorage.setItem(key, today);
-    executar.mutate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
 };
