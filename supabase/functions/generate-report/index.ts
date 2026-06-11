@@ -609,17 +609,17 @@ function buildDocument(payload: any) {
     h(View, { style: styles.coverInner },
       // Top — icon only (per master template, no wordmark on cover top)
       h(View, { style: styles.coverTop },
-        h(FinZapMark, { size: 44 }),
+        h(FinZapMark, { size: 72 }),
       ),
       // Eyebrow row
-      h(View, { style: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 90 } },
+      h(View, { style: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 140 } },
         h(Text, { style: styles.coverEyebrow }, "Dossiê financeiro inteligente"),
         h(Text, { style: { fontSize: 11, color: C.brand, fontFamily: FONT_BOLD, letterSpacing: 0.4 } }, `[${periodo}]`),
       ),
       // Hero title
-      h(View, { style: { marginTop: 36 } },
-        h(Text, { style: styles.coverTitle }, "O retrato"),
-        h(Text, { style: [styles.coverTitle, { marginTop: 26 }] }, "do seu mês."),
+      h(View, { style: { marginTop: 28, alignItems: "center" } },
+        h(Text, { style: [styles.coverTitle, { textAlign: "center" }] }, "O retrato"),
+        h(Text, { style: [styles.coverTitle, { marginTop: 18, textAlign: "center" }] }, "do seu mês."),
       ),
       // Intro paragraph
       h(Text, { style: styles.coverSub },
