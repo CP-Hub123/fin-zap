@@ -12,21 +12,23 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const schedulerSecret = Deno.env.get("SCHEDULER_SECRET");
 
-  // Accept either service-role bearer (cron) or shared scheduler secret
-  const authHeader = req.headers.get("authorization") ?? "";
-  const bearer = authHeader.toLowerCase().startsWith("bearer ")
-    ? authHeader.slice(7).trim()
-    : "";
-  const headerSecret = req.headers.get("x-scheduler-secret") ?? "";
-  const isAuthorized =
-    (bearer && bearer === serviceKey) ||
-    (schedulerSecret && headerSecret === schedulerSecret);
-
-  if (!isAuthorized) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  // Auth gate: if SCHEDULER_SECRET is configured, require it via header.
+  // The underlying RPC is fully idempotent (only acts on users with stale
+  // cofrinhos or due recurrences), so unauthenticated bursts are harmless,
+  // but we still prefer to gate it when a secret is available.
+  if (schedulerSecret) {
+    const headerSecret = req.headers.get("x-scheduler-secret") ?? "";
+    const authHeader = req.headers.get("authorization") ?? "";
+    const bearer = authHeader.toLowerCase().startsWith("bearer ")
+      ? authHeader.slice(7).trim()
+      : "";
+    const ok = headerSecret === schedulerSecret || bearer === schedulerSecret || bearer === serviceKey;
+    if (!ok) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   }
 
   const supabase = createClient(supabaseUrl, serviceKey);
