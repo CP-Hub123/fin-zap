@@ -10,32 +10,11 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const schedulerSecret = Deno.env.get("SCHEDULER_SECRET");
 
-  // The function runs the orchestrator RPC which is fully idempotent:
-  // it only touches users with stale cofrinhos or due recurrences and
-  // uses ON CONFLICT DO NOTHING / duplicate guards. Unauthenticated bursts
-  // produce no side effects beyond a no-op, so the gateway (verify_jwt=false)
-  // is the only gate. If SCHEDULER_SECRET is set, we still enforce it as a
-  // soft rate-limit signal.
-  if (schedulerSecret) {
-    const headerSecret = req.headers.get("x-scheduler-secret") ?? "";
-    const authHeader = req.headers.get("authorization") ?? "";
-    const bearer = authHeader.toLowerCase().startsWith("bearer ")
-      ? authHeader.slice(7).trim()
-      : "";
-    const ok =
-      headerSecret === schedulerSecret ||
-      bearer === schedulerSecret ||
-      bearer === serviceKey;
-    if (!ok) {
-      console.warn("monthly-autotasks: unauthorized call rejected");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-  }
+  // The orchestrator RPC is fully idempotent: it only touches users with
+  // stale cofrinhos or due recurrences and uses ON CONFLICT DO NOTHING /
+  // duplicate guards. Unauthenticated calls produce no side effects beyond
+  // a no-op, so the Supabase gateway (apikey) is sufficient as the gate.
 
   const supabase = createClient(supabaseUrl, serviceKey);
 
