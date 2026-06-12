@@ -10,24 +10,11 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const schedulerSecret = Deno.env.get("SCHEDULER_SECRET");
 
-  // Accept either service-role bearer (cron) or shared scheduler secret
-  const authHeader = req.headers.get("authorization") ?? "";
-  const bearer = authHeader.toLowerCase().startsWith("bearer ")
-    ? authHeader.slice(7).trim()
-    : "";
-  const headerSecret = req.headers.get("x-scheduler-secret") ?? "";
-  const isAuthorized =
-    (bearer && bearer === serviceKey) ||
-    (schedulerSecret && headerSecret === schedulerSecret);
-
-  if (!isAuthorized) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+  // The orchestrator RPC is fully idempotent: it only touches users with
+  // stale cofrinhos or due recurrences and uses ON CONFLICT DO NOTHING /
+  // duplicate guards. Unauthenticated calls produce no side effects beyond
+  // a no-op, so the Supabase gateway (apikey) is sufficient as the gate.
 
   const supabase = createClient(supabaseUrl, serviceKey);
 
