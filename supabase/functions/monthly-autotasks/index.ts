@@ -19,10 +19,7 @@ Deno.serve(async (req) => {
   // Runs BEFORE the auth check so a first unauthenticated call seeds the DB.
   if (schedulerSecret) {
     try {
-      await supabase.schema("private").from("app_config").upsert(
-        { key: "scheduler_secret", value: schedulerSecret, updated_at: new Date().toISOString() },
-        { onConflict: "key" },
-      );
+      await supabase.rpc("set_app_config", { _key: "scheduler_secret", _value: schedulerSecret });
     } catch (e) {
       console.warn("monthly-autotasks: failed to sync scheduler_secret", e);
     }
