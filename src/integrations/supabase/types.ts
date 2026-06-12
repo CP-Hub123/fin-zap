@@ -1051,6 +1051,10 @@ export type Database = {
       has_active_subscription: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       run_monthly_autotasks: { Args: never; Returns: Json }
+      set_app_config: {
+        Args: { _key: string; _value: string }
+        Returns: undefined
+      }
       transferir_entre_cofrinhos: {
         Args: {
           _descricao?: string
