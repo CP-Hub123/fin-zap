@@ -467,6 +467,59 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_commitments: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          notify_at: string | null
+          status: string
+          title: string
+          transaction_id: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          notify_at?: string | null
+          status?: string
+          title: string
+          transaction_id?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          notify_at?: string | null
+          status?: string
+          title?: string
+          transaction_id?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_commitments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_rhythm_state: {
         Row: {
           inactivity_level: string
@@ -1021,6 +1074,10 @@ export type Database = {
           locked_amount: number
           locked_count: number
         }[]
+      }
+      convert_commitment_to_transaction: {
+        Args: { _commitment_id: string }
+        Returns: string
       }
       delete_card_purchase_safe: {
         Args: { _purchase_id: string }
