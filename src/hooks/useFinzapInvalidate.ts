@@ -20,6 +20,7 @@ const FINANCIAL_KEYS = [
   'credit_cards',
   'credit_card_purchases',
   'credit_card_installments',
+  'financial_commitments',
   // Ritmo Financeiro depende destas chaves dedicadas — sem isso o card "congela".
   'rhythm-recent',
   'rhythm-last-tx',

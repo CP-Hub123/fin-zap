@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency } from '@/lib/constants';
 import { TrendingUp, TrendingDown, Minus, Sparkles, CalendarDays, Wallet, CreditCard as CardIcon, Activity } from 'lucide-react';
+import { CalendarClock } from 'lucide-react';
 import type { Month } from '@/hooks/useMonths';
 import type { Transaction } from '@/hooks/useTransactions';
 import { useHistoricalTransactions } from '@/hooks/useHistoricalTransactions';
@@ -16,6 +17,7 @@ import {
   type CategoryStat,
 } from '@/lib/planningEngine';
 import { CofrinhosView } from './CofrinhosView';
+import { CommitmentsView } from './CommitmentsView';
 import type { Cofrinho } from '@/hooks/useCofrinhos';
 import { EmptyState } from './EmptyState';
 
@@ -67,9 +69,12 @@ export const PlanningCenterView = ({
 
   return (
     <Tabs defaultValue="previsao" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 h-11">
+      <TabsList className="grid w-full grid-cols-3 h-11">
         <TabsTrigger value="previsao" className="text-xs sm:text-sm">
           <Activity className="h-3.5 w-3.5 mr-1.5" /> Previsibilidade
+        </TabsTrigger>
+        <TabsTrigger value="compromissos" className="text-xs sm:text-sm">
+          <CalendarClock className="h-3.5 w-3.5 mr-1.5" /> Compromissos
         </TabsTrigger>
         <TabsTrigger value="cofrinhos" className="text-xs sm:text-sm">
           <Wallet className="h-3.5 w-3.5 mr-1.5" /> Cofrinhos
@@ -173,6 +178,10 @@ export const PlanningCenterView = ({
             </div>
           )}
         </section>
+      </TabsContent>
+
+      <TabsContent value="compromissos" className="mt-4">
+        <CommitmentsView />
       </TabsContent>
 
       <TabsContent value="cofrinhos" className="mt-4">
