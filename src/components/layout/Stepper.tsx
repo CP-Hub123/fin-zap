@@ -5,7 +5,6 @@ const STEPS = [
   { label: 'Transações' },
   { label: 'Cartões' },
   { label: 'Plano' },
-  { label: 'Fechar' },
 ];
 
 interface StepperProps {

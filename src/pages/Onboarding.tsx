@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MONTH_NAMES, formatCurrency } from '@/lib/constants';
 import {
   ArrowRight, ArrowLeft, CheckCircle2, Sparkles, CreditCard, Repeat,
-  Target, PiggyBank, Lightbulb, Lock, BarChart3, TrendingUp, Calendar,
+  Target, PiggyBank, Lightbulb, BarChart3, TrendingUp, Calendar,
   Wand2, Shield, ChevronRight, X,
 } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';
@@ -162,7 +162,6 @@ const VisualEcosystem = () => (
       { icon: CreditCard, label: 'Cartões' },
       { icon: Target, label: 'Plano' },
       { icon: Lightbulb, label: 'Insights' },
-      { icon: Lock, label: 'Fechar' },
     ].map(({ icon: Icon, label }) => (
       <div key={label} className="rounded-xl border bg-card/60 p-3 flex flex-col items-center gap-1">
         <Icon className="h-4 w-4 text-primary" />

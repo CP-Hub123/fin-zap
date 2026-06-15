@@ -13,7 +13,6 @@ import { SummaryView } from '@/components/app/SummaryView';
 import { TransactionsView } from '@/components/app/TransactionsView';
 import { CreditCardsView } from '@/components/app/CreditCardsView';
 import { PlanningCenterView } from '@/components/app/PlanningCenterView';
-import { ClosingView } from '@/components/app/ClosingView';
 import { NudgeBanner } from '@/components/app/NudgeBanner';
 import { PaywallModal } from '@/components/app/PaywallModal';
 import { DecisionModeSheet } from '@/components/app/DecisionModeSheet';
@@ -50,9 +49,9 @@ const AppPage = () => {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { months, isLoading: monthsLoading, createMonth, updateMonthStatus } = useMonths();
+  const { months, isLoading: monthsLoading, createMonth } = useMonths();
   const selectedMonth = months.find(m => m.id === selectedMonthId);
-  const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
+  const { transactions, totalIncome, totalExpense, balance, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
   const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, transferir } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
@@ -295,18 +294,6 @@ const AppPage = () => {
             onUpdateCofrinho={guardedAction(data => updateCofrinho.mutateAsync(data))}
             onDeleteCofrinho={guardedAction(id => deleteCofrinho.mutateAsync(id))}
             onTransfer={guardedAction(data => transferir.mutateAsync(data))}
-          />
-        )}
-
-        {selectedMonth && currentStep === 4 && (
-          <ClosingView
-            month={selectedMonth}
-            totalIncome={totalIncome}
-            totalExpense={totalExpense}
-            balance={balance}
-            incomeCount={incomes.length}
-            expenseCount={expenses.length}
-            onUpdateStatus={data => updateMonthStatus.mutateAsync(data)}
           />
         )}
       </main>
