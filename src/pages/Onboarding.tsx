@@ -162,7 +162,6 @@ const VisualEcosystem = () => (
       { icon: CreditCard, label: 'Cartões' },
       { icon: Target, label: 'Plano' },
       { icon: Lightbulb, label: 'Insights' },
-      { icon: Lock, label: 'Fechar' },
     ].map(({ icon: Icon, label }) => (
       <div key={label} className="rounded-xl border bg-card/60 p-3 flex flex-col items-center gap-1">
         <Icon className="h-4 w-4 text-primary" />
