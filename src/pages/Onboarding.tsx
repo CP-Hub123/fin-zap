@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MONTH_NAMES, formatCurrency } from '@/lib/constants';
 import {
   ArrowRight, ArrowLeft, CheckCircle2, Sparkles, CreditCard, Repeat,
-  Target, PiggyBank, Lightbulb, Lock, BarChart3, TrendingUp, Calendar,
+  Target, PiggyBank, Lightbulb, BarChart3, TrendingUp, Calendar,
   Wand2, Shield, ChevronRight, X,
 } from 'lucide-react';
 import { Logo } from '@/components/app/Logo';

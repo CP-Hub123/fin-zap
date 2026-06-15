@@ -49,10 +49,9 @@ const AppPage = () => {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { months, isLoading: monthsLoading, createMonth, updateMonthStatus } = useMonths();
-  void updateMonthStatus;
+  const { months, isLoading: monthsLoading, createMonth } = useMonths();
   const selectedMonth = months.find(m => m.id === selectedMonthId);
-  const { transactions, totalIncome, totalExpense, balance, incomes, expenses, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
+  const { transactions, totalIncome, totalExpense, balance, addTransaction, updateTransaction, deleteTransaction } = useTransactions(selectedMonthId);
   const { cofrinhos, createCofrinho, updateCofrinho, deleteCofrinho, transferir } = useCofrinhos();
   const { subscription, canAct, isTrial, daysLeft, isExpired } = useSubscription();
   const { permission, subscribe: subscribePush } = usePushNotifications();
