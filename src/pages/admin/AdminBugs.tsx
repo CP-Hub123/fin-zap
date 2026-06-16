@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Search, Bug, ImageOff, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { AdminErrorState } from '@/components/admin/AdminErrorState';
 
 const STATUS = [
   { value: 'all', label: 'Todos' },
@@ -184,6 +185,8 @@ export const AdminBugs = () => {
       {/* List */}
       {isLoading ? (
         <div className="text-sm text-muted-foreground text-center py-12">Carregando...</div>
+      ) : error ? (
+        <AdminErrorState error={error} title="Falha ao carregar bugs" />
       ) : filtered.length === 0 ? (
         <Card className="p-12 text-center border-dashed bg-transparent shadow-none">
           <Bug className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
