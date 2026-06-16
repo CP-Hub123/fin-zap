@@ -272,10 +272,11 @@ const BugDetailSheet = ({
     queryKey: ['bug-screenshots', bug?.id],
     enabled: !!bug,
     queryFn: async () => {
-      const { data: rows } = await supabase
+      const { data: rows, error: rowsErr } = await supabase
         .from('bug_report_screenshots')
         .select('id, storage_path')
         .eq('bug_report_id', bug!.id);
+      if (rowsErr) throw rowsErr;
       const out: { id: string; url: string }[] = [];
       for (const r of rows ?? []) {
         const { data } = await supabase.storage
