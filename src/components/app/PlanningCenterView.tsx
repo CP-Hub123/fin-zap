@@ -26,6 +26,7 @@ interface Props {
   transactions: Transaction[];
   cofrinhos: Cofrinho[];
   isClosed: boolean;
+  isLocked?: boolean;
   onCreateCofrinho: (data: any) => Promise<any>;
   onUpdateCofrinho: (data: Partial<Cofrinho> & { id: string }) => Promise<any>;
   onDeleteCofrinho: (id: string) => Promise<any>;
@@ -33,7 +34,7 @@ interface Props {
 }
 
 export const PlanningCenterView = ({
-  month, transactions, cofrinhos, isClosed,
+  month, transactions, cofrinhos, isClosed, isLocked = false,
   onCreateCofrinho, onUpdateCofrinho, onDeleteCofrinho, onTransfer,
 }: Props) => {
   const { data: history = [], isLoading: historyLoading } = useHistoricalTransactions(6);
@@ -188,6 +189,7 @@ export const PlanningCenterView = ({
         <CofrinhosView
           cofrinhos={cofrinhos}
           isClosed={isClosed}
+          isLocked={isLocked}
           onCreate={onCreateCofrinho}
           onUpdate={onUpdateCofrinho}
           onDelete={onDeleteCofrinho}

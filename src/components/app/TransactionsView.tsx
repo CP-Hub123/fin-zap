@@ -19,6 +19,7 @@ interface TransactionsViewProps {
   transactions: Transaction[];
   monthId: string;
   isClosed: boolean;
+  isLocked?: boolean;
   cofrinhos: Cofrinho[];
   onAdd: (data: TablesInsert<'transactions'>) => Promise<any>;
   onUpdate: (data: Partial<Transaction> & { id: string }) => Promise<any>;
@@ -27,7 +28,9 @@ interface TransactionsViewProps {
 
 const emptyForm = { name: '', amount: '', cofrinho_id: '', date: new Date().toISOString().split('T')[0], status: 'realized' as 'planned' | 'realized', is_fixed: false, recurrence: 'none' as 'none' | 'monthly' };
 
-export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, onAdd, onUpdate, onDelete }: TransactionsViewProps) => {
+export const TransactionsView = ({ transactions, monthId, isClosed, isLocked = false, cofrinhos, onAdd, onUpdate, onDelete }: TransactionsViewProps) => {
+  // disabled = edição bloqueada (mês fechado OU assinatura inativa)
+  const disabled = isClosed || isLocked;
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -117,25 +120,30 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
         <Button size="sm" variant={activeTab === 'expense' ? 'default' : 'outline'} onClick={() => setActiveTab('expense')} className="flex-1 sm:flex-none min-h-[44px] sm:min-h-0">
           Despesas ({transactions.filter(t => t.type === 'expense').length})
         </Button>
-        {!isClosed && (
+        {!disabled && (
           <Button onClick={openNew} size="sm" className="w-full sm:w-auto sm:ml-auto min-h-[44px] sm:min-h-0" disabled={noCofrinhos}>
             <Plus className="h-4 w-4 mr-1" /> Adicionar
           </Button>
         )}
       </div>
 
-      {noCofrinhos && !isClosed && (
+      {noCofrinhos && !disabled && (
         <div className="p-3 rounded-lg bg-primary/10 text-sm text-primary">
           Crie um cofrinho na etapa <strong>Planejamento</strong> antes de adicionar transações.
         </div>
       )}
 
-      {isClosed && (
+      {isClosed ? (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
           <Badge variant="secondary">🔒 Mês fechado</Badge>
           <span className="text-sm text-muted-foreground">Edição bloqueada</span>
         </div>
-      )}
+      ) : isLocked ? (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10">
+          <Badge variant="destructive">🔒 Plano expirado</Badge>
+          <span className="text-sm text-destructive/80">Ative seu plano para voltar a editar</span>
+        </div>
+      ) : null}
 
       {/* Mobile cards / empty state */}
       {filtered.length === 0 ? (
@@ -148,14 +156,14 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
               ? 'Salário, freelas, vendas — toda entrada conta para o FinZap projetar seu mês com precisão.'
               : 'Lance um gasto para começar a entender seu padrão e ver o impacto direto em cada cofrinho.'
           }
-          primaryAction={!isClosed && !noCofrinhos ? { label: 'Adicionar agora', onClick: openNew, icon: Plus } : undefined}
+          primaryAction={!disabled && !noCofrinhos ? { label: 'Adicionar agora', onClick: openNew, icon: Plus } : undefined}
           tone={activeTab === 'income' ? 'success' : 'primary'}
           compact
         />
       ) : (
         <div className="space-y-3">
           {filtered.map(t => (
-            <Card key={t.id} className="border-0 shadow-sm" onClick={() => !isClosed && openEdit(t)}>
+            <Card key={t.id} className="border-0 shadow-sm" onClick={() => !disabled && openEdit(t)}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -183,7 +191,7 @@ export const TransactionsView = ({ transactions, monthId, isClosed, cofrinhos, o
                     <p className="font-bold text-base" style={{ color: t.type === 'income' ? 'hsl(var(--finzap-green))' : 'hsl(var(--finzap-red))' }}>
                       {formatCurrency(Number(t.amount))}
                     </p>
-                    {!isClosed && (
+                    {!disabled && (
                       <div className="flex gap-0.5 mt-2 justify-end" onClick={e => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => openEdit(t)}>
                           <Pencil className="h-4 w-4" />
