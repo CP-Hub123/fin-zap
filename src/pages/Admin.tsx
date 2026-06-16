@@ -261,10 +261,12 @@ const AdminDashboard = () => {
 // ============ Users ============
 const AdminUsers = () => {
   const [search, setSearch] = useState('');
-  const { data: users = [] } = useQuery({
+  const { data: users = [], error: usersError } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('profiles').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
       return data ?? [];
     },
   });
@@ -274,6 +276,11 @@ const AdminUsers = () => {
   return (
     <div>
       <PageHeader title="Usuários" description={`${users.length} usuário(s) cadastrado(s).`} />
+      {usersError && (
+        <div className="mb-4">
+          <AdminErrorState error={usersError} title="Falha ao carregar usuários" />
+        </div>
+      )}
       <Input placeholder="Buscar por nome..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-sm mb-4" />
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="hidden sm:block">
