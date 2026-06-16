@@ -208,14 +208,16 @@ export const CofrinhoDetailSheet = ({ cofrinho: c, cofrinhos, open, onOpenChange
 
         <div className="p-5 space-y-6">
           {/* AÇÕES */}
-          <Button
-            onClick={() => setTransferOpen(true)}
-            variant="outline"
-            className="w-full justify-start h-12 rounded-xl"
-          >
-            <ArrowLeftRight className="h-4 w-4 mr-2" />
-            Transferir para outro cofrinho
-          </Button>
+          {!isMensal && (
+            <Button
+              onClick={() => setTransferOpen(true)}
+              variant="outline"
+              className="w-full justify-start h-12 rounded-xl"
+            >
+              <ArrowLeftRight className="h-4 w-4 mr-2" />
+              Transferir para outro cofrinho
+            </Button>
+          )}
 
           {/* INTELIGÊNCIA */}
           <section className="space-y-2.5">
