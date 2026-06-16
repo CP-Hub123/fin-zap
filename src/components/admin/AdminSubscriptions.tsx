@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Pencil, Crown, Ban, Infinity, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminErrorState } from '@/components/admin/AdminErrorState';
 
 interface SubRow {
   id: string;
@@ -29,15 +30,19 @@ export const AdminSubscriptions = () => {
   const [editingSub, setEditingSub] = useState<SubRow | null>(null);
   const [form, setForm] = useState({ plan: '', status: '', expires_at: '', is_manual: false, discount_tag: '' });
 
-  const { data: subs = [], isLoading } = useQuery({
+  const { data: subs = [], isLoading, error } = useQuery({
     queryKey: ['admin-subscriptions'],
     queryFn: async () => {
-      const { data: subscriptions } = await supabase
+      const { data: subscriptions, error: subErr } = await supabase
         .from('subscriptions')
         .select('*')
         .order('created_at', { ascending: false });
+      if (subErr) throw subErr;
 
-      const { data: profiles } = await supabase.from('profiles').select('id, name');
+      const { data: profiles, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, name');
+      if (profErr) throw profErr;
       const profileMap = new Map((profiles ?? []).map(p => [p.id, p.name]));
 
       return (subscriptions ?? []).map(s => ({
@@ -56,6 +61,9 @@ export const AdminSubscriptions = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] });
       toast.success('Assinatura atualizada!');
+    },
+    onError: (err: any) => {
+      toast.error('Falha ao atualizar assinatura', { description: err?.message });
     },
   });
 
@@ -100,6 +108,7 @@ export const AdminSubscriptions = () => {
   };
 
   if (isLoading) return <p className="text-center text-muted-foreground py-8">Carregando...</p>;
+  if (error) return <AdminErrorState error={error} title="Falha ao carregar assinaturas" />;
 
   return (
     <div className="space-y-4">
