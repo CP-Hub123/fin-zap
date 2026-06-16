@@ -85,7 +85,9 @@ const AdminHeader = () => {
   const { data: status } = useQuery({
     queryKey: ['system-status-admin'],
     queryFn: async () => {
-      const { data } = await supabase.from('system_settings').select('value').eq('key', 'system_status').single();
+      const { data, error } = await supabase
+        .from('system_settings').select('value').eq('key', 'system_status').single();
+      if (error) throw error;
       return data?.value ?? 'active';
     },
   });
