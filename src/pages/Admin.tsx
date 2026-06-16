@@ -214,15 +214,18 @@ const KpiCard = ({ label, value, icon: Icon, accent }: { label: string; value: s
 );
 
 const AdminDashboard = () => {
-  const { data: stats } = useQuery({
+  const { data: stats, error: statsError } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const [{ count: total }, { count: withMonths }, { count: openBugs }, { data: status }] = await Promise.all([
+      const results = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('months').select('user_id', { count: 'exact', head: true }),
         supabase.from('bug_reports').select('*', { count: 'exact', head: true }).in('status', ['new', 'analyzing', 'fixing']),
         supabase.from('system_settings').select('value').eq('key', 'system_status').single(),
       ]);
+      const firstErr = results.find(r => r.error)?.error;
+      if (firstErr) throw firstErr;
+      const [{ count: total }, { count: withMonths }, { count: openBugs }, { data: status }] = results as any;
       return {
         total: total ?? 0,
         active: withMonths ?? 0,
@@ -235,6 +238,11 @@ const AdminDashboard = () => {
   return (
     <div>
       <PageHeader title="Dashboard" description="Visão geral do sistema." />
+      {statsError && (
+        <div className="mb-4">
+          <AdminErrorState error={statsError} title="Falha ao carregar dashboard" />
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Usuários totais" value={stats?.total ?? '—'} icon={UsersIcon} />
         <KpiCard label="Usuários ativos" value={stats?.active ?? '—'} icon={Activity} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
