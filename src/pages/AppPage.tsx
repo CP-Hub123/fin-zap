@@ -89,8 +89,10 @@ const AppPage = () => {
     setPushBannerOpen(false);
   };
 
-  const isClosed = selectedMonth?.status === 'closed';
-  const isBlocked = isClosed || !canAct;
+  // Separação definitiva entre mês fechado e assinatura inativa.
+  // Nunca reaproveitar um para representar o outro.
+  const isMonthClosed = selectedMonth?.status === 'closed';
+  const isSubscriptionLocked = !canAct;
 
   const guardedAction = <T,>(fn: (data: T) => Promise<any>) => (data: T) => {
     if (!canAct) { setPaywallOpen(true); return Promise.resolve(); }
@@ -271,7 +273,8 @@ const AppPage = () => {
           <TransactionsView
             transactions={transactions}
             monthId={selectedMonth.id}
-            isClosed={isBlocked}
+            isClosed={isMonthClosed}
+            isLocked={isSubscriptionLocked}
             cofrinhos={cofrinhos}
             onAdd={guardedAction(data => addTransaction.mutateAsync(data))}
             onUpdate={guardedAction(data => updateTransaction.mutateAsync(data))}
@@ -289,7 +292,8 @@ const AppPage = () => {
             month={selectedMonth}
             transactions={transactions}
             cofrinhos={cofrinhos}
-            isClosed={isBlocked}
+            isClosed={isMonthClosed}
+            isLocked={isSubscriptionLocked}
             onCreateCofrinho={guardedAction(data => createCofrinho.mutateAsync(data))}
             onUpdateCofrinho={guardedAction(data => updateCofrinho.mutateAsync(data))}
             onDeleteCofrinho={guardedAction(id => deleteCofrinho.mutateAsync(id))}

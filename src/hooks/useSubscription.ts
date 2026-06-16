@@ -16,7 +16,7 @@ export interface Subscription {
 }
 
 export const useSubscription = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -64,7 +64,9 @@ export const useSubscription = () => {
   const isActive = subscription?.status === 'active';
   const isTrial = subscription?.plan === 'trial';
   const isExpired = subscription?.status === 'expired';
-  const canAct = isActive; // can create/edit/delete transactions
+  // Admin sempre tem acesso completo, independente do estado da assinatura.
+  // O bypass aqui é apenas de UI — RLS/SECURITY DEFINER no banco continuam autoritativos.
+  const canAct = isActive || isAdmin;
 
   const daysLeft = subscription?.expires_at
     ? Math.max(0, Math.ceil((new Date(subscription.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
