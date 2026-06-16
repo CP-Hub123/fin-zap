@@ -166,11 +166,16 @@ export const CofrinhoDetailSheet = ({ cofrinho: c, cofrinhos, open, onOpenChange
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-wider opacity-80">{c.nome}</p>
               <p className="text-4xl font-bold tabular-nums tracking-tight">
-                {formatCurrency(Number(c.saldo))}
+                {formatCurrency(isMensal ? Number(c.gasto_mes) : Number(c.saldo))}
               </p>
               {denominador > 0 && (
                 <p className="text-sm opacity-90">
                   {isMensal ? 'Gasto' : 'Guardado'} {formatCurrency(numerador)} de {formatCurrency(denominador)}
+                </p>
+              )}
+              {isMensal && (
+                <p className="text-xs opacity-80 leading-snug pt-1">
+                  Este cofrinho controla orçamento e gastos. Para guardar dinheiro utilize Meta ou Reserva.
                 </p>
               )}
             </div>
@@ -203,14 +208,16 @@ export const CofrinhoDetailSheet = ({ cofrinho: c, cofrinhos, open, onOpenChange
 
         <div className="p-5 space-y-6">
           {/* AÇÕES */}
-          <Button
-            onClick={() => setTransferOpen(true)}
-            variant="outline"
-            className="w-full justify-start h-12 rounded-xl"
-          >
-            <ArrowLeftRight className="h-4 w-4 mr-2" />
-            Transferir para outro cofrinho
-          </Button>
+          {!isMensal && (
+            <Button
+              onClick={() => setTransferOpen(true)}
+              variant="outline"
+              className="w-full justify-start h-12 rounded-xl"
+            >
+              <ArrowLeftRight className="h-4 w-4 mr-2" />
+              Transferir para outro cofrinho
+            </Button>
+          )}
 
           {/* INTELIGÊNCIA */}
           <section className="space-y-2.5">

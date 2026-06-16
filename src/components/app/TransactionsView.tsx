@@ -41,6 +41,11 @@ export const TransactionsView = ({ transactions, monthId, isClosed, isLocked = f
   const filtered = transactions.filter(t => t.type === activeTab);
   const cofrinhoById = (id: string) => cofrinhos.find(c => c.id === id);
 
+  // Receitas só podem ser vinculadas a Meta/Reserva. Mensal = orçamento (sem dinheiro).
+  const cofrinhosForType = activeTab === 'income'
+    ? cofrinhos.filter(c => c.tipo !== 'mensal')
+    : cofrinhos;
+
   const openNew = () => { setEditingId(null); setForm(emptyForm); setDialogOpen(true); };
   const openEdit = (t: Transaction) => {
     setEditingId(t.id);
@@ -272,7 +277,7 @@ export const TransactionsView = ({ transactions, monthId, isClosed, isLocked = f
               <Select value={form.cofrinho_id} onValueChange={v => setForm(f => ({ ...f, cofrinho_id: v }))}>
                 <SelectTrigger className="h-12"><SelectValue placeholder="Selecione um cofrinho" /></SelectTrigger>
                 <SelectContent>
-                  {cofrinhos.map(c => (
+                  {cofrinhosForType.map(c => (
                     <SelectItem key={c.id} value={c.id}>
                       <span className="inline-flex items-center gap-2">
                         <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.cor }} />
@@ -282,6 +287,11 @@ export const TransactionsView = ({ transactions, monthId, isClosed, isLocked = f
                   ))}
                 </SelectContent>
               </Select>
+              {activeTab === 'income' && (
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Receitas podem ser vinculadas apenas a cofrinhos do tipo <strong>Meta</strong> ou <strong>Reserva</strong>. Cofrinhos mensais controlam apenas orçamento.
+                </p>
+              )}
             </div>
 
             {/* Data */}

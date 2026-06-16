@@ -106,6 +106,12 @@ export const CofrinhoCard = ({ cofrinho: c, onClick }: Props) => {
         {!isMensal && c.tipo === 'meta' && denominador > 0 && pct >= 100 && (
           <Badge className="bg-emerald-500/15 text-emerald-600 border-0">🎉 Meta concluída!</Badge>
         )}
+
+        {isMensal && (
+          <p className="text-[10px] text-muted-foreground leading-snug">
+            Controla orçamento e gastos. Não guarda dinheiro.
+          </p>
+        )}
       </div>
     </Card>
   );
