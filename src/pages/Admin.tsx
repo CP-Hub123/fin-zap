@@ -322,10 +322,11 @@ const AdminTutorials = () => {
   const [form, setForm] = useState({ title: '', description: '', video_url: '', display_order: '0', is_active: true });
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: tutorials = [] } = useQuery({
+  const { data: tutorials = [], error: tutorialsError } = useQuery({
     queryKey: ['admin-tutorials'],
     queryFn: async () => {
-      const { data } = await supabase.from('tutorials').select('*').order('display_order');
+      const { data, error } = await supabase.from('tutorials').select('*').order('display_order');
+      if (error) throw error;
       return data ?? [];
     },
   });
@@ -333,14 +334,21 @@ const AdminTutorials = () => {
   const save = useMutation({
     mutationFn: async () => {
       const payload = { title: form.title, description: form.description, video_url: form.video_url, display_order: parseInt(form.display_order) || 0, is_active: form.is_active };
-      if (editingId) await supabase.from('tutorials').update(payload).eq('id', editingId);
-      else await supabase.from('tutorials').insert(payload);
+      const { error } = editingId
+        ? await supabase.from('tutorials').update(payload).eq('id', editingId)
+        : await supabase.from('tutorials').insert(payload);
+      if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-tutorials'] }); setDialogOpen(false); toast.success('Tutorial salvo!'); },
+    onError: (err: any) => toast.error('Falha ao salvar tutorial', { description: err?.message }),
   });
   const del = useMutation({
-    mutationFn: async (id: string) => { await supabase.from('tutorials').delete().eq('id', id); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('tutorials').delete().eq('id', id);
+      if (error) throw error;
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-tutorials'] }); toast.success('Tutorial excluído!'); },
+    onError: (err: any) => toast.error('Falha ao excluir tutorial', { description: err?.message }),
   });
 
   const openNew = () => { setEditingId(null); setForm({ title: '', description: '', video_url: '', display_order: '0', is_active: true }); setDialogOpen(true); };
