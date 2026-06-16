@@ -431,13 +431,24 @@ const AdminSettings = () => {
   const [testMessage, setTestMessage] = useState('');
   const [sending, setSending] = useState(false);
 
-  const { data: settings = [] } = useQuery({
+  const { data: settings = [], error: settingsError } = useQuery({
     queryKey: ['admin-settings'],
-    queryFn: async () => (await supabase.from('system_settings').select('*')).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('system_settings').select('*');
+      if (error) throw error;
+      return data ?? [];
+    },
   });
-  const { data: subCount } = useQuery({
+  const { data: subCount, error: subCountError } = useQuery({
     queryKey: ['admin-push-sub-count'],
-    queryFn: async () => (await supabase.from('push_subscriptions').select('*', { count: 'exact', head: true }).not('endpoint', 'like', '%permanently-removed.invalid%')).count ?? 0,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('push_subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .not('endpoint', 'like', '%permanently-removed.invalid%');
+      if (error) throw error;
+      return count ?? 0;
+    },
   });
 
   const [values, setValues] = useState<Record<string, string>>({});
@@ -448,7 +459,8 @@ const AdminSettings = () => {
 
   const saveSetting = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      await supabase.from('system_settings').update({ value }).eq('key', key);
+      const { error } = await supabase.from('system_settings').update({ value }).eq('key', key);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
@@ -456,6 +468,7 @@ const AdminSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['system-status-admin'] });
       toast.success('Configuração salva!');
     },
+    onError: (err: any) => toast.error('Falha ao salvar configuração', { description: err?.message }),
   });
 
   const toggleStatus = () => {
@@ -486,6 +499,14 @@ const AdminSettings = () => {
   return (
     <div>
       <PageHeader title="Configurações" description="Ajustes globais do sistema." />
+      {(settingsError || subCountError) && (
+        <div className="mb-4">
+          <AdminErrorState
+            error={settingsError ?? subCountError}
+            title="Falha ao carregar configurações"
+          />
+        </div>
+      )}
       <div className="space-y-4">
         <div className="rounded-xl border bg-card p-5 space-y-4">
           <div>
