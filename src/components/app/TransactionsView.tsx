@@ -41,6 +41,11 @@ export const TransactionsView = ({ transactions, monthId, isClosed, isLocked = f
   const filtered = transactions.filter(t => t.type === activeTab);
   const cofrinhoById = (id: string) => cofrinhos.find(c => c.id === id);
 
+  // Receitas só podem ser vinculadas a Meta/Reserva. Mensal = orçamento (sem dinheiro).
+  const cofrinhosForType = activeTab === 'income'
+    ? cofrinhos.filter(c => c.tipo !== 'mensal')
+    : cofrinhos;
+
   const openNew = () => { setEditingId(null); setForm(emptyForm); setDialogOpen(true); };
   const openEdit = (t: Transaction) => {
     setEditingId(t.id);
