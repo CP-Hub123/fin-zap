@@ -22,6 +22,7 @@ type TipoCofrinho = 'reserva' | 'mensal' | 'meta';
 interface Props {
   cofrinhos: Cofrinho[];
   isClosed: boolean;
+  isLocked?: boolean;
   onCreate: (data: any) => Promise<any>;
   onUpdate: (data: Partial<Cofrinho> & { id: string }) => Promise<any>;
   onDelete: (id: string) => Promise<any>;
@@ -39,7 +40,8 @@ const empty = {
   meses_protegidos: '6',
 };
 
-export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelete, onTransfer }: Props) => {
+export const CofrinhosView = ({ cofrinhos, isClosed, isLocked = false, onCreate, onUpdate, onDelete, onTransfer }: Props) => {
+  const disabled = isClosed || isLocked;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Cofrinho | null>(null);
   const [form, setForm] = useState(empty);
@@ -118,7 +120,7 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
           </h2>
           <p className="text-xs text-muted-foreground">Separe seu dinheiro por propósito.</p>
         </div>
-        {!isClosed && (
+        {!disabled && (
           <Button size="sm" onClick={openNew} className="min-h-[40px]">
             <Plus className="h-4 w-4 mr-1" /> Novo
           </Button>
@@ -167,7 +169,7 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
             'Mensal — orçamento para gastos do dia a dia',
             'Meta — guarda dinheiro para um objetivo específico',
           ]}
-          primaryAction={!isClosed ? { label: 'Criar cofrinho', onClick: openNew, icon: Plus } : undefined}
+          primaryAction={!disabled ? { label: 'Criar cofrinho', onClick: openNew, icon: Plus } : undefined}
           tone="primary"
         />
       ) : (
@@ -175,7 +177,7 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
           {cofrinhos.map(c => (
             <div key={c.id} className="relative group">
               <CofrinhoCard cofrinho={c} onClick={() => setDetailId(c.id)} />
-              {!isClosed && (
+              {!disabled && (
                 <div className="absolute top-2 right-8 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button variant="secondary" size="icon" className="h-7 w-7 bg-white/80 backdrop-blur" onClick={(e) => { e.stopPropagation(); openEdit(c); }}>
                     <Pencil className="h-3 w-3" />
@@ -193,7 +195,7 @@ export const CofrinhosView = ({ cofrinhos, isClosed, onCreate, onUpdate, onDelet
       <ConnectedAccountsCard />
 
       <div className="pt-2">
-        <RecurringTransactionsView cofrinhos={cofrinhos} isClosed={isClosed} />
+        <RecurringTransactionsView cofrinhos={cofrinhos} isClosed={isClosed} isLocked={isLocked} />
       </div>
 
       {onTransfer && (

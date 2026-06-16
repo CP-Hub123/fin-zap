@@ -22,6 +22,7 @@ import { usePlan } from '@/hooks/usePlan';
 interface Props {
   cofrinhos: Cofrinho[];
   isClosed: boolean;
+  isLocked?: boolean;
 }
 
 const empty = {
@@ -65,7 +66,8 @@ const relativeLabel = (iso?: string | null) => {
   return fmtNextDate(iso);
 };
 
-export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
+export const RecurringTransactionsView = ({ cofrinhos, isClosed, isLocked = false }: Props) => {
+  const disabled = isClosed || isLocked;
   const { recorrencias, isLoading, create, update, remove } = useRecurringTransactions();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<RecurringTransaction | null>(null);
@@ -209,7 +211,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
             </div>
           </div>
 
-          {!isClosed && (
+          {!disabled && (
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60">
               <button
                 type="button"
@@ -260,7 +262,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">Seus lançamentos automáticos organizados.</p>
         </div>
-        {!isClosed && (
+        {!disabled && (
           <Button size="sm" onClick={openNew} disabled={noCofrinhos} className="h-10 shrink-0">
             <Plus className="h-4 w-4 mr-1" /> Nova
           </Button>
@@ -337,7 +339,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed }: Props) => {
             'Previsibilidade real para os próximos meses',
             'Você ainda pode pausar ou ajustar a qualquer momento',
           ]}
-          primaryAction={!isClosed && !noCofrinhos ? { label: 'Criar primeira automação', onClick: openNew, icon: Plus } : undefined}
+          primaryAction={!disabled && !noCofrinhos ? { label: 'Criar primeira automação', onClick: openNew, icon: Plus } : undefined}
           tone="primary"
           compact
         />
