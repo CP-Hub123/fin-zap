@@ -361,6 +361,11 @@ const AdminTutorials = () => {
         description="Vídeos exibidos na seção de ajuda."
         action={<Button onClick={openNew} size="sm"><Plus className="h-4 w-4" /> Novo</Button>}
       />
+      {tutorialsError && (
+        <div className="mb-4">
+          <AdminErrorState error={tutorialsError} title="Falha ao carregar tutoriais" />
+        </div>
+      )}
       <div className="rounded-xl border bg-card overflow-hidden">
         <Table>
           <TableHeader>
