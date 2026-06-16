@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Search, Bug, ImageOff, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { AdminErrorState } from '@/components/admin/AdminErrorState';
 
 const STATUS = [
   { value: 'all', label: 'Todos' },
@@ -93,17 +94,22 @@ export const AdminBugs = () => {
   const [selected, setSelected] = useState<BugRow | null>(null);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
 
-  const { data: bugs = [], isLoading } = useQuery({
+  const { data: bugs = [], isLoading, error } = useQuery({
     queryKey: ['admin-bugs'],
     queryFn: async () => {
-      const { data: rows } = await supabase
+      const { data: rows, error: rowsErr } = await supabase
         .from('bug_reports')
         .select('*')
         .order('created_at', { ascending: false });
+      if (rowsErr) throw rowsErr;
       const ids = Array.from(new Set((rows ?? []).map(r => r.user_id)));
-      const { data: profiles } = ids.length
-        ? await supabase.from('profiles').select('id, name').in('id', ids)
-        : { data: [] as any[] };
+      let profiles: any[] = [];
+      if (ids.length) {
+        const { data, error: profErr } = await supabase
+          .from('profiles').select('id, name').in('id', ids);
+        if (profErr) throw profErr;
+        profiles = data ?? [];
+      }
       const map = new Map((profiles ?? []).map(p => [p.id, p.name]));
       return (rows ?? []).map(r => ({ ...r, profile_name: map.get(r.user_id) ?? '—' })) as BugRow[];
     },
@@ -179,6 +185,8 @@ export const AdminBugs = () => {
       {/* List */}
       {isLoading ? (
         <div className="text-sm text-muted-foreground text-center py-12">Carregando...</div>
+      ) : error ? (
+        <AdminErrorState error={error} title="Falha ao carregar bugs" />
       ) : filtered.length === 0 ? (
         <Card className="p-12 text-center border-dashed bg-transparent shadow-none">
           <Bug className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
@@ -264,10 +272,11 @@ const BugDetailSheet = ({
     queryKey: ['bug-screenshots', bug?.id],
     enabled: !!bug,
     queryFn: async () => {
-      const { data: rows } = await supabase
+      const { data: rows, error: rowsErr } = await supabase
         .from('bug_report_screenshots')
         .select('id, storage_path')
         .eq('bug_report_id', bug!.id);
+      if (rowsErr) throw rowsErr;
       const out: { id: string; url: string }[] = [];
       for (const r of rows ?? []) {
         const { data } = await supabase.storage

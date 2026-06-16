@@ -18,43 +18,52 @@ import { cn } from '@/lib/utils';
 import { AdminSubscriptions } from '@/components/admin/AdminSubscriptions';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminBugs } from '@/pages/admin/AdminBugs';
+import { AdminErrorState } from '@/components/admin/AdminErrorState';
 
 // ============ Notifications Admin ============
 const AdminNotifications = () => {
   const since7 = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
-  const { data: stats } = useQuery({
+  const { data: stats, error: statsError } = useQuery({
     queryKey: ['admin-notif-stats'],
     queryFn: async () => {
-      const [{ count: sent }, { count: delivered }, { count: failed }, { count: clicked }, { count: subs }] = await Promise.all([
+      const results = await Promise.all([
         supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7),
         supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7).not('delivered_at', 'is', null),
         supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7).not('error', 'is', null),
         supabase.from('notifications_log').select('*', { count: 'exact', head: true }).gte('sent_at', since7).not('clicked_at', 'is', null),
         supabase.from('push_subscriptions').select('*', { count: 'exact', head: true }),
       ]);
+      const firstErr = results.find(r => r.error)?.error;
+      if (firstErr) throw firstErr;
+      const [{ count: sent }, { count: delivered }, { count: failed }, { count: clicked }, { count: subs }] = results;
       return { sent: sent ?? 0, delivered: delivered ?? 0, failed: failed ?? 0, clicked: clicked ?? 0, subs: subs ?? 0 };
     },
   });
-  const { data: recent = [] } = useQuery({
+  const { data: recent = [], error: recentError } = useQuery({
     queryKey: ['admin-notif-recent'],
-    queryFn: async () => (await supabase
-      .from('notifications_log')
-      .select('id, title, type, category, priority, sent_at, delivered_at, clicked_at, error')
-      .order('sent_at', { ascending: false })
-      .limit(50)).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('notifications_log')
+        .select('id, title, type, category, priority, sent_at, delivered_at, clicked_at, error')
+        .order('sent_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
   });
   const ctr = stats && stats.delivered > 0 ? Math.round((stats.clicked / stats.delivered) * 100) : 0;
 
   // Top notification types by CTR (last 30 days)
   const since30 = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
-  const { data: typeBreakdown = [] } = useQuery({
+  const { data: typeBreakdown = [], error: typeError } = useQuery({
     queryKey: ['admin-notif-types'],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('notifications_log')
         .select('type, delivered_at, clicked_at')
         .gte('sent_at', since30)
         .limit(5000);
+      if (error) throw error;
       const map = new Map<string, { sent: number; delivered: number; clicked: number }>();
       for (const n of data ?? []) {
         const cur = map.get(n.type) ?? { sent: 0, delivered: 0, clicked: 0 };
@@ -75,17 +84,20 @@ const AdminNotifications = () => {
   });
 
   // Silent users — subscribed but no click in 30d
-  const { data: silentInfo } = useQuery({
+  const { data: silentInfo, error: silentError } = useQuery({
     queryKey: ['admin-notif-silent'],
     queryFn: async () => {
-      const { data: subs } = await supabase.from('push_subscriptions').select('user_id').limit(5000);
+      const { data: subs, error: subsErr } = await supabase
+        .from('push_subscriptions').select('user_id').limit(5000);
+      if (subsErr) throw subsErr;
       const subUsers = new Set((subs ?? []).map((s: any) => s.user_id));
-      const { data: clicked } = await supabase
+      const { data: clicked, error: clickedErr } = await supabase
         .from('notifications_log')
         .select('user_id')
         .gte('sent_at', since30)
         .not('clicked_at', 'is', null)
         .limit(5000);
+      if (clickedErr) throw clickedErr;
       const clickedUsers = new Set((clicked ?? []).map((c: any) => c.user_id));
       let silent = 0;
       for (const u of subUsers) if (!clickedUsers.has(u)) silent += 1;
@@ -93,9 +105,16 @@ const AdminNotifications = () => {
     },
   });
 
+  const firstError = statsError ?? recentError ?? typeError ?? silentError;
+
   return (
     <div>
       <PageHeader title="Notificações" description="Métricas dos últimos 7 dias." />
+      {firstError && (
+        <div className="mb-6">
+          <AdminErrorState error={firstError} title="Falha ao carregar notificações" />
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <KpiCard label="Enviadas" value={stats?.sent ?? '—'} icon={SendIcon} />
         <KpiCard label="Entregues" value={stats?.delivered ?? '—'} icon={CheckCircle2} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
@@ -195,15 +214,18 @@ const KpiCard = ({ label, value, icon: Icon, accent }: { label: string; value: s
 );
 
 const AdminDashboard = () => {
-  const { data: stats } = useQuery({
+  const { data: stats, error: statsError } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const [{ count: total }, { count: withMonths }, { count: openBugs }, { data: status }] = await Promise.all([
+      const results = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('months').select('user_id', { count: 'exact', head: true }),
         supabase.from('bug_reports').select('*', { count: 'exact', head: true }).in('status', ['new', 'analyzing', 'fixing']),
         supabase.from('system_settings').select('value').eq('key', 'system_status').single(),
       ]);
+      const firstErr = results.find(r => r.error)?.error;
+      if (firstErr) throw firstErr;
+      const [{ count: total }, { count: withMonths }, { count: openBugs }, { data: status }] = results as any;
       return {
         total: total ?? 0,
         active: withMonths ?? 0,
@@ -216,6 +238,11 @@ const AdminDashboard = () => {
   return (
     <div>
       <PageHeader title="Dashboard" description="Visão geral do sistema." />
+      {statsError && (
+        <div className="mb-4">
+          <AdminErrorState error={statsError} title="Falha ao carregar dashboard" />
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Usuários totais" value={stats?.total ?? '—'} icon={UsersIcon} />
         <KpiCard label="Usuários ativos" value={stats?.active ?? '—'} icon={Activity} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
@@ -234,10 +261,12 @@ const AdminDashboard = () => {
 // ============ Users ============
 const AdminUsers = () => {
   const [search, setSearch] = useState('');
-  const { data: users = [] } = useQuery({
+  const { data: users = [], error: usersError } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('profiles').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
       return data ?? [];
     },
   });
@@ -247,6 +276,11 @@ const AdminUsers = () => {
   return (
     <div>
       <PageHeader title="Usuários" description={`${users.length} usuário(s) cadastrado(s).`} />
+      {usersError && (
+        <div className="mb-4">
+          <AdminErrorState error={usersError} title="Falha ao carregar usuários" />
+        </div>
+      )}
       <Input placeholder="Buscar por nome..." value={search} onChange={e => setSearch(e.target.value)} className="max-w-sm mb-4" />
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="hidden sm:block">
@@ -288,10 +322,11 @@ const AdminTutorials = () => {
   const [form, setForm] = useState({ title: '', description: '', video_url: '', display_order: '0', is_active: true });
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: tutorials = [] } = useQuery({
+  const { data: tutorials = [], error: tutorialsError } = useQuery({
     queryKey: ['admin-tutorials'],
     queryFn: async () => {
-      const { data } = await supabase.from('tutorials').select('*').order('display_order');
+      const { data, error } = await supabase.from('tutorials').select('*').order('display_order');
+      if (error) throw error;
       return data ?? [];
     },
   });
@@ -299,14 +334,21 @@ const AdminTutorials = () => {
   const save = useMutation({
     mutationFn: async () => {
       const payload = { title: form.title, description: form.description, video_url: form.video_url, display_order: parseInt(form.display_order) || 0, is_active: form.is_active };
-      if (editingId) await supabase.from('tutorials').update(payload).eq('id', editingId);
-      else await supabase.from('tutorials').insert(payload);
+      const { error } = editingId
+        ? await supabase.from('tutorials').update(payload).eq('id', editingId)
+        : await supabase.from('tutorials').insert(payload);
+      if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-tutorials'] }); setDialogOpen(false); toast.success('Tutorial salvo!'); },
+    onError: (err: any) => toast.error('Falha ao salvar tutorial', { description: err?.message }),
   });
   const del = useMutation({
-    mutationFn: async (id: string) => { await supabase.from('tutorials').delete().eq('id', id); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('tutorials').delete().eq('id', id);
+      if (error) throw error;
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-tutorials'] }); toast.success('Tutorial excluído!'); },
+    onError: (err: any) => toast.error('Falha ao excluir tutorial', { description: err?.message }),
   });
 
   const openNew = () => { setEditingId(null); setForm({ title: '', description: '', video_url: '', display_order: '0', is_active: true }); setDialogOpen(true); };
@@ -319,6 +361,11 @@ const AdminTutorials = () => {
         description="Vídeos exibidos na seção de ajuda."
         action={<Button onClick={openNew} size="sm"><Plus className="h-4 w-4" /> Novo</Button>}
       />
+      {tutorialsError && (
+        <div className="mb-4">
+          <AdminErrorState error={tutorialsError} title="Falha ao carregar tutoriais" />
+        </div>
+      )}
       <div className="rounded-xl border bg-card overflow-hidden">
         <Table>
           <TableHeader>
@@ -384,13 +431,24 @@ const AdminSettings = () => {
   const [testMessage, setTestMessage] = useState('');
   const [sending, setSending] = useState(false);
 
-  const { data: settings = [] } = useQuery({
+  const { data: settings = [], error: settingsError } = useQuery({
     queryKey: ['admin-settings'],
-    queryFn: async () => (await supabase.from('system_settings').select('*')).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('system_settings').select('*');
+      if (error) throw error;
+      return data ?? [];
+    },
   });
-  const { data: subCount } = useQuery({
+  const { data: subCount, error: subCountError } = useQuery({
     queryKey: ['admin-push-sub-count'],
-    queryFn: async () => (await supabase.from('push_subscriptions').select('*', { count: 'exact', head: true }).not('endpoint', 'like', '%permanently-removed.invalid%')).count ?? 0,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('push_subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .not('endpoint', 'like', '%permanently-removed.invalid%');
+      if (error) throw error;
+      return count ?? 0;
+    },
   });
 
   const [values, setValues] = useState<Record<string, string>>({});
@@ -401,7 +459,8 @@ const AdminSettings = () => {
 
   const saveSetting = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      await supabase.from('system_settings').update({ value }).eq('key', key);
+      const { error } = await supabase.from('system_settings').update({ value }).eq('key', key);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
@@ -409,6 +468,7 @@ const AdminSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['system-status-admin'] });
       toast.success('Configuração salva!');
     },
+    onError: (err: any) => toast.error('Falha ao salvar configuração', { description: err?.message }),
   });
 
   const toggleStatus = () => {
@@ -439,6 +499,14 @@ const AdminSettings = () => {
   return (
     <div>
       <PageHeader title="Configurações" description="Ajustes globais do sistema." />
+      {(settingsError || subCountError) && (
+        <div className="mb-4">
+          <AdminErrorState
+            error={settingsError ?? subCountError}
+            title="Falha ao carregar configurações"
+          />
+        </div>
+      )}
       <div className="space-y-4">
         <div className="rounded-xl border bg-card p-5 space-y-4">
           <div>
