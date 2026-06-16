@@ -93,17 +93,22 @@ export const AdminBugs = () => {
   const [selected, setSelected] = useState<BugRow | null>(null);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
 
-  const { data: bugs = [], isLoading } = useQuery({
+  const { data: bugs = [], isLoading, error } = useQuery({
     queryKey: ['admin-bugs'],
     queryFn: async () => {
-      const { data: rows } = await supabase
+      const { data: rows, error: rowsErr } = await supabase
         .from('bug_reports')
         .select('*')
         .order('created_at', { ascending: false });
+      if (rowsErr) throw rowsErr;
       const ids = Array.from(new Set((rows ?? []).map(r => r.user_id)));
-      const { data: profiles } = ids.length
-        ? await supabase.from('profiles').select('id, name').in('id', ids)
-        : { data: [] as any[] };
+      let profiles: any[] = [];
+      if (ids.length) {
+        const { data, error: profErr } = await supabase
+          .from('profiles').select('id, name').in('id', ids);
+        if (profErr) throw profErr;
+        profiles = data ?? [];
+      }
       const map = new Map((profiles ?? []).map(p => [p.id, p.name]));
       return (rows ?? []).map(r => ({ ...r, profile_name: map.get(r.user_id) ?? '—' })) as BugRow[];
     },
