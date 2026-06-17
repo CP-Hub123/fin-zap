@@ -48,7 +48,7 @@ export const SmartDashboardHeader = ({ month }: Props) => {
   const {
     totalIncome, totalExpense,
     currentBalance: saldoAtual,
-    availableReal: saldoDisponivelReal,
+    saldoLivre: saldoDisponivelReal,
     projectedEndOfMonth: projecaoFimMes,
     commitmentsRemaining: compromissosFuturos,
     isCurrentMonth, daysRemaining,

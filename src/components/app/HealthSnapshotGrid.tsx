@@ -65,7 +65,7 @@ export const HealthSnapshotGrid = ({ monthId }: Props) => {
 
   // Risco (saldo disponível real vs compromissos restantes)
   const compromissos = fb.commitmentsRemaining;
-  const livre = fb.availableReal;
+  const livre = fb.saldoLivre;
   let riskTone: Tone = 'safe';
   let riskTitle = 'Sob controle';
   let riskHint = 'Saldo livre cobre os compromissos restantes.';

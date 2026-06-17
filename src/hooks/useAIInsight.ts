@@ -77,7 +77,7 @@ export const useAIInsight = (month: Month | undefined): {
 
     return {
       saldoAtual: fb.currentBalance,
-      saldoDisponivel: fb.availableReal,
+      saldoDisponivel: fb.saldoLivre,
       saldoPrevisto: fb.projectedEndOfMonth,
       totalReceitas: fb.totalIncome,
       totalDespesas: fb.totalExpense,
@@ -94,7 +94,7 @@ export const useAIInsight = (month: Month | undefined): {
       mesRef: `${String(month.month).padStart(2, '0')}/${month.year}`,
     };
   }, [
-    month, fb.currentBalance, fb.availableReal, fb.projectedEndOfMonth,
+    month, fb.currentBalance, fb.saldoLivre, fb.projectedEndOfMonth,
     fb.totalIncome, fb.totalExpense, fb.commitmentsRemaining, fb.saldoReservado,
     fb.cardsPendingThisMonth, fb.daysRemaining, fb.isCurrentMonth, fb.expenses,
     cofrinhos, recorrencias, rhythm?.precision,
