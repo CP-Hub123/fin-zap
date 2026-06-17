@@ -98,8 +98,8 @@ export const IntelligentBalanceCard = ({ monthId }: Props) => {
             <div className="mt-2 rounded-xl border border-border/40 bg-background/30 p-3 space-y-1.5 text-[12px]">
               <Row label="Saldo total do mês" value={fb.saldoTotal} />
               <Row label="− Reservado em cofrinhos" value={-fb.saldoReservado} />
-              <Row label="− Compromissos restantes" value={-fb.commitmentsRemaining} />
-              <Row label="− Parcelas de cartão deste mês" value={-fb.cardsPendingThisMonth} />
+              <Row label="− Compromissos restantes (livres)" value={-fb.commitmentsRemainingFree} />
+              <Row label="− Parcelas de cartão deste mês (livres)" value={-fb.cardsPendingFree} />
               {fb.projectedIncomeRemaining > 0 && (
                 <Row label="+ Receitas previstas no mês" value={fb.projectedIncomeRemaining} />
               )}
