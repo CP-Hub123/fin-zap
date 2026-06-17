@@ -159,6 +159,9 @@ export const useFinancialBalance = (monthId: string | undefined) => {
     saldoTotal,
     saldoReservado,
     cardsPendingThisMonth,
+    // componentes exatos consumidos por computeBalances (decomposição auditável)
+    commitmentsRemainingFree,
+    cardsPendingFree: cardsPendingBreakdown.free,
     saldoLivre,
     saldoPrevisto: projectedEndOfMonth,
 
