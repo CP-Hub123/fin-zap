@@ -1,91 +1,55 @@
-## Diagnóstico — o que JÁ existe
+## Objetivo
 
-A engine de notificações inteligentes não está conceitual: ela está em produção.
+Eliminar a métrica paralela `availableReal` e consolidar **`fb.saldoLivre`** (engine `computeBalances`) como única fonte de "saldo livre" do FinZap. Após esta refatoração, qualquer alteração na regra de saldo é feita exclusivamente em `src/lib/financialEngine.ts`.
 
-**Infraestrutura já operacional:**
-- `notification_preferences` — 11 categorias + quiet hours + timezone (mais completa que o pedido)
-- `notifications_log` — com `dedupe_key`, `delivered_at`, `clicked_at`, `priority`, `category`, `error`
-- `push_subscriptions` — endpoints + `failure_count` + `last_error`
-- Edge function `notifications-scheduler` (500 linhas) — agendador contextual completo
-- Cron `pg_cron` rodando **a cada 15 min** invocando o scheduler
-- Edge function `send-push` — entrega com VAPID + dedup + log
-- Per-user **daily cap 2/dia** (críticos isentos)
-- Deduplicação por `dedupe_key`
-- Cooldown semanal nos sinais de ritmo
+## Pontos divergentes identificados
 
-**Regras inteligentes já implementadas no scheduler:**
-| Regra solicitada | Status atual |
-|---|---|
-| R1 — usuário sumiu (≥7 dias) | ✅ `rhythm_outdated` |
-| R2 — previsibilidade caiu (≥4 dias) | ✅ `rhythm_attention` |
-| R3 — fechamento próximo (3d) | ❌ **falta** |
-| R4 — recorrência amanhã/hoje | ✅ `recurring_due` |
-| R5 — usuário ativo | ✅ `rhythm_consistent` (segundas) |
-| R6 — cofrinho avançando | ✅ `cofrinho_milestone` 25/50/75/100% |
-| Orçamento 50/80/100% | ✅ por categoria |
-| Resumo semanal (domingo 19h) | ✅ |
-| Próximo mês mais leve no cartão | ✅ `card_lighter_ahead` |
-| Concentração de despesas próxima semana | ✅ `week_concentration` |
-| Mês mais calmo que histórico | ✅ |
+| Arquivo | Linha | Uso atual | Após |
+|---|---|---|---|
+| `src/components/app/SmartDashboardHeader.tsx` | 51, 75–79, 144, 207, 218 | `availableReal` exibido como hero e rotulado "saldo livre" | `fb.saldoLivre` |
+| `src/components/app/HealthSnapshotGrid.tsx` | 68, 71 | `fb.availableReal` rotulado "Saldo livre…" | `fb.saldoLivre` |
+| `src/hooks/useAIInsight.ts` | 80, 97, 108 | Envia `saldoDisponivel: fb.availableReal` à IA | `fb.saldoLivre` |
+| `src/hooks/useFinancialBalance.ts` | 22, 84, 153 | Calcula e expõe `availableReal` localmente | Remover |
 
-## Lacunas reais a fechar
+Nenhum outro consumidor de `availableReal` existe no projeto (varredura `rg` confirma).
 
-### 1. Regra de fechamento próximo (faltando)
-Adicionar ao scheduler bloco que dispara **3 dias antes do último dia do mês** (e 1 dia antes), uma vez por mês por usuário:
-> "Seu fechamento mensal está se aproximando — revise para fechar com clareza."
-Dedupe: `month_closing:{user_id}:{YYYY-MM}:{3d|1d}`
+## Mudanças
 
-### 2. Respeitar `quiet_hours` por usuário
-Hoje o scheduler tem cap diário mas **não silencia** durante quiet hours definidas pelo usuário. Adicionar: antes de `dispatch()`, ler `quiet_hours_start/end` + `timezone` da preferência e bloquear envios não-críticos dentro do intervalo (mantendo `alerta`/`critical` passando).
+### 1. `src/hooks/useFinancialBalance.ts`
+- Remover `const availableReal = …` (L84) e o campo `availableReal` do return (L153).
+- Atualizar JSDoc removendo a menção a `availableReal`.
 
-### 3. Tabela `financial_rhythm_state` (persistência do score)
-Hoje os scores são computados ad-hoc a cada run. Persistir permite:
-- detectar **queda** de previsibilidade (compara snapshot anterior)
-- alimentar painel admin
-- evitar recálculos
+### 2. `src/components/app/SmartDashboardHeader.tsx`
+- Trocar `availableReal: saldoDisponivelReal` por `saldoLivre: saldoDisponivelReal` no destructuring (mantém a variável local, só muda a fonte).
+- Heurística `getHealthStatus` continua válida (lê `saldoDisponivelReal`).
 
-Campos: `user_id` (PK), `last_transaction_at`, `last_open_at`, `rhythm_score 0-100`, `predictability_score 0-100`, `inactivity_level` (`ok|atencao|risco|critico`), `last_notification_at`, `updated_at`.
+### 3. `src/components/app/HealthSnapshotGrid.tsx`
+- Trocar `const livre = fb.availableReal` por `const livre = fb.saldoLivre`.
 
-Atualizado pelo scheduler a cada run. Score = mistura ponderada de: dias-ativos/14, recência da última transação, nº de recorrências ativas, lacunas (>3 dias sem registro), volatilidade do saldo.
+### 4. `src/hooks/useAIInsight.ts`
+- Trocar `saldoDisponivel: fb.availableReal` por `saldoDisponivel: fb.saldoLivre` (e atualizar a dependência do `useMemo`).
 
-### 4. Painel admin de métricas de notificação
-Nova rota `/admin/notifications` com:
-- enviadas por dia (últimos 30d)
-- taxa de clique (`clicked_at IS NOT NULL` / total)
-- taxa de entrega (`delivered_at IS NOT NULL` / total)
-- top 10 tipos mais eficientes (por CTR)
-- usuários silenciosos (sem `clicked_at` em 30d)
-- erros recentes de envio (`push_subscriptions.last_error`)
+## Não-escopo
 
-Consultas diretas ao `notifications_log` + `push_subscriptions` (admin já tem RLS via `is_admin()`).
+- Nenhuma alteração em `financialEngine.ts` (a engine já é canônica).
+- Nenhuma alteração em RLS, migrations, triggers, recorrências, cofrinhos, PDF, ou compromissos.
+- Nenhuma mudança visual no `IntelligentBalanceCard` (já corrigido na rodada anterior).
+- `CardDetailSheet` / `CreditCardsView` mantêm `disponivel` (escopo de limite de cartão, não saldo).
 
-## Plano de execução
+## Validação
 
-```text
-1. Migração SQL
-   - CREATE TABLE public.financial_rhythm_state + GRANTs + RLS
-   - Função/coluna se necessária para fechamento
+1. `rg "availableReal"` deve retornar **zero** ocorrências após a refatoração.
+2. Em um mês com compromisso/cartão vinculado a cofrinho, o número exibido em:
+   - `IntelligentBalanceCard` (hero "Disponível para usar")
+   - `SmartDashboardHeader` (hero)
+   - `HealthSnapshotGrid` ("livre")
+   - prompt enviado pela IA (`saldoDisponivel`)
+   deve ser **idêntico** ao output de `computeBalances`.
+3. Build limpa (sem TS errors sobre `availableReal`).
+4. Smoke test manual nos cenários: sem movimento · só receita · só despesa · com reservas · com compromissos · com cartões · com receitas previstas · com `impacta_saldo=false`.
 
-2. Atualizar supabase/functions/notifications-scheduler/index.ts
-   - Bloco "month closing" (R3)
-   - Helper isInQuietHours(prefs, now) antes de dispatch
-   - Bloco "rhythm snapshot": upsert em financial_rhythm_state
-   - Disparo extra quando predictability_score cai >15 pts vs snapshot anterior
+## Critério de aceite
 
-3. Frontend admin
-   - src/pages/admin/AdminNotifications.tsx (métricas)
-   - Adicionar item no AdminLayout
-```
-
-## Pontos que NÃO vamos refazer (já existem)
-
-- Não criar `notifications_preferences` nova — usar a existente (`notification_preferences`).
-- Não criar `notifications_history` nova — `notifications_log` já cobre tudo (inclusive hash de dedup).
-- Não criar segunda edge function `process-smart-notifications` — estender o `notifications-scheduler` que já roda a cada 15 min via pg_cron.
-- Não trocar o cron — 15min é mais responsivo que 2h pedido e já está estável.
-
-## Resumo do escopo final
-
-4 entregas: (1) regra de fechamento próximo, (2) respeito a quiet hours por usuário, (3) tabela `financial_rhythm_state` com score persistido + gatilho de queda, (4) painel admin de métricas.
-
-Confirma esse escopo? Se quiser que eu inclua/remova algo (ex.: apenas painel admin, ou só a regra de fechamento), me diz antes de eu começar.
+- Único caminho para "saldo livre" no projeto: `financialEngine.computeBalances` → `useFinancialBalance.saldoLivre` → UI/IA.
+- `availableReal` não existe mais no codebase.
+- Toda futura mudança de regra acontece apenas em `financialEngine.ts`.

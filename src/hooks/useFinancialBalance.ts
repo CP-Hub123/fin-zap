@@ -19,8 +19,6 @@ import {
  * Convenção:
  *  - `delta`            = soma(receitas) - soma(despesas) do mês (apenas movimento)
  *  - `currentBalance`   = initial_balance + delta (saldo atual contábil do mês)
- *  - `availableReal`    = currentBalance - compromissosFuturos + receitasFuturas
- *                         (saldo realmente livre considerando recorrências do restante do mês)
  *  - `projectedEndOfMonth` = projeção ao fim do ciclo ponderando o ritmo de gasto
  */
 export const useFinancialBalance = (monthId: string | undefined) => {
@@ -80,8 +78,6 @@ export const useFinancialBalance = (monthId: string | undefined) => {
       isCurrentMonth: true,
     };
   }, [month, recorrencias]);
-
-  const availableReal = currentBalance - commitmentsRemaining + projectedIncomeRemaining;
 
   // ───────────────── Fonte única de verdade financeira ─────────────────
   // Saldo total = saldo contábil corrente do mês (igual a currentBalance)
@@ -150,7 +146,6 @@ export const useFinancialBalance = (monthId: string | undefined) => {
     currentBalance,
     commitmentsRemaining,
     projectedIncomeRemaining,
-    availableReal,
     projectedEndOfMonth,
     daysRemaining,
     isCurrentMonth,
