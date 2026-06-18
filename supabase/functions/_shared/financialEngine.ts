@@ -1,5 +1,9 @@
 /**
- * FinZap — Engine financeira canônica.
+ * FinZap — Engine financeira canônica (mirror para edge functions).
+ *
+ * ATENÇÃO: este arquivo é um espelho fiel de `src/lib/financialEngine.ts`.
+ * Qualquer alteração de regra deve ser feita PRIMEIRO em `src/lib/financialEngine.ts`
+ * e depois copiada aqui para manter a única fonte de verdade entre app e PDF.
  *
  * Funções puras que servem como ÚNICA fonte de verdade para:
  *   - totais de receitas / despesas do mês
