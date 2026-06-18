@@ -72,12 +72,15 @@ const PieTooltip = ({ active, payload }: any) => {
   );
 };
 
-export const SummaryView = ({ month, totalIncome, totalExpense, balance, transactions, budgetPlans, onNavigate }: SummaryViewProps) => {
+export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProps) => {
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  // Fonte oficial de saldo final (initial_balance + delta)
-  const { currentBalance: finalBalance } = useFinancialBalance(month.id);
+  // Fonte única de verdade: todos os indicadores financeiros vêm da engine.
+  const fb = useFinancialBalance(month.id);
+  const totalIncome = fb.totalIncome;
+  const totalExpense = fb.totalExpense;
+  const finalBalance = fb.currentBalance;
   const cofrinhoMap = useMemo(() => {
     const map: Record<string, { nome: string; cor: string; orcamento: number }> = {};
     cofrinhos.forEach(c => {
@@ -91,7 +94,6 @@ export const SummaryView = ({ month, totalIncome, totalExpense, balance, transac
   const currentDay = month.year === now.getFullYear() && month.month === now.getMonth() + 1
     ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
   const monthProgress = Math.round((currentDay / daysInMonth) * 100);
-  const isPositive = finalBalance >= 0;
 
   // Budget usage — based on cofrinhos
   const totalPlanned = cofrinhos.reduce((s, c) => s + Number(c.orcamento_mensal), 0);
