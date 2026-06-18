@@ -23,6 +23,13 @@ import {
   renderToBuffer,
 } from "npm:@react-pdf/renderer@3.4.4";
 import { FINZAP_ICON_DATA_URI, FINZAP_LOGO_DATA_URI } from "./brand-assets.ts";
+import {
+  computeMonthTotals,
+  computeUpcomingRecurring,
+  computeCardsPendingThisMonth,
+  computeBalances,
+  computeSaldoPrevisto,
+} from "../_shared/financialEngine.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -696,6 +703,23 @@ function buildDocument(payload: any) {
           h(Text, { style: styles.kpiHint }, "Cartões + recorrências"),
         ),
       ),
+      h(View, { style: [styles.kpiGrid, { marginTop: 10 }], wrap: false },
+        h(View, { style: styles.kpiCard },
+          h(Text, { style: styles.kpiLabel }, "Saldo atual"),
+          h(Text, { style: styles.kpiValue }, fmtBRL(totals.final)),
+          h(Text, { style: styles.kpiHint }, "Inicial + receitas − despesas"),
+        ),
+        h(View, { style: styles.kpiCard },
+          h(Text, { style: styles.kpiLabel }, "Saldo projetado"),
+          h(Text, { style: styles.kpiValue }, fmtBRL(totals.projected)),
+          h(Text, { style: styles.kpiHint }, "Projeção ao fim do mês"),
+        ),
+        h(View, { style: styles.kpiCard },
+          h(Text, { style: styles.kpiLabel }, "Saldo inicial"),
+          h(Text, { style: styles.kpiValue }, fmtBRL(totals.initial)),
+          h(Text, { style: styles.kpiHint }, "Abertura do período"),
+        ),
+      ),
     ),
     h(View, { style: [styles.section, { marginTop: 4 }], wrap: false },
       h(Text, { style: styles.sectionEyebrow }, "Trajetória recente"),
@@ -1022,16 +1046,20 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     { data: cardPurchases },
     { data: closures },
     { data: monthsList },
+    { data: recorrencias },
+    { data: installments },
   ] = await Promise.all([
     supa.from("transactions").select("type,amount,status,impacta_saldo,cofrinho_id,card_purchase_id").eq("user_id", userId).eq("month_id", monthId),
     supa.from("cofrinhos").select("nome,saldo,meta_valor,orcamento_mensal").eq("user_id", userId).order("ordem"),
     supa.from("credit_cards").select("id,nome,limite,fechamento_dia,vencimento_dia").eq("user_id", userId).eq("ativo", true).order("ordem"),
-    supa.from("credit_card_purchases").select("id,card_id,valor_total").eq("user_id", userId),
+    supa.from("credit_card_purchases").select("id,card_id,valor_total,cofrinho_id").eq("user_id", userId),
     supa.from("monthly_closures").select("month_id,total_income,total_expense,final_balance").in("month_id",
       // closures for last months — fetched after we list months below; placeholder for now
       [monthId],
     ),
     supa.from("months").select("id,month,year,initial_balance,status").eq("user_id", userId).order("year", { ascending: false }).order("month", { ascending: false }).limit(7),
+    supa.from("recurring_transactions").select("ativo,tipo,valor,proxima_execucao,cofrinho_id").eq("user_id", userId),
+    supa.from("credit_card_installments").select("month_id,amount,status,card_purchase_id").eq("user_id", userId).eq("month_id", monthId),
   ]);
 
   // History: last 6 months including current
@@ -1048,27 +1076,14 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
 
   // ───────────────────────────────────────────────────────────────
   // FONTE ÚNICA DE VERDADE FINANCEIRA DO RELATÓRIO
-  // Alinhada a src/lib/financialEngine.ts → computeMonthTotals:
-  //   - considera apenas `impacta_saldo !== false`
-  //   - NÃO filtra por status (planned + realized contam, igual ao Dashboard)
-  // Todo cálculo de receita/despesa/saldo do PDF deve passar por aqui.
+  // Toda matemática é delegada para `financialEngine` (mesmas funções consumidas
+  // por `useFinancialBalance` no app). O PDF é APENAS uma camada de exportação.
   // ───────────────────────────────────────────────────────────────
-  const computeSnapshot = (transactions: any[]) => {
-    const impacta = (transactions || []).filter((t: any) => t.impacta_saldo !== false);
-    const inc = impacta
-      .filter((t: any) => t.type === "income")
-      .reduce((s: number, t: any) => s + Number(t.amount || 0), 0);
-    const exp = impacta
-      .filter((t: any) => t.type === "expense")
-      .reduce((s: number, t: any) => s + Number(t.amount || 0), 0);
-    return { income: inc, expense: exp, balance: inc - exp };
-  };
-
-  // Snapshot canônico do mês corrente — UMA ÚNICA VEZ.
-  const snapshot = computeSnapshot(txs || []);
-  const income = snapshot.income;
-  const expense = snapshot.expense;
-  const balance = snapshot.balance;
+  // Snapshot canônico do mês corrente via engine.
+  const monthTotals = computeMonthTotals((txs || []) as any);
+  const income = monthTotals.totalIncome;
+  const expense = monthTotals.totalExpense;
+  const balance = monthTotals.delta;
 
   const history = (monthsList || []).slice().reverse().map((m: any) => {
     // Mês corrente: sempre reutiliza o snapshot (garante igualdade com KPIs do Resumo).
@@ -1090,23 +1105,66 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     }
     // Mês passado não fechado: usa o MESMO critério canônico (impacta_saldo).
     const mtx = (histTx || []).filter((t: any) => t.month_id === m.id);
-    const snap = computeSnapshot(mtx);
+    const snap = computeMonthTotals(mtx as any);
     return {
       label: `${MONTHS_PT[m.month - 1].slice(0, 3)}/${String(m.year).slice(2)}`,
-      income: snap.income,
-      expense: snap.expense,
-      balance: Number(m.initial_balance || 0) + snap.balance,
+      income: snap.totalIncome,
+      expense: snap.totalExpense,
+      balance: Number(m.initial_balance || 0) + snap.delta,
     };
   });
 
   const initial = Number(month.initial_balance || 0);
-  const final = initial + balance;
   const reserved = (cofrinhos || []).reduce((s: number, c: any) => s + Number(c.saldo || 0), 0);
-  // committed = parcelas planejadas (cartão) + recorrências planejadas — respeita impacta_saldo.
-  const committed = (txs || [])
-    .filter((t: any) => t.status === "planned" && t.type === "expense" && t.impacta_saldo !== false)
-    .reduce((s: number, t: any) => s + Number(t.amount), 0);
-  const free = Math.max(0, final - reserved);
+
+  // Compromissos futuros do mês corrente (recorrências) — engine canônica.
+  // Só conta quando o mês exportado é o mês atual; meses fechados ou futuros
+  // têm compromissos = 0 (mesma regra do `useFinancialBalance`).
+  const now = new Date();
+  const isCurrentMonth = month.year === now.getFullYear() && month.month === (now.getMonth() + 1);
+  const recRef = isCurrentMonth ? now : new Date(month.year, month.month - 1, 1);
+  const upcoming = isCurrentMonth
+    ? computeUpcomingRecurring((recorrencias || []) as any, recRef)
+    : { commitmentsRemaining: 0, commitmentsRemainingFree: 0, commitmentsRemainingCofrinho: 0, projectedIncomeRemaining: 0 };
+
+  // Parcelas de cartão pendentes deste mês — engine canônica.
+  const purchaseToCofrinho = new Map<string, string | null>();
+  (cardPurchases || []).forEach((p: any) => purchaseToCofrinho.set(p.id, p.cofrinho_id ?? null));
+  const cardsPending = computeCardsPendingThisMonth(
+    (installments || []) as any,
+    monthId,
+    purchaseToCofrinho,
+  );
+
+  // Família canônica de saldos.
+  const bal = computeBalances({
+    initialBalance: initial,
+    totalIncome: income,
+    totalExpense: expense,
+    saldoReservado: reserved,
+    commitmentsRemainingFree: upcoming.commitmentsRemainingFree,
+    projectedIncomeRemaining: upcoming.projectedIncomeRemaining,
+    cardsPendingFree: cardsPending.free,
+  });
+  const final = bal.saldoTotal; // initial + delta
+  const free = bal.saldoLivre;
+
+  // Saldo previsto (projeção fim de mês) — engine canônica.
+  const daysInMonth = new Date(month.year, month.month, 0).getDate();
+  const today = isCurrentMonth ? now.getDate() : daysInMonth;
+  const daysRemaining = Math.max(0, daysInMonth - today);
+  const daysElapsed = daysInMonth - daysRemaining;
+  const projected = computeSaldoPrevisto({
+    isCurrentMonth,
+    saldoLivre: free,
+    saldoTotal: final,
+    totalExpense: expense,
+    daysElapsed,
+    daysRemaining,
+  });
+
+  // "Comprometido" exibido = recorrências futuras + parcelas pendentes (livres + cofrinho)
+  const committed = upcoming.commitmentsRemaining + cardsPending.total;
 
   // Maior despesa única do mês corrente — usado como fallback antes do "mês com maior saída".
   const biggestExpenseTx = (txs || [])
@@ -1276,7 +1334,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
     userName: profile?.name || "FinZap",
     periodo,
     generatedAt,
-    totals: { income, expense, balance, free, reserved, committed, initial, final },
+    totals: { income, expense, balance, free, reserved, committed, initial, final, projected },
     history,
     biggestExpenseAmount,
     cofrinhos: cofrinhosOut,
