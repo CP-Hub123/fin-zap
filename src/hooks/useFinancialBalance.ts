@@ -156,6 +156,7 @@ export const useFinancialBalance = (monthId: string | undefined) => {
     // engine premium (fonte única de verdade)
     saldoTotal,
     saldoReservado,
+    defaultReserveSaldo,
     cardsPendingThisMonth,
     // componentes exatos consumidos por computeBalances (decomposição auditável)
     commitmentsRemainingFree,
