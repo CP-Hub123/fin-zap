@@ -1,18 +1,20 @@
 import { useState } from 'react';
-import { Wallet, Lock, Sparkles, TrendingUp, ChevronDown, Info } from 'lucide-react';
+import { Wallet, Lock, Sparkles, TrendingUp, ChevronDown, Info, ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 import { formatCurrency } from '@/lib/constants';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Props {
   monthId: string;
+  onReservar?: () => void;
+  onResgatar?: () => void;
 }
 
 /**
  * Saldo Inteligente — fonte única de verdade exposta ao usuário.
  * Total · Reservado · Livre · Previsto, todos derivados de useFinancialBalance.
  */
-export const IntelligentBalanceCard = ({ monthId }: Props) => {
+export const IntelligentBalanceCard = ({ monthId, onReservar, onResgatar }: Props) => {
   const fb = useFinancialBalance(monthId);
   const [open, setOpen] = useState(false);
 
@@ -54,6 +56,30 @@ export const IntelligentBalanceCard = ({ monthId }: Props) => {
             <p className="mt-1 text-[11.5px] text-muted-foreground leading-relaxed">
               Total {formatCurrency(fb.saldoTotal)} − reservas, compromissos e cartões.
             </p>
+            {(onReservar || onResgatar) && (
+              <div className="mt-3 flex gap-2">
+                {onReservar && (
+                  <button
+                    type="button"
+                    onClick={onReservar}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-[12px] font-semibold text-primary hover:bg-primary/15 transition-colors"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.4} />
+                    Reservar
+                  </button>
+                )}
+                {onResgatar && fb.defaultReserveSaldo > 0 && (
+                  <button
+                    type="button"
+                    onClick={onResgatar}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-background/40 px-3 py-2 text-[12px] font-semibold text-foreground/80 hover:text-foreground hover:border-foreground/30 transition-colors"
+                  >
+                    <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.4} />
+                    Resgatar
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Reservado */}
