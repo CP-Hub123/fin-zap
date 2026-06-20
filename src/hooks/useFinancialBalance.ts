@@ -25,7 +25,7 @@ export const useFinancialBalance = (monthId: string | undefined) => {
   const tx = useTransactions(monthId);
   const { months } = useMonths();
   const { recorrencias } = useRecurringTransactions();
-  const { cofrinhos } = useCofrinhos();
+  const { cofrinhosAll, defaultReserve } = useCofrinhos();
   const { installments, purchases } = useCreditCards();
 
   const month = months.find(m => m.id === monthId);
@@ -85,10 +85,13 @@ export const useFinancialBalance = (monthId: string | undefined) => {
   // Cartões pendentes deste mês = parcelas planejadas/não realizadas do mês
   // Saldo livre = total - reservado - compromissos restantes - cartões pendentes + receitas futuras
   // Saldo previsto = projeção ao fim do mês (já considerando ritmo)
+  // Soma inclui o cofrinho-reserva padrão (invisível ao usuário) para que
+  // reservas diretas via RPC entrem em `saldoReservado` automaticamente.
   const saldoReservado = useMemo(
-    () => cofrinhos.reduce((s, c) => s + Number(c.saldo ?? 0), 0),
-    [cofrinhos]
+    () => cofrinhosAll.reduce((s, c) => s + Number(c.saldo ?? 0), 0),
+    [cofrinhosAll]
   );
+  const defaultReserveSaldo = Number(defaultReserve?.saldo ?? 0);
 
   // Mapa compra→cofrinho para segregar parcelas vinculadas a reservas
   const purchaseToCofrinho = useMemo(() => {
