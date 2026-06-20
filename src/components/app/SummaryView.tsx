@@ -22,6 +22,7 @@ import { QuickActionsCard } from './QuickActionsCard';
 import { IntelligentBalanceCard } from './IntelligentBalanceCard';
 import { useFinancialBalance } from '@/hooks/useFinancialBalance';
 import { ReportModal } from './ReportModal';
+import { ReserveSheet } from './ReserveSheet';
 
 interface SummaryViewProps {
   month: Month;
@@ -76,6 +77,8 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
   const { cofrinhos } = useCofrinhos();
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [reserveOpen, setReserveOpen] = useState(false);
+  const [reserveMode, setReserveMode] = useState<'reservar' | 'resgatar'>('reservar');
   // Fonte única de verdade: todos os indicadores financeiros vêm da engine.
   const fb = useFinancialBalance(month.id);
   const totalIncome = fb.totalIncome;
@@ -192,7 +195,11 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
       <AIInsightDiagnostics month={month} />
 
       {/* Saldo Inteligente — fonte única de verdade (Total · Reservado · Livre · Previsto) */}
-      <IntelligentBalanceCard monthId={month.id} />
+      <IntelligentBalanceCard
+        monthId={month.id}
+        onReservar={() => { setReserveMode('reservar'); setReserveOpen(true); }}
+        onResgatar={() => { setReserveMode('resgatar'); setReserveOpen(true); }}
+      />
 
       {/* Ritmo Financeiro — confiabilidade da projeção (retenção premium) */}
       <FinancialRhythmCard />
@@ -207,6 +214,7 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
           onAddExpense={() => onNavigate(1)}
           onOpenReport={() => setReportOpen(true)}
           onOpenPlanning={() => onNavigate(3)}
+          onOpenReserve={() => { setReserveMode('reservar'); setReserveOpen(true); }}
         />
       )}
 
@@ -274,6 +282,14 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
         onOpenChange={setReportOpen}
         monthId={month.id}
         periodoLabel={`${MONTH_NAMES[month.month - 1]} de ${month.year}`}
+      />
+
+      <ReserveSheet
+        monthId={month.id}
+        open={reserveOpen}
+        onOpenChange={setReserveOpen}
+        initialMode={reserveMode}
+        onOpenCofrinhos={onNavigate ? () => onNavigate(3) : undefined}
       />
 
       {/* Central financeira avançada */}

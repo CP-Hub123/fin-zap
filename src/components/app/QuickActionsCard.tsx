@@ -1,10 +1,11 @@
-import { Plus, Minus, FileText, Wallet } from 'lucide-react';
+import { Plus, Minus, FileText, Wallet, ShieldCheck } from 'lucide-react';
 
 interface Props {
   onAddIncome: () => void;
   onAddExpense: () => void;
   onOpenReport?: () => void;
   onOpenPlanning: () => void;
+  onOpenReserve?: () => void;
 }
 
 const Action = ({
@@ -45,7 +46,7 @@ const Action = ({
   );
 };
 
-export const QuickActionsCard = ({ onAddIncome, onAddExpense, onOpenReport, onOpenPlanning }: Props) => {
+export const QuickActionsCard = ({ onAddIncome, onAddExpense, onOpenReport, onOpenPlanning, onOpenReserve }: Props) => {
   return (
     <section aria-label="Ações rápidas" className="space-y-3">
       <div className="flex items-center justify-between">
@@ -57,8 +58,9 @@ export const QuickActionsCard = ({ onAddIncome, onAddExpense, onOpenReport, onOp
       <div className="grid grid-cols-2 gap-3">
         <Action icon={Plus}     tone="income"  label="Nova receita"     hint="Registre uma entrada"          onClick={onAddIncome} />
         <Action icon={Minus}    tone="expense" label="Nova despesa"     hint="Registre uma saída"            onClick={onAddExpense} />
-        <Action icon={FileText} tone="primary" label="Relatório premium" hint="Gere seu resumo inteligente"  onClick={onOpenReport} disabled={!onOpenReport} />
+        <Action icon={ShieldCheck} tone="primary" label="Reservar dinheiro" hint="Separe do saldo livre"      onClick={onOpenReserve} disabled={!onOpenReserve} />
         <Action icon={Wallet}   tone="neutral" label="Planejar mês"      hint="Cofrinhos e previsibilidade"  onClick={onOpenPlanning} />
+        <Action icon={FileText} tone="primary" label="Relatório premium" hint="Gere seu resumo inteligente"  onClick={onOpenReport} disabled={!onOpenReport} />
       </div>
     </section>
   );

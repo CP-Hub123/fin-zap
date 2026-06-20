@@ -264,6 +264,7 @@ export type Database = {
           gasto_mes: number
           icon: string
           id: string
+          is_default: boolean
           mes_ref: number
           meses_protegidos: number
           meta_valor: number
@@ -285,6 +286,7 @@ export type Database = {
           gasto_mes?: number
           icon?: string
           id?: string
+          is_default?: boolean
           mes_ref?: number
           meses_protegidos?: number
           meta_valor?: number
@@ -306,6 +308,7 @@ export type Database = {
           gasto_mes?: number
           icon?: string
           id?: string
+          is_default?: boolean
           mes_ref?: number
           meses_protegidos?: number
           meta_valor?: number
@@ -1092,6 +1095,7 @@ export type Database = {
         Returns: undefined
       }
       delete_month_cascade: { Args: { _month_id: string }; Returns: undefined }
+      ensure_default_reserve: { Args: { _user_id: string }; Returns: string }
       executar_recorrencias_usuario: {
         Args: { _user_id: string }
         Returns: number
@@ -1107,6 +1111,14 @@ export type Database = {
       }
       has_active_subscription: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      reservar_valor: {
+        Args: { _descricao: string; _month_id: string; _valor: number }
+        Returns: string
+      }
+      resgatar_reserva: {
+        Args: { _descricao: string; _month_id: string; _valor: number }
+        Returns: string
+      }
       run_monthly_autotasks: { Args: never; Returns: Json }
       set_app_config: {
         Args: { _key: string; _value: string }
