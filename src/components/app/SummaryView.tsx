@@ -284,6 +284,14 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
         periodoLabel={`${MONTH_NAMES[month.month - 1]} de ${month.year}`}
       />
 
+      <ReserveSheet
+        monthId={month.id}
+        open={reserveOpen}
+        onOpenChange={setReserveOpen}
+        initialMode={reserveMode}
+        onOpenCofrinhos={onNavigate ? () => onNavigate(3) : undefined}
+      />
+
       {/* Central financeira avançada */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen} className="space-y-4">
         <CollapsibleTrigger className="group w-full flex items-center justify-between rounded-2xl border border-border/60 bg-card/60 px-4 py-3.5 text-left transition-colors hover:bg-card">
