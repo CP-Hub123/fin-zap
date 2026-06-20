@@ -95,8 +95,18 @@ export const useCofrinhos = () => {
     },
   });
 
+  // Lista completa (inclui o cofrinho-reserva padrão invisível ao usuário).
+  // Usada apenas pela engine financeira para somar `saldoReservado`.
+  const cofrinhosAll = query.data ?? [];
+  // Lista visível ao usuário — sem o cofrinho default. Usada em listagens,
+  // selects, limites de plano e qualquer UI relacionada a cofrinhos nomeados.
+  const cofrinhos = cofrinhosAll.filter(c => !c.is_default);
+  const defaultReserve = cofrinhosAll.find(c => c.is_default) ?? null;
+
   return {
-    cofrinhos: query.data ?? [],
+    cofrinhos,
+    cofrinhosAll,
+    defaultReserve,
     isLoading: query.isLoading,
     createCofrinho,
     updateCofrinho,
