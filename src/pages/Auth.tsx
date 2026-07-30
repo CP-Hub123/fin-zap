@@ -30,11 +30,18 @@ const Auth = () => {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
+  // Preserva o destino (ex.: tela de consentimento OAuth) através do login.
+  const nextParam = (() => {
+    const raw = new URLSearchParams(window.location.search).get('next');
+    return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : null;
+  })();
+  const afterAuthPath = nextParam ?? '/app';
+
   const handleGoogle = async () => {
     setGoogleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin + '/app',
+        redirect_uri: window.location.origin + afterAuthPath,
       });
       if (result.error) {
         toast.error('Não foi possível conectar com o Google. Tente novamente.');
@@ -42,7 +49,7 @@ const Auth = () => {
         return;
       }
       if (result.redirected) return;
-      navigate('/app');
+      navigate(afterAuthPath);
     } catch {
       toast.error('Erro inesperado ao entrar com Google.');
       setGoogleLoading(false);
@@ -69,7 +76,7 @@ const Auth = () => {
       if (error) {
         toast.error(error.message === 'Invalid login credentials' ? 'Email ou senha incorretos' : error.message);
       } else {
-        navigate('/app');
+        navigate(afterAuthPath);
       }
     } else {
       if (password.length < 6) {
