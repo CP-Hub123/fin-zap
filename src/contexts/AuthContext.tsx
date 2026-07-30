@@ -56,10 +56,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
+    const raw = new URLSearchParams(window.location.search).get('next');
+    const next = raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : '';
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name }, emailRedirectTo: window.location.origin },
+      options: { data: { name }, emailRedirectTo: window.location.origin + next },
     });
     return { error };
   };
