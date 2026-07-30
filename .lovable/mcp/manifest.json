@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "sdk_version": "0.25.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://pufhontpohhuifrtqfsu.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "finzap-decis-o-financeira-inteligente",
+      "version": "0.1.0",
+      "title": "FinZap: Decisão Financeira Inteligente"
+    },
+    "tools": [
+      {
+        "name": "list_months",
+        "title": "Listar meses",
+        "description": "Lista os meses financeiros do usuário no FinZap, com ano, mês, status (draft/in_progress/closed) e saldo inicial.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "year": {
+              "description": "Filtrar por ano, ex.: 2026.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "limit": {
+              "description": "Quantidade máxima de meses (padrão 12).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_month_summary",
+        "title": "Resumo do mês",
+        "description": "Retorna o resumo financeiro de um mês do FinZap: receitas, despesas, saldo do período e principais categorias de gasto.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "year": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "description": "Ano do mês, ex.: 2026."
+            },
+            "month": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "description": "Número do mês, de 1 a 12."
+            }
+          },
+          "required": [
+            "year",
+            "month"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_transactions",
+        "title": "Listar lançamentos",
+        "description": "Lista lançamentos (receitas e despesas) do FinZap, opcionalmente filtrados por mês, tipo ou intervalo de datas.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "year": {
+              "description": "Ano do mês a filtrar.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "month": {
+              "description": "Número do mês a filtrar, de 1 a 12.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "description": "Tipo do lançamento.",
+              "type": "string",
+              "enum": [
+                "income",
+                "expense"
+              ]
+            },
+            "from": {
+              "description": "Data inicial no formato AAAA-MM-DD.",
+              "type": "string"
+            },
+            "to": {
+              "description": "Data final no formato AAAA-MM-DD.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Máximo de registros (padrão 50, teto 200).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_cofrinhos",
+        "title": "Listar cofrinhos",
+        "description": "Lista os cofrinhos do usuário no FinZap: orçamentos mensais, metas e reservas, com saldo, orçamento e gasto do mês.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_transaction",
+        "title": "Criar lançamento",
+        "description": "Cria um lançamento (receita ou despesa) no FinZap para o mês correspondente à data informada. O mês precisa existir e não estar fechado.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Descrição curta do lançamento."
+            },
+            "amount": {
+              "type": "number",
+              "description": "Valor em reais, sempre positivo."
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "income",
+                "expense"
+              ],
+              "description": "Receita (income) ou despesa (expense)."
+            },
+            "date": {
+              "type": "string",
+              "description": "Data do lançamento no formato AAAA-MM-DD."
+            },
+            "category": {
+              "description": "Categoria do lançamento.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "amount",
+            "type",
+            "date"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
