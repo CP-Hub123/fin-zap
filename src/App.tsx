@@ -24,6 +24,7 @@ import Terms from "./pages/legal/Terms";
 import Consent from "./pages/legal/Consent";
 import CookiesPage from "./pages/legal/Cookies";
 import Security from "./pages/legal/Security";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const BrandingApplier = () => {
   useAppBranding();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/maintenance" element={<Maintenance />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/legal/privacidade" element={<Privacy />} />
             <Route path="/legal/termos" element={<Terms />} />
             <Route path="/legal/consentimento" element={<Consent />} />
