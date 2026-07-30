@@ -15,7 +15,6 @@ export default defineTool({
     category: z.string().optional().describe("Categoria do lançamento."),
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-  needsApproval: true,
   handler: async ({ name, amount, type, date, category }, ctx) => {
     if (!ctx.isAuthenticated()) return notAuthenticated;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date))

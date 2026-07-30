@@ -7,7 +7,7 @@ import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.25.0";
 
 // src/lib/mcp/tools/list-months.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.25.0";
-import { z } from "npm:zod@^4.4.3";
+import { z } from "npm:zod@^3.25.76";
 
 // src/lib/mcp/supabase.ts
 import { createClient } from "npm:@supabase/supabase-js@^2.101.0";
@@ -53,7 +53,7 @@ var list_months_default = defineTool({
 
 // src/lib/mcp/tools/get-month-summary.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.25.0";
-import { z as z2 } from "npm:zod@^4.4.3";
+import { z as z2 } from "npm:zod@^3.25.76";
 var get_month_summary_default = defineTool2({
   name: "get_month_summary",
   title: "Resumo do m\xEAs",
@@ -111,7 +111,7 @@ var get_month_summary_default = defineTool2({
 
 // src/lib/mcp/tools/list-transactions.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.25.0";
-import { z as z3 } from "npm:zod@^4.4.3";
+import { z as z3 } from "npm:zod@^3.25.76";
 var list_transactions_default = defineTool3({
   name: "list_transactions",
   title: "Listar lan\xE7amentos",
@@ -174,7 +174,7 @@ var list_cofrinhos_default = defineTool4({
 
 // src/lib/mcp/tools/create-transaction.ts
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.25.0";
-import { z as z4 } from "npm:zod@^4.4.3";
+import { z as z4 } from "npm:zod@^3.25.76";
 var create_transaction_default = defineTool5({
   name: "create_transaction",
   title: "Criar lan\xE7amento",
@@ -187,7 +187,6 @@ var create_transaction_default = defineTool5({
     category: z4.string().optional().describe("Categoria do lan\xE7amento.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-  needsApproval: true,
   handler: async ({ name, amount, type, date, category }, ctx) => {
     if (!ctx.isAuthenticated()) return notAuthenticated;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date))

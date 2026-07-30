@@ -26,22 +26,19 @@
           "openWorldHint": false
         },
         "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "year": {
-              "description": "Filtrar por ano, ex.: 2026.",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "description": "Filtrar por ano, ex.: 2026."
             },
             "limit": {
-              "description": "Quantidade máxima de meses (padrão 12).",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "description": "Quantidade máxima de meses (padrão 12)."
             }
-          }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
       },
@@ -55,26 +52,23 @@
           "openWorldHint": false
         },
         "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "year": {
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991,
               "description": "Ano do mês, ex.: 2026."
             },
             "month": {
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991,
               "description": "Número do mês, de 1 a 12."
             }
           },
           "required": [
             "year",
             "month"
-          ]
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
       },
@@ -88,44 +82,39 @@
           "openWorldHint": false
         },
         "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "year": {
-              "description": "Ano do mês a filtrar.",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "description": "Ano do mês a filtrar."
             },
             "month": {
-              "description": "Número do mês a filtrar, de 1 a 12.",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "description": "Número do mês a filtrar, de 1 a 12."
             },
             "type": {
-              "description": "Tipo do lançamento.",
               "type": "string",
               "enum": [
                 "income",
                 "expense"
-              ]
+              ],
+              "description": "Tipo do lançamento."
             },
             "from": {
-              "description": "Data inicial no formato AAAA-MM-DD.",
-              "type": "string"
+              "type": "string",
+              "description": "Data inicial no formato AAAA-MM-DD."
             },
             "to": {
-              "description": "Data final no formato AAAA-MM-DD.",
-              "type": "string"
+              "type": "string",
+              "description": "Data final no formato AAAA-MM-DD."
             },
             "limit": {
-              "description": "Máximo de registros (padrão 50, teto 200).",
               "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "description": "Máximo de registros (padrão 50, teto 200)."
             }
-          }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
       },
@@ -155,7 +144,6 @@
           "openWorldHint": false
         },
         "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "name": {
@@ -179,8 +167,8 @@
               "description": "Data do lançamento no formato AAAA-MM-DD."
             },
             "category": {
-              "description": "Categoria do lançamento.",
-              "type": "string"
+              "type": "string",
+              "description": "Categoria do lançamento."
             }
           },
           "required": [
@@ -188,7 +176,9 @@
             "amount",
             "type",
             "date"
-          ]
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
       }
