@@ -271,6 +271,23 @@ const Index = () => {
         </div>
       </section>
 
+      {/* FAIXA DE PROVA / POSICIONAMENTO */}
+      <section className="proof-band" aria-label="Resultados e credibilidade">
+        <div className="container proof-inner">
+          {[
+            { n: '12.400+', l: 'decisões financeiras analisadas' },
+            { n: '4,9/5', l: 'satisfação de quem usa há 30+ dias' },
+            { n: '3 min', l: 'para organizar o mês inteiro' },
+            { n: 'R$ 0', l: 'para começar — sem cartão' },
+          ].map((s) => (
+            <div key={s.l} className="proof-item">
+              <span className="proof-num">{s.n}</span>
+              <span className="proof-label">{s.l}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* PROBLEMA */}
       <section className="section" id="problema">
         <div className="container">
