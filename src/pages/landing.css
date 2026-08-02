@@ -465,3 +465,85 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ===== FAIXA DE PROVA ===== */
+.finzap-landing .proof-band { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: linear-gradient(180deg, rgba(59,130,246,0.05), rgba(16,185,129,0.03)); }
+.finzap-landing .proof-inner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; padding-top: 2.25rem; padding-bottom: 2.25rem; }
+.finzap-landing .proof-item { display: flex; flex-direction: column; gap: 0.25rem; text-align: center; }
+.finzap-landing .proof-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, var(--blue-2), var(--green)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.finzap-landing .proof-label { font-size: 0.78rem; color: var(--text-3); line-height: 1.35; }
+
+/* ===== JORNADA 7 DIAS ===== */
+.finzap-landing .section-journey { background: var(--bg-2); }
+.finzap-landing .journey-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 3rem; }
+.finzap-landing .journey-step { position: relative; padding: 1.6rem 1.35rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); transition: transform var(--t), border-color var(--t); }
+.finzap-landing .journey-step:hover { transform: translateY(-4px); border-color: rgba(59,130,246,0.3); }
+.finzap-landing .journey-icon { width: 42px; height: 42px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.12); color: var(--blue-2); margin-bottom: 0.9rem; }
+.finzap-landing .journey-icon svg { width: 20px; height: 20px; }
+.finzap-landing .journey-day { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-bottom: 0.4rem; }
+.finzap-landing .journey-step h3 { font-size: 1.02rem; margin-bottom: 0.45rem; }
+.finzap-landing .journey-step p { font-size: 0.88rem; line-height: 1.6; }
+
+/* ===== DEPOIMENTOS ===== */
+.finzap-landing .depo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.15rem; margin-top: 3rem; }
+.finzap-landing .depo-card { position: relative; padding: 1.75rem 1.5rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 0.9rem; }
+.finzap-landing .depo-quote { position: absolute; top: 1.1rem; right: 1.1rem; width: 26px; height: 26px; color: rgba(255,255,255,0.07); }
+.finzap-landing .depo-stars { display: flex; gap: 0.18rem; }
+.finzap-landing .depo-stars svg { width: 15px; height: 15px; color: var(--amber); fill: var(--amber); }
+.finzap-landing .depo-card blockquote { font-size: 0.94rem; line-height: 1.7; color: var(--text-2); }
+.finzap-landing .depo-card figcaption { display: flex; align-items: center; gap: 0.7rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
+.finzap-landing .depo-avatar { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--blue), var(--teal)); flex-shrink: 0; }
+.finzap-landing .depo-card figcaption strong { display: block; font-size: 0.88rem; color: var(--text); }
+.finzap-landing .depo-card figcaption small { font-size: 0.76rem; color: var(--text-3); }
+
+/* ===== SEGURANÇA ===== */
+.finzap-landing .section-trust { background: var(--bg-2); }
+.finzap-landing .trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin-top: 3rem; }
+.finzap-landing .trust-card { padding: 1.5rem 1.35rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); transition: border-color var(--t), transform var(--t); }
+.finzap-landing .trust-card:hover { border-color: rgba(16,185,129,0.28); transform: translateY(-3px); }
+.finzap-landing .trust-icon { width: 40px; height: 40px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; background: rgba(16,185,129,0.12); color: #34D399; margin-bottom: 0.85rem; }
+.finzap-landing .trust-icon svg { width: 19px; height: 19px; }
+.finzap-landing .trust-card h3 { font-size: 0.98rem; margin-bottom: 0.4rem; }
+.finzap-landing .trust-card p { font-size: 0.86rem; line-height: 1.6; }
+.finzap-landing .trust-links { display: flex; flex-wrap: wrap; gap: 1.25rem; justify-content: center; margin-top: 2.25rem; }
+.finzap-landing .trust-links a { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; color: var(--text-2); border-bottom: 1px solid transparent; transition: color var(--t), border-color var(--t); }
+.finzap-landing .trust-links a:hover { color: var(--text); border-bottom-color: var(--border-bright); }
+
+/* ===== PLANOS ===== */
+.finzap-landing .plans-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-top: 3rem; max-width: 860px; margin-left: auto; margin-right: auto; }
+.finzap-landing .plan-card { position: relative; padding: 2rem 1.75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; gap: 0.85rem; }
+.finzap-landing .plan-featured { border-color: rgba(59,130,246,0.35); background: linear-gradient(180deg, rgba(59,130,246,0.08), var(--card) 45%); box-shadow: 0 20px 60px rgba(37,99,235,0.18); }
+.finzap-landing .plan-flag { position: absolute; top: -0.7rem; left: 1.75rem; padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--blue), var(--teal)); }
+.finzap-landing .plan-price { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; }
+.finzap-landing .plan-price span { font-size: 0.85rem; font-weight: 500; color: var(--text-3); margin-left: 0.35rem; letter-spacing: 0; }
+.finzap-landing .plan-desc { font-size: 0.88rem; }
+.finzap-landing .plan-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; margin: 0.35rem 0 0.5rem; }
+.finzap-landing .plan-list li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.88rem; color: var(--text-2); }
+.finzap-landing .plan-list svg { width: 16px; height: 16px; color: var(--green); flex-shrink: 0; margin-top: 3px; }
+.finzap-landing .plan-note { font-size: 0.75rem; color: var(--text-3); text-align: center; }
+
+/* ===== FAQ ===== */
+.finzap-landing .section-faq { background: var(--bg-2); }
+.finzap-landing .faq-list { max-width: 780px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 0.7rem; }
+.finzap-landing .faq-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; transition: border-color var(--t); }
+.finzap-landing .faq-item.open { border-color: rgba(59,130,246,0.3); }
+.finzap-landing .faq-q { width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 1.05rem 1.2rem; background: none; border: none; color: var(--text); font-size: 0.95rem; font-weight: 600; text-align: left; cursor: pointer; }
+.finzap-landing .faq-q > svg:first-child { width: 18px; height: 18px; color: var(--blue-2); flex-shrink: 0; }
+.finzap-landing .faq-q span { flex: 1; }
+.finzap-landing .faq-chev { color: var(--text-3); transition: transform var(--t); flex-shrink: 0; }
+.finzap-landing .faq-item.open .faq-chev { transform: rotate(90deg); }
+.finzap-landing .faq-a { padding: 0 1.2rem 1.15rem 3rem; font-size: 0.9rem; line-height: 1.7; }
+
+@media (max-width: 900px) {
+  .finzap-landing .journey-grid,
+  .finzap-landing .depo-grid,
+  .finzap-landing .trust-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .finzap-landing .proof-inner { grid-template-columns: repeat(2, 1fr); gap: 1.5rem 1rem; }
+  .finzap-landing .journey-grid,
+  .finzap-landing .depo-grid,
+  .finzap-landing .trust-grid,
+  .finzap-landing .plans-grid { grid-template-columns: 1fr; }
+  .finzap-landing .faq-a { padding-left: 1.2rem; }
+}
