@@ -8,7 +8,7 @@ import {
   Repeat, Target, Calendar, Smartphone, Shield, Bell, Plus, Check,
   ShoppingBag, Film, Banknote, Plane, Monitor, GraduationCap,
   PiggyBank, Home, Lightbulb, ChevronRight, CircleAlert,
-  Zap,
+  Zap, Star, Quote, Rocket, Users, Award, HelpCircle, Database, Fingerprint,
 } from 'lucide-react';
 import finzapLogo from '@/assets/finzap-logo-icon.png';
 import './landing.css';
@@ -23,6 +23,7 @@ const Index = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('visao-geral');
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,7 +42,7 @@ const Index = () => {
       });
     };
     const onScroll = () => { setScrolled(window.scrollY > 30); reveal(); };
-    root.querySelectorAll('.problema-card, .step-item, .section-header, .demo-container, .compare-table, .cta-content')
+    root.querySelectorAll('.problema-card, .step-item, .section-header, .demo-container, .compare-table, .cta-content, .proof-item, .trust-card, .journey-step, .depo-card, .faq-item, .plan-card')
       .forEach((el) => el.classList.add('fade-up'));
     root.querySelectorAll('.beneficio-item').forEach((el) => el.classList.add('fade-right'));
     root.querySelectorAll('.beneficios-left').forEach((el) => el.classList.add('fade-left'));
