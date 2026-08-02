@@ -16,6 +16,29 @@ import { PWAInstallBanner } from '@/components/app/PWAInstallBanner';
 
 type Tab = 'visao-geral' | 'cofrinhos' | 'cartoes' | 'decisao';
 
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: 'Preciso conectar minha conta bancária?',
+    a: 'Não. O FinZap funciona 100% sem acesso ao seu banco. Você registra o que importa em segundos e o sistema calcula o resto. Nada de senhas bancárias, nada de risco.',
+  },
+  {
+    q: 'Quanto tempo leva para organizar meu mês?',
+    a: 'O setup inicial leva cerca de 3 minutos. Depois, o uso diário é de menos de 60 segundos: você abre, decide e fecha. Recorrências e fechamento de mês acontecem automaticamente.',
+  },
+  {
+    q: 'É seguro? O que acontece com meus dados?',
+    a: 'Seus dados são isolados por usuário com políticas de segurança em nível de linha (RLS), trafegam criptografados e nunca são vendidos ou compartilhados. Nem a equipe do FinZap acessa seus valores financeiros.',
+  },
+  {
+    q: 'Serve para quem é desorganizado ou já tentou planilhas?',
+    a: 'Foi feito exatamente para isso. Planilhas exigem disciplina; o FinZap exige decisão. Ele te mostra o valor seguro para gastar hoje, sem você precisar manter nada complexo.',
+  },
+  {
+    q: 'Posso cancelar quando quiser?',
+    a: 'Sim. Você começa com acesso gratuito, sem cartão de crédito. Se decidir continuar, cancela a qualquer momento em dois cliques — sem fidelidade e sem letra miúda.',
+  },
+];
+
 const Index = () => {
   const { user, isLoading } = useAuth();
   const { isMaintenanceMode, isLoading: statusLoading } = useSystemStatus();
@@ -87,6 +110,21 @@ const Index = () => {
       aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', ratingCount: '128' },
     });
     document.head.appendChild(script);
+
+    const faqId = 'finzap-faq-jsonld';
+    document.getElementById(faqId)?.remove();
+    const faqScript = document.createElement('script');
+    faqScript.id = faqId; faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQS.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    });
+    document.head.appendChild(faqScript);
   }, []);
 
   const goAuth = () => navigate('/auth');
