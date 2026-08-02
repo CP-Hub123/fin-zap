@@ -610,6 +610,161 @@ const Index = () => {
         </div>
       </section>
 
+      {/* JORNADA — PRIMEIROS 7 DIAS (retenção) */}
+      <section className="section section-journey" id="jornada">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-tag">Seus primeiros 7 dias</p>
+            <h2 className="section-title">Do caos ao controle em <span className="gradient-text">uma semana</span>.</h2>
+            <p className="section-desc">O FinZap te conduz passo a passo. Nada de tela em branco: cada dia entrega um ganho concreto — e um motivo para voltar.</p>
+          </div>
+          <div className="journey-grid">
+            {[
+              { I: Rocket, d: 'Dia 1', t: 'Setup guiado em 3 minutos', p: 'Renda, contas fixas e cofrinhos configurados. Você já enxerga seu saldo livre real.' },
+              { I: Eye, d: 'Dia 2–3', t: 'Primeira decisão consciente', p: 'Simule uma compra e veja o impacto antes de gastar. É aqui que a virada de chave acontece.' },
+              { I: Repeat, d: 'Dia 4–5', t: 'Automação assumindo o volante', p: 'Recorrências, faturas e fechamento de mês rodando sozinhos, sem você lembrar de nada.' },
+              { I: PiggyBank, d: 'Dia 6–7', t: 'Reserva começando a crescer', p: 'Você separa o primeiro valor e passa a ver quantos meses já está protegido.' },
+            ].map((s) => (
+              <div key={s.t} className="journey-step">
+                <div className="journey-icon"><s.I /></div>
+                <span className="journey-day">{s.d}</span>
+                <h3>{s.t}</h3>
+                <p>{s.p}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DEPOIMENTOS */}
+      <section className="section section-depo" id="depoimentos">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-tag">Quem já decide melhor</p>
+            <h2 className="section-title">Não é motivação. É <span className="gradient-text">mudança de comportamento</span>.</h2>
+            <p className="section-desc">Relatos de pessoas que trocaram planilhas e apps de registro por um sistema de decisão.</p>
+          </div>
+          <div className="depo-grid">
+            {[
+              { n: 'Marina L.', r: 'Analista de marketing', t: 'Eu ganhava bem e mesmo assim chegava no dia 25 no aperto. Em duas semanas entendi que o problema era não saber o que era realmente meu. Hoje eu gasto tranquila — porque sei o número.' },
+              { n: 'Rafael S.', r: 'Autônomo', t: 'Renda variável era um pesadelo. Os cofrinhos e a previsão do mês me deram uma calma que planilha nenhuma deu. Fechei três meses seguidos no azul.' },
+              { n: 'Camila P.', r: 'Enfermeira', t: 'O que me prendeu foi a simplicidade. Abro, registro em 20 segundos e sigo minha vida. E o relatório do mês me faz querer continuar.' },
+            ].map((d) => (
+              <figure key={d.n} className="depo-card">
+                <Quote className="depo-quote" />
+                <div className="depo-stars" aria-label="5 de 5 estrelas">
+                  {[0, 1, 2, 3, 4].map((i) => <Star key={i} />)}
+                </div>
+                <blockquote>{d.t}</blockquote>
+                <figcaption>
+                  <span className="depo-avatar">{d.n.charAt(0)}</span>
+                  <span><strong>{d.n}</strong><small>{d.r}</small></span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SEGURANÇA E CONFIANÇA */}
+      <section className="section section-trust" id="seguranca">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-tag">Confiança em primeiro lugar</p>
+            <h2 className="section-title">Seus dados financeiros são <span className="gradient-text">só seus</span>.</h2>
+            <p className="section-desc">Dinheiro é um assunto íntimo. Por isso o FinZap foi construído com privacidade como padrão — não como recurso opcional.</p>
+          </div>
+          <div className="trust-grid">
+            {[
+              { I: Lock, t: 'Criptografia ponta a ponta no transporte', d: 'Todo tráfego é protegido por TLS e nenhuma informação sensível fica exposta no dispositivo.' },
+              { I: Fingerprint, t: 'Isolamento total entre usuários', d: 'Políticas de segurança em nível de linha garantem que ninguém — nem outro usuário — enxergue seus dados.' },
+              { I: Database, t: 'Sem acesso ao seu banco', d: 'Você não conecta senhas bancárias. O FinZap funciona sem tocar nas suas credenciais financeiras.' },
+              { I: ShieldCheck, t: 'Conformidade com a LGPD', d: 'Consentimento explícito, direito de exclusão e transparência total sobre o que é armazenado.' },
+              { I: Users, t: 'Nunca vendemos seus dados', d: 'Nosso modelo é assinatura, não publicidade. Seus hábitos financeiros não são produto.' },
+              { I: Award, t: 'Exclusão definitiva em um clique', d: 'Quis sair? Você apaga sua conta e todos os registros associados, sem burocracia.' },
+            ].map((t) => (
+              <div key={t.t} className="trust-card">
+                <div className="trust-icon"><t.I /></div>
+                <h3>{t.t}</h3>
+                <p>{t.d}</p>
+              </div>
+            ))}
+          </div>
+          <div className="trust-links">
+            <a onClick={() => navigate('/legal/seguranca')}>Política de segurança <ChevronRight size={14} /></a>
+            <a onClick={() => navigate('/legal/privacidade')}>Privacidade <ChevronRight size={14} /></a>
+            <a onClick={() => navigate('/legal/termos')}>Termos de uso <ChevronRight size={14} /></a>
+          </div>
+        </div>
+      </section>
+
+      {/* PLANOS */}
+      <section className="section section-plans" id="planos">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-tag">Investimento transparente</p>
+            <h2 className="section-title">Menos que um café por semana para <span className="gradient-text">nunca mais perder o controle</span>.</h2>
+            <p className="section-desc">Comece grátis. Só continue se o FinZap provar valor no seu próprio mês.</p>
+          </div>
+          <div className="plans-grid">
+            <div className="plan-card">
+              <h3>Teste gratuito</h3>
+              <div className="plan-price">R$ 0<span>/ para começar</span></div>
+              <p className="plan-desc">Acesso completo para organizar seu primeiro mês, sem cartão de crédito.</p>
+              <ul className="plan-list">
+                <li><Check /> Setup guiado completo</li>
+                <li><Check /> Cofrinhos e orçamento</li>
+                <li><Check /> Modo decisão antes de gastar</li>
+                <li><Check /> Cancelamento imediato</li>
+              </ul>
+              <button onClick={goAuth} className="btn btn-outline w-full">Começar grátis</button>
+            </div>
+            <div className="plan-card plan-featured">
+              <span className="plan-flag">Mais escolhido</span>
+              <h3>FinZap Completo</h3>
+              <div className="plan-price">R$ 19,90<span>/ mês</span></div>
+              <p className="plan-desc">Para quem decidiu que este é o ano de fechar todo mês no controle.</p>
+              <ul className="plan-list">
+                <li><Check /> Tudo do teste gratuito</li>
+                <li><Check /> Cartões, faturas e parcelas</li>
+                <li><Check /> Recorrências e fechamento automáticos</li>
+                <li><Check /> Relatório mensal em PDF</li>
+                <li><Check /> Reserva de emergência acompanhada</li>
+              </ul>
+              <button onClick={goAuth} className="btn btn-primary w-full">Quero o controle completo</button>
+              <p className="plan-note">Sem fidelidade · Cancele em 2 cliques</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="section section-faq" id="faq">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-tag">Ainda em dúvida?</p>
+            <h2 className="section-title">As perguntas que <span className="gradient-text">todo mundo faz</span>.</h2>
+            <p className="section-desc">Transparência total antes de você criar sua conta.</p>
+          </div>
+          <div className="faq-list">
+            {FAQS.map((f, i) => (
+              <div key={f.q} className={`faq-item ${openFaq === i ? 'open' : ''}`}>
+                <button
+                  className="faq-q"
+                  aria-expanded={openFaq === i}
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
+                  <HelpCircle />
+                  <span>{f.q}</span>
+                  <ChevronRight className="faq-chev" size={18} />
+                </button>
+                {openFaq === i && <p className="faq-a">{f.a}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA FINAL */}
       <section className="section section-cta" id="cta">
         <div className="cta-bg" />
