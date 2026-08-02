@@ -795,6 +795,8 @@ const Index = () => {
               <a onClick={() => scrollTo('solucao')}>Como funciona</a>
               <a onClick={() => scrollTo('demo')}>Demonstração</a>
               <a onClick={() => scrollTo('beneficios')}>Benefícios</a>
+              <a onClick={() => scrollTo('planos')}>Planos</a>
+              <a onClick={() => scrollTo('faq')}>Perguntas frequentes</a>
             </div>
             <div className="footer-col">
               <h4>Acesso</h4>
