@@ -162,6 +162,8 @@ const Index = () => {
             <a className="nav-link" onClick={() => scrollTo('solucao')}>Solução</a>
             <a className="nav-link" onClick={() => scrollTo('demo')}>Demo</a>
             <a className="nav-link" onClick={() => scrollTo('beneficios')}>Benefícios</a>
+            <a className="nav-link" onClick={() => scrollTo('seguranca')}>Segurança</a>
+            <a className="nav-link" onClick={() => scrollTo('faq')}>FAQ</a>
           </div>
           <div className="nav-cta">
             <button onClick={goAuth} className="btn btn-ghost">Entrar</button>
@@ -178,6 +180,8 @@ const Index = () => {
           <a className="mobile-link" onClick={() => scrollTo('solucao')}>Solução</a>
           <a className="mobile-link" onClick={() => scrollTo('demo')}>Demo</a>
           <a className="mobile-link" onClick={() => scrollTo('beneficios')}>Benefícios</a>
+          <a className="mobile-link" onClick={() => scrollTo('seguranca')}>Segurança</a>
+          <a className="mobile-link" onClick={() => scrollTo('faq')}>FAQ</a>
           <button onClick={goAuth} className="btn btn-ghost w-full">Entrar</button>
           <button onClick={goAuth} className="btn btn-primary w-full">Começar grátis</button>
         </div>
