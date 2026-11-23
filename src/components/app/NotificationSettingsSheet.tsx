@@ -109,7 +109,7 @@ export function NotificationSettingsSheet({ open, onOpenChange }: { open: boolea
       if (error) throw error;
       const sent = (data as any)?.sent ?? 0;
       if (sent > 0) toast.success('Notificação enviada!');
-      else toast.message('Salvo no histórico — verifique se as permissões estão liberadas.');
+      else toast.message('Salvo no histórico, verifique se as permissões estão liberadas.');
     } catch (e) {
       toast.error('Falha ao enviar.');
     } finally { setTesting(false); }

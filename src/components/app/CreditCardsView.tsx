@@ -298,7 +298,7 @@ export function CreditCardsView() {
             <KpiCard
               icon={<Calendar className="h-3.5 w-3.5" />}
               label="Próximo vencimento"
-              value={stats.proxVencimento ? stats.proxVencimento.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '—'}
+              value={stats.proxVencimento ? stats.proxVencimento.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '-'}
               hint={stats.proxVencimento ? relativeLabel(stats.proxVencimento) : ''}
               tone="warning"
             />

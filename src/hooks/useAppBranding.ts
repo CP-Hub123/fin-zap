@@ -20,8 +20,8 @@ const THEME_COLORS: Record<IconMode, string> = {
 
 const LABELS: Record<IconMode, string> = {
   normal:      'FinZap',
-  maintenance: 'FinZap — Manutenção',
-  event:       'FinZap — Evento',
+  maintenance: 'FinZap, Manutenção',
+  event:       'FinZap, Evento',
   founders:    'FinZap Founders',
 };
 
@@ -69,7 +69,7 @@ export const useAppBranding = (): { mode: IconMode } => {
     theme.content = THEME_COLORS[mode];
     // Document title hint (subtle)
     if (mode !== 'normal') {
-      document.title = `${LABELS[mode]} — Controle Financeiro Inteligente`;
+      document.title = `${LABELS[mode]}, Controle Financeiro Inteligente`;
     }
   }, [mode]);
 

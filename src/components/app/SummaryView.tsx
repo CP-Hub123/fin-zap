@@ -253,7 +253,7 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
             Seu mês financeiro em nível premium
           </h3>
           <p className="mt-2.5 text-[13px] sm:text-sm leading-relaxed text-white/65 max-w-xl">
-            Transforme seus dados em um relatório visual inteligente, com análises, evolução e insights do FinZap.
+            Gere um relatório visual dos seus dados inteligente, com análises, evolução e insights do FinZap.
           </p>
 
           {/* Feature line */}
@@ -357,7 +357,7 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
               <span className="text-xs text-muted-foreground">Orçamento</span>
             </div>
             <p className={`text-lg md:text-xl font-bold ${overBudget ? '' : 'text-primary'}`} style={overBudget ? { color: 'hsl(var(--finzap-red))' } : {}}>
-              {totalPlanned > 0 ? `${budgetUsage}%` : '—'}
+              {totalPlanned > 0 ? `${budgetUsage}%` : '-'}
             </p>
             {totalPlanned > 0 && (
               <Progress value={Math.min(budgetUsage, 100)} className={`h-1.5 mt-2 ${overBudget ? '[&>div]:bg-[hsl(var(--finzap-red))]' : ''}`} />
@@ -371,7 +371,7 @@ export const SummaryView = ({ month, transactions, onNavigate }: SummaryViewProp
         <div className="flex items-center gap-3 p-4 rounded-xl bg-[hsl(var(--finzap-red)/0.1)]">
           <AlertTriangle className="h-5 w-5 shrink-0" style={{ color: 'hsl(var(--finzap-red))' }} />
           <span className="text-sm font-medium" style={{ color: 'hsl(var(--finzap-red))' }}>
-            Orçamento ultrapassado — você gastou {formatCurrency(totalExpense - totalPlanned)} além do previsto.
+            Orçamento ultrapassado, você gastou {formatCurrency(totalExpense - totalPlanned)} além do previsto.
           </span>
         </div>
       )}

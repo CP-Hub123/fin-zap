@@ -163,11 +163,11 @@ export const CofrinhosView = ({ cofrinhos, isClosed, isLocked = false, onCreate,
           icon={PiggyBank}
           eyebrow="Organize por contexto"
           title="Crie seu primeiro cofrinho"
-          description="Cofrinhos separam seu dinheiro por propósito — moradia, lazer, reserva ou metas — para você decidir com clareza onde cada real entra e sai."
+          description="Cofrinhos separam seu dinheiro por propósito, moradia, lazer, reserva ou metas, para você decidir com clareza onde cada real entra e sai."
           hints={[
-            'Reserva — proteção em meses de imprevisto',
-            'Mensal — orçamento para gastos do dia a dia',
-            'Meta — guarda dinheiro para um objetivo específico',
+            'Reserva, proteção em meses de imprevisto',
+            'Mensal, orçamento para gastos do dia a dia',
+            'Meta, guarda dinheiro para um objetivo específico',
           ]}
           primaryAction={!disabled ? { label: 'Criar cofrinho', onClick: openNew, icon: Plus } : undefined}
           tone="primary"

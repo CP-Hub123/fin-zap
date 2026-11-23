@@ -173,7 +173,7 @@ export const BugReportModal = ({ open, onOpenChange }: Props) => {
                 <div>
                   <DialogTitle className="text-base">Reportar um problema</DialogTitle>
                   <DialogDescription className="text-xs mt-0.5">
-                    Descreva o que aconteceu — quanto mais detalhes, melhor.
+                    Descreva o que aconteceu, quanto mais detalhes, melhor.
                   </DialogDescription>
                 </div>
               </div>

@@ -63,7 +63,7 @@ export default defineTool({
       content: [
         {
           type: "text",
-          text: `Lançamento criado: ${data.name} — ${brl(Number(data.amount))} (${type === "income" ? "receita" : "despesa"}) em ${data.date}.`,
+          text: `Lançamento criado: ${data.name}, ${brl(Number(data.amount))} (${type === "income" ? "receita" : "despesa"}) em ${data.date}.`,
         },
       ],
       structuredContent: { transaction: data },

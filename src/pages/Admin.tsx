@@ -116,11 +116,11 @@ const AdminNotifications = () => {
         </div>
       )}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-        <KpiCard label="Enviadas" value={stats?.sent ?? '—'} icon={SendIcon} />
-        <KpiCard label="Entregues" value={stats?.delivered ?? '—'} icon={CheckCircle2} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
-        <KpiCard label="Falhas" value={stats?.failed ?? '—'} icon={XCircle} accent="bg-destructive/10 text-destructive" />
+        <KpiCard label="Enviadas" value={stats?.sent ?? '-'} icon={SendIcon} />
+        <KpiCard label="Entregues" value={stats?.delivered ?? '-'} icon={CheckCircle2} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
+        <KpiCard label="Falhas" value={stats?.failed ?? '-'} icon={XCircle} accent="bg-destructive/10 text-destructive" />
         <KpiCard label="Cliques" value={`${ctr}%`} icon={Activity} accent="bg-violet-500/10 text-violet-500" />
-        <KpiCard label="Inscrições" value={stats?.subs ?? '—'} icon={Bell} accent="bg-blue-500/10 text-blue-500" />
+        <KpiCard label="Inscrições" value={stats?.subs ?? '-'} icon={Bell} accent="bg-blue-500/10 text-blue-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
@@ -149,8 +149,8 @@ const AdminNotifications = () => {
         <div className="rounded-xl border bg-card p-5">
           <h3 className="text-sm font-semibold mb-3">Usuários silenciosos</h3>
           <p className="text-3xl font-semibold tracking-tight">
-            {silentInfo?.silent ?? '—'}
-            <span className="text-sm text-muted-foreground font-normal"> / {silentInfo?.total ?? '—'}</span>
+            {silentInfo?.silent ?? '-'}
+            <span className="text-sm text-muted-foreground font-normal"> / {silentInfo?.total ?? '-'}</span>
           </p>
           <p className="text-xs text-muted-foreground mt-2 leading-snug">
             Inscritos sem nenhum clique em notificação nos últimos 30 dias.
@@ -244,9 +244,9 @@ const AdminDashboard = () => {
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Usuários totais" value={stats?.total ?? '—'} icon={UsersIcon} />
-        <KpiCard label="Usuários ativos" value={stats?.active ?? '—'} icon={Activity} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
-        <KpiCard label="Bugs em aberto" value={stats?.openBugs ?? '—'} icon={BugIcon} accent="bg-orange-500/10 text-orange-500" />
+        <KpiCard label="Usuários totais" value={stats?.total ?? '-'} icon={UsersIcon} />
+        <KpiCard label="Usuários ativos" value={stats?.active ?? '-'} icon={Activity} accent="bg-finzap-green/10 text-[hsl(var(--finzap-green))]" />
+        <KpiCard label="Bugs em aberto" value={stats?.openBugs ?? '-'} icon={BugIcon} accent="bg-orange-500/10 text-orange-500" />
         <KpiCard
           label="Status sistema"
           value={stats?.maintenance ? 'Manutenção' : 'Ativo'}
@@ -294,7 +294,7 @@ const AdminUsers = () => {
             <TableBody>
               {filtered.map(u => (
                 <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.name || '—'}</TableCell>
+                  <TableCell className="font-medium">{u.name || '-'}</TableCell>
                   <TableCell className="text-right text-muted-foreground text-sm">{new Date(u.created_at).toLocaleDateString('pt-BR')}</TableCell>
                 </TableRow>
               ))}
@@ -304,7 +304,7 @@ const AdminUsers = () => {
         <div className="sm:hidden divide-y">
           {filtered.map(u => (
             <div key={u.id} className="px-4 py-3">
-              <p className="text-sm font-medium">{u.name || '—'}</p>
+              <p className="text-sm font-medium">{u.name || '-'}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
             </div>
           ))}

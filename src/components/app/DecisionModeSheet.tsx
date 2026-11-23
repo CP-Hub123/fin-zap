@@ -252,7 +252,7 @@ export const DecisionModeSheet = ({ open, onOpenChange, monthId }: Props) => {
                   {addTransaction.isPending ? (
                     <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Registrando...</>
                   ) : (
-                    <><Check className="h-4 w-4 mr-2" /> Gastar agora — registrar despesa</>
+                    <><Check className="h-4 w-4 mr-2" /> Gastar agora, registrar despesa</>
                   )}
                 </Button>
               )}

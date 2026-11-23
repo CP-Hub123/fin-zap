@@ -32,7 +32,7 @@ const LEVEL_META: Record<RhythmLevel, { headline: string; subtitle: string }> = 
   },
   good: {
     headline: 'Boa previsibilidade',
-    subtitle: 'Sua projeção está sólida — pequenos ajustes deixam tudo ainda mais nítido.',
+    subtitle: 'Sua projeção está sólida, pequenos ajustes deixam tudo ainda mais nítido.',
   },
   attention: {
     headline: 'Atenção necessária',

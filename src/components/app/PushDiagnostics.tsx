@@ -218,7 +218,7 @@ export function PushDiagnostics() {
         warn('No iOS, push web só funciona com o app instalado pela tela inicial (iOS 16.4+). Adicione o FinZap à tela inicial pelo Safari.')
       )}
       {diag.permission === 'denied' && (
-        warn('Permissão negada. Abra as configurações do site no navegador para liberar notificações manualmente — não é possível pedir novamente pelo app.')
+        warn('Permissão negada. Abra as configurações do site no navegador para liberar notificações manualmente, não é possível pedir novamente pelo app.')
       )}
 
       <Separator />
@@ -230,7 +230,7 @@ export function PushDiagnostics() {
         {rows.length === 0 ? (
           <p className="text-xs text-muted-foreground">Nenhum dispositivo inscrito ainda.</p>
         ) : rows.map((r) => {
-          let host = '—';
+          let host = '-';
           try { host = new URL(r.endpoint).hostname; } catch {}
           return (
             <div key={r.id} className="rounded-lg border bg-background p-2.5 text-[11.5px] space-y-1">

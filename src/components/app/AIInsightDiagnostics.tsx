@@ -54,9 +54,9 @@ export const AIInsightDiagnostics = ({ month }: Props) => {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
         <Field label="Source" value={source} icon={<SourceIcon className="h-3 w-3" />} />
-        <Field label="Model" value={insight?.model ?? '—'} />
+        <Field label="Model" value={insight?.model ?? '-'} />
         <Field label="Cached" value={insight?.cached ? (insight.stale ? 'stale' : 'hit') : 'miss'} />
-        <Field label="Gerado" value={insight?.generated_at ? new Date(insight.generated_at).toLocaleString('pt-BR') : '—'} />
+        <Field label="Gerado" value={insight?.generated_at ? new Date(insight.generated_at).toLocaleString('pt-BR') : '-'} />
       </div>
       {insight && (
         <div className="rounded-lg bg-background/60 border p-2 text-xs space-y-1">

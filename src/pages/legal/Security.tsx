@@ -4,7 +4,7 @@ const Security = () => (
   <LegalLayout
     eyebrow="Segurança"
     title="Como protegemos seus dados financeiros"
-    description="Segurança não é um recurso — é a fundação do FinZap. Veja as práticas técnicas e organizacionais que aplicamos."
+    description="Segurança não é um recurso, é a fundação do FinZap. Veja as práticas técnicas e organizacionais que aplicamos."
   >
     <LegalCallout tone="success" title="Princípios de segurança">
       Mínimo privilégio · Criptografia por padrão · Defesa em camadas · Transparência sobre incidentes.
@@ -19,7 +19,7 @@ const Security = () => (
           <strong>Em repouso:</strong> banco de dados criptografado em nível de disco.
         </li>
         <li>
-          <strong>Senhas:</strong> nunca armazenadas em texto puro — usamos hashing forte com salt.
+          <strong>Senhas:</strong> nunca armazenadas em texto puro, usamos hashing forte com salt.
         </li>
       </ul>
     </LegalSection>

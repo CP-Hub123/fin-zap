@@ -126,7 +126,7 @@ const MonthsPage = () => {
       total: months.length,
       closed,
       saldoAggregate,
-      activeLabel: activeMonth ? `${MONTH_NAMES[activeMonth.month - 1]} ${activeMonth.year}` : '—',
+      activeLabel: activeMonth ? `${MONTH_NAMES[activeMonth.month - 1]} ${activeMonth.year}` : '-',
     };
   }, [months, aggregates]);
 
@@ -192,7 +192,7 @@ const MonthsPage = () => {
             </span>
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Central de Meses</h1>
-              <p className="text-sm text-muted-foreground">Seu hub temporal — gerencie todos os ciclos financeiros.</p>
+              <p className="text-sm text-muted-foreground">Seu hub temporal, gerencie todos os ciclos financeiros.</p>
             </div>
           </div>
 

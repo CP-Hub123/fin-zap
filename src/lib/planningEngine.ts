@@ -235,7 +235,7 @@ export function buildPlanningInsights(args: {
       id: 'cat-calm-' + calm.category,
       tone: 'calm',
       title: `${calm.category} mais leve`,
-      message: `Seu ritmo em ${calm.category.toLowerCase()} está abaixo da média histórica — bom espaço para reorganizar prioridades.`,
+      message: `Seu ritmo em ${calm.category.toLowerCase()} está abaixo da média histórica, bom espaço para reorganizar prioridades.`,
       priority: 40,
     });
   }

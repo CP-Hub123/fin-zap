@@ -215,7 +215,7 @@ export function CardDetailSheet({
                       return (
                         <div key={i} className="flex flex-col items-center gap-1.5 min-w-0">
                           <span className="text-[10px] tabular-nums font-medium text-foreground/80 truncate w-full text-center">
-                            {t.total > 0 ? formatCurrency(t.total).replace('R$', '').trim() : '—'}
+                            {t.total > 0 ? formatCurrency(t.total).replace('R$', '').trim() : '-'}
                           </span>
                           <div className="w-full flex-1 flex items-end">
                             <div
@@ -292,7 +292,7 @@ export function CardDetailSheet({
                 icon={ShoppingBag}
                 eyebrow="Fatura limpa"
                 title="Sem compras nesta fatura"
-                description="Quando você registrar uma compra neste cartão, ela aparece aqui — com data, parcelas e impacto nos próximos meses."
+                description="Quando você registrar uma compra neste cartão, ela aparece aqui, com data, parcelas e impacto nos próximos meses."
                 primaryAction={{ label: 'Registrar compra', onClick: () => card && onAddPurchase(card.id), icon: Plus }}
                 tone="neutral"
                 compact

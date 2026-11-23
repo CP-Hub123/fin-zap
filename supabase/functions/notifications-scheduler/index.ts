@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
       await dispatch({
         user_id: r.user_id,
         title: isToday ? "Vence hoje" : "Vence amanhã",
-        body: `${r.nome} — ${brl(Number(r.valor))} ${when}. Confirme para manter sua previsão precisa.`,
+        body: `${r.nome}, ${brl(Number(r.valor))} ${when}. Confirme para manter sua previsão precisa.`,
         type: "recurring_due",
         category: r.tipo === "receita" ? "recorrencia" : "vencimento",
         priority: isToday ? "high" : "normal",
@@ -369,7 +369,7 @@ Deno.serve(async (req) => {
             await dispatch({
               user_id: uid,
               title: "O FinZap perdeu visibilidade",
-              body: "Seus dados podem não refletir seu momento atual. Atualize quando puder — sua previsão volta ao normal.",
+              body: "Seus dados podem não refletir seu momento atual. Atualize quando puder, sua previsão volta ao normal.",
               type: "rhythm_outdated",
               category: "atualizacao_diaria",
               priority: "normal",

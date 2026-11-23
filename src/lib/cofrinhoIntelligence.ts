@@ -143,7 +143,7 @@ export function analyzeCofrinho(
   }
 
   if (movimentacoes30d === 0) {
-    messages.push({ severity: 'safe', text: 'Nenhuma movimentação nos últimos 30 dias — estabilidade total.' });
+    messages.push({ severity: 'safe', text: 'Nenhuma movimentação nos últimos 30 dias, estabilidade total.' });
   }
 
   if (messages.length === 0) {

@@ -158,7 +158,7 @@ export const TransactionsView = ({ transactions, monthId, isClosed, isLocked = f
           title={activeTab === 'income' ? 'Registre sua primeira receita' : 'Registre sua primeira despesa'}
           description={
             activeTab === 'income'
-              ? 'Salário, freelas, vendas — toda entrada conta para o FinZap projetar seu mês com precisão.'
+              ? 'Salário, freelas, vendas, toda entrada conta para o FinZap projetar seu mês com precisão.'
               : 'Lance um gasto para começar a entender seu padrão e ver o impacto direto em cada cofrinho.'
           }
           primaryAction={!disabled && !noCofrinhos ? { label: 'Adicionar agora', onClick: openNew, icon: Plus } : undefined}
@@ -178,7 +178,7 @@ export const TransactionsView = ({ transactions, monthId, isClosed, isLocked = f
                         {(t as any).cofrinho_id && cofrinhoById((t as any).cofrinho_id) && (
                           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cofrinhoById((t as any).cofrinho_id)!.cor }} />
                         )}
-                        {cofrinhoById((t as any).cofrinho_id)?.nome ?? '—'}
+                        {cofrinhoById((t as any).cofrinho_id)?.nome ?? '-'}
                       </Badge>
                       <Badge variant={t.status === 'realized' ? 'default' : 'secondary'} className="text-xs">
                         {t.status === 'realized' ? 'Realizado' : 'Previsto'}

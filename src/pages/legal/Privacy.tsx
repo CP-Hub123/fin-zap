@@ -8,7 +8,7 @@ const Privacy = () => (
   >
     <p>
       Esta política descreve como o <strong>FinZap</strong> trata seus dados pessoais e financeiros, em conformidade
-      com a <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>.
+      com a <strong>Lei Geral de Proteção de Dados (LGPD, Lei nº 13.709/2018)</strong>.
     </p>
 
     <LegalCallout tone="success" title="O que nunca faremos">

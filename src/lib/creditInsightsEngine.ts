@@ -117,7 +117,7 @@ export function buildCreditInsights(p: BuildParams): CreditInsight[] {
         id: 'futuro_aumenta',
         severity: delta >= 35 ? 'warning' : 'info',
         title: `Seu comprometimento aumenta em ${MONTH_LABEL[proxRef.getMonth()]}`,
-        message: `As parcelas do próximo mês somam ${fmt(proxV)} — cerca de ${Math.round(delta)}% acima deste mês.`,
+        message: `As parcelas do próximo mês somam ${fmt(proxV)}, cerca de ${Math.round(delta)}% acima deste mês.`,
         priority: delta >= 35 ? 70 : 45,
         category: 'futuro',
       });
@@ -149,7 +149,7 @@ export function buildCreditInsights(p: BuildParams): CreditInsight[] {
         id: `concentracao_${heavier.key}`,
         severity: share >= 40 ? 'warning' : 'info',
         title: `Alta concentração de parcelas em ${MONTH_LABEL[heavier.date.getMonth()]}`,
-        message: `${fmt(heavier.total)} previstos — ${Math.round(share)}% das parcelas dos próximos 6 meses.`,
+        message: `${fmt(heavier.total)} previstos, ${Math.round(share)}% das parcelas dos próximos 6 meses.`,
         priority: share >= 40 ? 65 : 40,
         category: 'concentracao',
       });

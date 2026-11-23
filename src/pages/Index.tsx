@@ -36,7 +36,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Posso cancelar quando quiser?',
-    a: 'Sim. Você começa com acesso gratuito, sem cartão de crédito. Se decidir continuar, cancela a qualquer momento em dois cliques — sem fidelidade e sem letra miúda.',
+    a: 'Sim. Você começa com acesso gratuito, sem cartão de crédito. Se decidir continuar, cancela a qualquer momento em dois cliques, sem fidelidade e sem letra miúda.',
   },
 ];
 
@@ -77,7 +77,7 @@ const Index = () => {
 
   // SEO: dynamic meta + JSON-LD
   useEffect(() => {
-    document.title = 'FinZap — Decisão financeira inteligente';
+    document.title = 'FinZap | Decisão financeira inteligente';
     const setMeta = (name: string, content: string, attr: 'name' | 'property' = 'name') => {
       let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement('meta'); el.setAttribute(attr, name); document.head.appendChild(el); }
@@ -85,11 +85,11 @@ const Index = () => {
     };
     setMeta('description', 'App financeiro que mostra o impacto de cada gasto antes da decisão. Cofrinhos, orçamento e reserva automática em um só lugar.');
     setMeta('keywords', 'app financeiro inteligente, controle financeiro premium, organização financeira pessoal, app de orçamento, controle de gastos, planejamento financeiro, cofrinhos, reserva de emergência, decisão financeira, finanças pessoais com IA');
-    setMeta('og:title', 'FinZap — Decisão financeira inteligente', 'property');
+    setMeta('og:title', 'FinZap | Decisão financeira inteligente', 'property');
     setMeta('og:description', 'Pare de descobrir onde gastou. Decida antes. O sistema financeiro pessoal mais inteligente para quem quer controle real.', 'property');
     setMeta('og:type', 'website', 'property');
     setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', 'FinZap — Decisão financeira inteligente');
+    setMeta('twitter:title', 'FinZap | Decisão financeira inteligente');
     setMeta('twitter:description', 'Pare de descobrir onde gastou. Decida antes.');
 
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
@@ -169,8 +169,8 @@ const Index = () => {
         badgeLinkText="Ver como funciona"
         onBadgeClick={() => scrollTo('solucao')}
         title={<>Seu dinheiro, finalmente<br />sob o seu comando.</>}
-        subtitle="Veja o impacto exato de cada gasto antes de decidir — e termine todo mês com clareza, sobra e tranquilidade. Grátis por 3 dias, sem cartão."
-        ctaLabel="Começar agora — é grátis"
+        subtitle="Veja o impacto exato de cada gasto antes de decidir, e termine todo mês com clareza, sobra e tranquilidade. Grátis por 3 dias, sem cartão."
+        ctaLabel="Começar agora, é grátis"
         onCta={goAuth}
         preview={
           <div className="hero" style={{ minHeight: 0, padding: 0, background: 'transparent', maxWidth: 560, margin: '0 auto' }}>
@@ -236,7 +236,7 @@ const Index = () => {
             { n: '12.400+', l: 'decisões financeiras analisadas' },
             { n: '4,9/5', l: 'satisfação de quem usa há 30+ dias' },
             { n: '3 min', l: 'para organizar o mês inteiro' },
-            { n: 'R$ 0', l: 'para começar — sem cartão' },
+            { n: 'R$ 0', l: 'para começar, sem cartão' },
           ].map((s) => (
             <div key={s.l} className="proof-item">
               <span className="proof-num">{s.n}</span>
@@ -252,11 +252,11 @@ const Index = () => {
           <div className="section-header">
             <p className="section-tag">A verdade desconfortável</p>
             <h2 className="section-title">Saldo positivo não é o mesmo que <span className="gradient-text">controle</span>.</h2>
-            <p className="section-desc">Você não está sem dinheiro. Você está sem <strong>visibilidade</strong>. E é isso que destrói qualquer mês — não importa quanto você ganhe.</p>
+            <p className="section-desc">Você não está sem dinheiro. Você está sem <strong>visibilidade</strong>. E é isso que destrói qualquer mês, não importa quanto você ganhe.</p>
           </div>
           <div className="problema-grid">
             {[
-              { I: Eye,           t: 'Você acha que tem — até não ter mais.', d: 'O saldo no app sugere folga. Aí o boleto chega, a fatura fecha, e o que parecia tranquilo vira aperto. Falta visibilidade do que ainda vai sair.', tag: 'Falsa folga' },
+              { I: Eye,           t: 'Você acha que tem, até não ter mais.', d: 'O saldo no app sugere folga. Aí o boleto chega, a fatura fecha, e o que parecia tranquilo vira aperto. Falta visibilidade do que ainda vai sair.', tag: 'Falsa folga' },
               { I: AlertTriangle, t: 'Os pequenos gastos drenam tudo.',       d: 'R$ 18 no café, R$ 32 no delivery, R$ 27 numa "besteira". Cada um parece nada. Juntos, viram centenas que somem do mês sem aviso.',                tag: 'Vazamentos invisíveis' },
               { I: Brain,         t: 'Você decide no susto, não no cálculo.', d: 'Surge um gasto não planejado. Você pensa "será que dá?", responde no impulso e descobre o estrago só na próxima fatura.',                          tag: 'Decisão no escuro' },
               { I: Repeat,        t: 'O ciclo se repete todo mês.',           d: 'Começa bem, vai apertando, termina devendo. No mês seguinte, mesma coisa. Sem um sistema, é matemática: você não sai do lugar.',                  tag: 'Padrão travado' },
@@ -277,7 +277,7 @@ const Index = () => {
           <div className="section-header">
             <p className="section-tag">Como o FinZap funciona</p>
             <h2 className="section-title">Não é mais um app de gastos. É um <span className="gradient-text">sistema de decisão</span>.</h2>
-            <p className="section-desc">Aplicativos comuns te mostram onde você gastou. O FinZap te força a <strong>decidir antes</strong> — quando ainda dá para mudar o final do mês.</p>
+            <p className="section-desc">Aplicativos comuns te mostram onde você gastou. O FinZap te força a <strong>decidir antes</strong>, quando ainda dá para mudar o final do mês.</p>
           </div>
 
           <div className="solucao-steps">
@@ -288,7 +288,7 @@ const Index = () => {
               </div>
               <div className="step-content">
                 <h3 className="step-title">Cofrinhos: cada real com um propósito</h3>
-                <p className="step-desc">No FinZap, dinheiro <strong>não fica solto</strong> na conta. Você distribui automaticamente em cofrinhos — alimentação, moradia, lazer, reserva, metas. Cada decisão de gasto vem de algum lugar concreto.</p>
+                <p className="step-desc">No FinZap, dinheiro <strong>não fica solto</strong> na conta. Você distribui automaticamente em cofrinhos, alimentação, moradia, lazer, reserva, metas. Cada decisão de gasto vem de algum lugar concreto.</p>
                 <ul className="step-list">
                   <li><Check /> Você sabe exatamente <strong>de onde</strong> está tirando ao gastar</li>
                   <li><Check /> Limites visuais que mudam de cor antes de você estourar</li>
@@ -308,7 +308,7 @@ const Index = () => {
               </div>
               <div className="step-content">
                 <h3 className="step-title">Análise de decisão em tempo real</h3>
-                <p className="step-desc">Vai gastar? O FinZap simula o impacto antes do clique e mostra <strong>qual valor te mantém estável</strong> — e qual compromete o resto do mês.</p>
+                <p className="step-desc">Vai gastar? O FinZap simula o impacto antes do clique e mostra <strong>qual valor te mantém estável</strong>, e qual compromete o resto do mês.</p>
                 <div className="decision-demo">
                   <div className="decision-demo-title">Cenário real</div>
                   <div className="decision-demo-cards">
@@ -334,8 +334,8 @@ const Index = () => {
                 <div className="step-icon-big"><Shield /></div>
               </div>
               <div className="step-content">
-                <h3 className="step-title">Reserva de emergência calculada por você — automaticamente</h3>
-                <p className="step-desc">O FinZap analisa seus custos fixos e mostra <strong>exatamente quantos meses</strong> de tranquilidade você já conquistou — e quanto falta para a meta.</p>
+                <h3 className="step-title">Reserva de emergência calculada por você, automaticamente</h3>
+                <p className="step-desc">O FinZap analisa seus custos fixos e mostra <strong>exatamente quantos meses</strong> de tranquilidade você já conquistou, e quanto falta para a meta.</p>
                 <div className="reserva-demo">
                   <div className="reserva-formula">
                     <div className="reserva-item"><span className="reserva-label">Custo fixo</span><span className="reserva-value">R$ 3.200</span></div>
@@ -498,7 +498,7 @@ const Index = () => {
                     </div>
                     <div className="decisao-insight">
                       <span className="insight-icon"><Brain /></span>
-                      <span>Com R$ 50 você curte e mantém o controle. Com R$ 140, você abre uma brecha que custa três semanas de aperto. <strong>É a mesma noite — com finais diferentes.</strong></span>
+                      <span>Com R$ 50 você curte e mantém o controle. Com R$ 140, você abre uma brecha que custa três semanas de aperto. <strong>É a mesma noite, com finais diferentes.</strong></span>
                     </div>
                   </div>
                 </div>
@@ -522,11 +522,11 @@ const Index = () => {
             </div>
             <div className="beneficios-right">
               {[
-                { I: Target,     t: 'Você sabe o que pode gastar agora — sem culpa, sem medo', d: 'Em tempo real, o sistema te diz o valor seguro. Acabaram os "será que dá?". Acabaram os arrependimentos.' },
+                { I: Target,     t: 'Você sabe o que pode gastar agora, sem culpa, sem medo', d: 'Em tempo real, o sistema te diz o valor seguro. Acabaram os "será que dá?". Acabaram os arrependimentos.' },
                 { I: Calendar,   t: 'Final de mês deixa de ser sufoco', d: 'Com cofrinhos alocados antes, você nunca mais chega no dia 25 sem entender para onde foi o salário.' },
                 { I: Brain,      t: 'Decisões financeiras viram hábito inteligente', d: 'Toda compra passa por uma análise simples. Em poucas semanas, você decide melhor sem nem perceber.' },
                 { I: Smartphone, t: 'Interface que cabe na sua rotina', d: 'Sem planilhas, sem complexidade. Abre, decide, fecha. Funciona no celular, no impulso, na vida real.' },
-                { I: Shield,     t: 'Reserva calculada e acompanhada por você', d: 'Você vê exatamente quantos meses está protegido — e o que falta para dormir tranquilo.' },
+                { I: Shield,     t: 'Reserva calculada e acompanhada por você', d: 'Você vê exatamente quantos meses está protegido, e o que falta para dormir tranquilo.' },
                 { I: Sparkles,   t: 'Confiança que se reflete fora das finanças', d: 'Quando o dinheiro está no lugar, a cabeça também fica. Você decide melhor em outras áreas da vida.' },
               ].map((b) => (
                 <div key={b.t} className="beneficio-item">
@@ -550,7 +550,7 @@ const Index = () => {
           <div className="compare-table">
             <div className="compare-col">
               <div className="compare-col-header"><CircleAlert /> <span>Apps comuns</span></div>
-              <div className="compare-row bad"><XCircle /> Mostram onde você gastou — depois</div>
+              <div className="compare-row bad"><XCircle /> Mostram onde você gastou, depois</div>
               <div className="compare-row bad"><XCircle /> Saldo único, misturado, sem contexto</div>
               <div className="compare-row bad"><XCircle /> Nenhuma análise antes do gasto</div>
               <div className="compare-row bad"><XCircle /> Reserva manual, sempre esquecida</div>
@@ -574,7 +574,7 @@ const Index = () => {
           <div className="section-header">
             <p className="section-tag">Seus primeiros 7 dias</p>
             <h2 className="section-title">Do caos ao controle em <span className="gradient-text">uma semana</span>.</h2>
-            <p className="section-desc">O FinZap te conduz passo a passo. Nada de tela em branco: cada dia entrega um ganho concreto — e um motivo para voltar.</p>
+            <p className="section-desc">O FinZap te conduz passo a passo. Nada de tela em branco: cada dia entrega um ganho concreto, e um motivo para voltar.</p>
           </div>
           <div className="journey-grid">
             {[
@@ -604,7 +604,7 @@ const Index = () => {
           </div>
           <div className="depo-grid">
             {[
-              { n: 'Marina L.', r: 'Analista de marketing', t: 'Eu ganhava bem e mesmo assim chegava no dia 25 no aperto. Em duas semanas entendi que o problema era não saber o que era realmente meu. Hoje eu gasto tranquila — porque sei o número.' },
+              { n: 'Marina L.', r: 'Analista de marketing', t: 'Eu ganhava bem e mesmo assim chegava no dia 25 no aperto. Em duas semanas entendi que o problema era não saber o que era meu. Hoje eu gasto tranquila, porque sei o número.' },
               { n: 'Rafael S.', r: 'Autônomo', t: 'Renda variável era um pesadelo. Os cofrinhos e a previsão do mês me deram uma calma que planilha nenhuma deu. Fechei três meses seguidos no azul.' },
               { n: 'Camila P.', r: 'Enfermeira', t: 'O que me prendeu foi a simplicidade. Abro, registro em 20 segundos e sigo minha vida. E o relatório do mês me faz querer continuar.' },
             ].map((d) => (
@@ -630,12 +630,12 @@ const Index = () => {
           <div className="section-header">
             <p className="section-tag">Confiança em primeiro lugar</p>
             <h2 className="section-title">Seus dados financeiros são <span className="gradient-text">só seus</span>.</h2>
-            <p className="section-desc">Dinheiro é um assunto íntimo. Por isso o FinZap foi construído com privacidade como padrão — não como recurso opcional.</p>
+            <p className="section-desc">Dinheiro é um assunto íntimo. Por isso o FinZap foi construído com privacidade como padrão, não como recurso opcional.</p>
           </div>
           <div className="trust-grid">
             {[
               { I: Lock, t: 'Criptografia ponta a ponta no transporte', d: 'Todo tráfego é protegido por TLS e nenhuma informação sensível fica exposta no dispositivo.' },
-              { I: Fingerprint, t: 'Isolamento total entre usuários', d: 'Políticas de segurança em nível de linha garantem que ninguém — nem outro usuário — enxergue seus dados.' },
+              { I: Fingerprint, t: 'Isolamento total entre usuários', d: 'Políticas de segurança em nível de linha garantem que ninguém, nem outro usuário, enxergue seus dados.' },
               { I: Database, t: 'Sem acesso ao seu banco', d: 'Você não conecta senhas bancárias. O FinZap funciona sem tocar nas suas credenciais financeiras.' },
               { I: ShieldCheck, t: 'Conformidade com a LGPD', d: 'Consentimento explícito, direito de exclusão e transparência total sobre o que é armazenado.' },
               { I: Users, t: 'Nunca vendemos seus dados', d: 'Nosso modelo é assinatura, não publicidade. Seus hábitos financeiros não são produto.' },
@@ -729,7 +729,7 @@ const Index = () => {
         <div className="container cta-content">
           <div className="cta-badge"><Zap /> Comece em 30 segundos</div>
           <h2 className="cta-headline">Ou você comanda seu dinheiro,<br /><span className="gradient-text">ou ele continua comandando você.</span></h2>
-          <p className="cta-sub">Quem termina o mês bem não ganha mais — <strong>decide melhor</strong>. O FinZap te entrega exatamente essa vantagem.</p>
+          <p className="cta-sub">Quem termina o mês bem não ganha mais, <strong>decide melhor</strong>. O FinZap te entrega exatamente essa vantagem.</p>
           <button onClick={goAuth} className="btn btn-primary btn-xl">
             <span>Criar minha conta grátis</span><ArrowRight size={20} />
           </button>
@@ -745,7 +745,7 @@ const Index = () => {
               <LogoMark />
               <span>Fin<span className="logo-accent">Zap</span></span>
             </a>
-            <p className="footer-tagline">O sistema que transforma a forma como você decide com o seu dinheiro.</p>
+            <p className="footer-tagline">O sistema que mostra como você decide com o seu dinheiro.</p>
           </div>
           <div className="footer-links">
             <div className="footer-col">

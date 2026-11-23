@@ -43,7 +43,7 @@ const humanFreq = (dia: number) =>
   dia >= 28 ? `Todo ${ordinal(dia)} (ou último dia do mês)` : `Mensalmente, todo ${ordinal(dia)}`;
 
 const fmtNextDate = (iso?: string | null) => {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const d = new Date(iso + 'T12:00:00');
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 };
@@ -303,7 +303,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed, isLocked = fals
                 <span className="text-[10px] uppercase tracking-wider font-medium">Próxima</span>
               </div>
               <p className="text-base font-semibold tabular-nums truncate">
-                {kpis.proximaIso ? fmtNextDate(kpis.proximaIso) : '—'}
+                {kpis.proximaIso ? fmtNextDate(kpis.proximaIso) : '-'}
               </p>
               <p className="text-[10px] text-muted-foreground mt-0.5">{kpis.proximaIso ? relativeLabel(kpis.proximaIso) : 'sem agendamento'}</p>
             </CardContent>
@@ -333,7 +333,7 @@ export const RecurringTransactionsView = ({ cofrinhos, isClosed, isLocked = fals
           icon={Repeat}
           eyebrow="Automatize o que repete"
           title="Pare de lançar tudo manualmente"
-          description="Cadastre receitas e despesas que se repetem todo mês — salário, aluguel, assinaturas — e o FinZap faz o resto, todo início de mês."
+          description="Cadastre receitas e despesas que se repetem todo mês, salário, aluguel, assinaturas, e o FinZap faz o resto, todo início de mês."
           hints={[
             'Lançamentos automáticos no dia certo',
             'Previsibilidade real para os próximos meses',

@@ -667,7 +667,7 @@ function buildDocument(payload: any) {
         "Indicadores principais consolidados a partir das suas transações realizadas e planejadas, cofrinhos e compromissos do período.",
       ),
       h(Text, { style: styles.personalIntro },
-        `${(userName || "Você").split(" ")[0]}, este foi o panorama financeiro do seu mês — leia como uma fotografia, não como uma sentença.`,
+        `${(userName || "Você").split(" ")[0]}, este foi o panorama financeiro do seu mês, leia como uma fotografia, não como uma sentença.`,
       ),
       h(View, { style: styles.kpiGrid, wrap: false },
         h(View, { style: styles.kpiCard },
@@ -810,7 +810,7 @@ function buildDocument(payload: any) {
               : null,
           ),
           h(View, { style: { alignItems: "flex-end", minWidth: 70 } },
-            h(Text, { style: [styles.rowValue, { color }] }, hasMeta ? fmtPct(c.pct) : "—"),
+            h(Text, { style: [styles.rowValue, { color }] }, hasMeta ? fmtPct(c.pct) : "-"),
             h(Text, { style: styles.rowMeta }, hasMeta ? "concluído" : "sem meta"),
           ),
         );
@@ -879,7 +879,7 @@ function buildDocument(payload: any) {
     h(View, { style: styles.section },
       h(Text, { style: styles.sectionEyebrow }, "Leitura estratégica"),
       h(Text, { style: styles.sectionTitle }, "O que os números dizem"),
-      h(Text, { style: styles.sectionLede }, "Padrões, variações e oportunidades detectadas no seu mês — pensadas como um analista financeiro pessoal explicaria."),
+      h(Text, { style: styles.sectionLede }, "Padrões, variações e oportunidades detectadas no seu mês, pensadas como um analista financeiro pessoal explicaria."),
     ),
     h(View, null,
       ...insights.map((it: any, i: number) => {
@@ -909,7 +909,7 @@ function buildDocument(payload: any) {
       h(View, { style: { marginBottom: 26 } },
         h(FinZapMark, { size: 56 }),
       ),
-      h(Text, { style: styles.closingEyebrow }, "— Inteligência financeira —"),
+      h(Text, { style: styles.closingEyebrow }, ",  Inteligência financeira , "),
       h(Text, {
         style: [
           styles.closingQuote,
@@ -936,7 +936,7 @@ function buildDocument(payload: any) {
 }
 
 function bestMonthLabel(history: any[], key: "balance" | "expense" | "income", maximize: boolean) {
-  if (!history || history.length === 0) return "—";
+  if (!history || history.length === 0) return "-";
   let best = history[0];
   for (const p of history) {
     if (maximize ? p[key] > best[key] : p[key] < best[key]) best = p;
@@ -955,13 +955,13 @@ const QUOTES: Record<string, ClosingQuote[]> = {
     { text: "Nós somos o que fazemos repetidamente. A excelência, portanto, não é um ato, mas um hábito.", author: "Aristóteles" },
     { text: "Pequenas decisões repetidas moldam grandes destinos.", author: "FinZap" },
     { text: "Constância silenciosa supera intensidade esporádica.", author: "FinZap" },
-    { text: "O tempo recompensa quem decide bem — e pune quem decide tarde.", author: "FinZap" },
+    { text: "O tempo recompensa quem decide bem, e pune quem decide tarde.", author: "FinZap" },
   ],
   // Usuário disciplinado / economizou / cofrinhos saudáveis
   discipline: [
     { text: "O preço da disciplina é sempre menor que o custo do arrependimento.", author: "Jim Rohn" },
     { text: "Reservar antes de gastar é o gesto mais maduro que o dinheiro conhece.", author: "FinZap" },
-    { text: "Riqueza é o que você não vê — é o consumo que você adiou.", author: "Morgan Housel" },
+    { text: "Riqueza é o que você não vê, é o consumo que você adiou.", author: "Morgan Housel" },
     { text: "A liberdade financeira começa onde o impulso termina.", author: "FinZap" },
   ],
   // Usuário instável / saldo em queda / gastos altos
@@ -1224,7 +1224,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
         tone: up ? "warn" : "pos",
         title: up
           ? `Despesas avançaram ${Math.abs(d).toFixed(0)}% sobre o mês anterior`
-          : `Despesas recuaram ${Math.abs(d).toFixed(0)}% — controle visível`,
+          : `Despesas recuaram ${Math.abs(d).toFixed(0)}%, controle visível`,
         body: up
           ? `Foram ${fmtBRL(expense)} contra ${fmtBRL(prev.expense)} no período anterior. Vale isolar as categorias que mais cresceram antes de assumir novos compromissos.`
           : `Você desacelerou para ${fmtBRL(expense)} (de ${fmtBRL(prev.expense)}). Pequenas reduções, sustentadas por alguns ciclos, compõem grandes diferenças anuais.`,
@@ -1243,7 +1243,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
           ? `Saldo do mês ${fmtBRL(dB)} acima do anterior`
           : `Saldo do mês ${fmtBRL(Math.abs(dB))} abaixo do anterior`,
         body: up
-          ? "O fôlego financeiro cresceu — momento favorável para reforçar reservas ou antecipar metas planejadas."
+          ? "O fôlego financeiro cresceu, momento favorável para reforçar reservas ou antecipar metas planejadas."
           : "A margem para decisões discricionárias caiu. Reavalie compromissos planejados antes do próximo ciclo.",
       });
     }
@@ -1256,7 +1256,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
         label: "Reservas robustas",
         tone: "pos",
         title: `Reservas equivalem a ${Math.round(ratio)}% da sua receita mensal`,
-        body: `Você acumula ${fmtBRL(reserved)} em cofrinhos — colchão raro e sinal de maturidade financeira. Vale revisitar o destino das reservas: emergência, oportunidade ou objetivo de médio prazo.`,
+        body: `Você acumula ${fmtBRL(reserved)} em cofrinhos, colchão raro e sinal de maturidade financeira. Vale revisitar o destino das reservas: emergência, oportunidade ou objetivo de médio prazo.`,
       });
     } else if (ratio >= 25) {
       insights.push({
@@ -1295,7 +1295,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
       label: "Metas no horizonte",
       tone: "info",
       title: `${closeGoals.length} meta(s) a poucos passos do destino`,
-      body: `Alguns cofrinhos passam de 80% — concluir essas metas no próximo ciclo libera espaço mental para novos objetivos.`,
+      body: `Alguns cofrinhos passam de 80%, concluir essas metas no próximo ciclo libera espaço mental para novos objetivos.`,
     });
   }
 
@@ -1323,7 +1323,7 @@ async function loadPayload(supa: any, userId: string, monthId: string) {
       label: "Mês de calibragem",
       tone: "neutral",
       title: "Sem variações relevantes em relação ao histórico",
-      body: "Períodos estáveis são oportunidade rara para estruturar o que vem a seguir — revisar metas, ajustar reservas ou planejar um movimento estratégico.",
+      body: "Períodos estáveis são oportunidade rara para estruturar o que vem a seguir, revisar metas, ajustar reservas ou planejar um movimento estratégico.",
     });
   }
 

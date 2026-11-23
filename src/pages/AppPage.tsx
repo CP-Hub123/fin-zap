@@ -252,7 +252,7 @@ const AppPage = () => {
               <span>
                 {isExpired
                   ? '⏰ Seu acesso expirou. Ative o premium para continuar.'
-                  : `🎁 Teste gratuito — ${daysLeft} dia(s) restante(s)`}
+                  : `🎁 Teste gratuito, ${daysLeft} dia(s) restante(s)`}
               </span>
               <Button size="sm" variant={isExpired ? 'destructive' : 'default'} className="shrink-0" onClick={() => navigate('/upgrade')}>
                 {isExpired ? 'Ativar acesso' : 'Ver planos'}

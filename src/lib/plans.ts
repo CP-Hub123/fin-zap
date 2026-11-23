@@ -75,7 +75,7 @@ export const PLANS: Record<PlanTier, PlanDefinition> = {
       'Insights inteligentes do seu dinheiro',
       'Planejamento avançado e previsões financeiras',
       'Acesso antecipado a recursos premium futuros',
-      'Acesso vitalício — sem mensalidade',
+      'Acesso vitalício, sem mensalidade',
     ],
   },
 };
@@ -90,7 +90,7 @@ export interface FeatureMeta {
 export const FEATURE_META: Record<string, FeatureMeta> = {
   cards: { key: 'cards', icon: CreditCard, title: 'Mais cartões organizados', description: 'Acompanhe todas as faturas, parcelas e limites com clareza Founders.' },
   recorrencias: { key: 'recorrencias', icon: Repeat, title: 'Automação completa', description: 'Cadastre todas as despesas e receitas que se repetem todo mês.' },
-  cofrinhos: { key: 'cofrinhos', icon: PiggyBank, title: 'Cofrinhos sem limites práticos', description: 'Organize seu dinheiro por contexto — moradia, lazer, metas e reservas.' },
+  cofrinhos: { key: 'cofrinhos', icon: PiggyBank, title: 'Cofrinhos sem limites práticos', description: 'Organize seu dinheiro por contexto, moradia, lazer, metas e reservas.' },
   forecastMonths: { key: 'forecastMonths', icon: BarChart3, title: 'Previsão estendida', description: 'Veja como seu dinheiro evolui nos próximos meses, não apenas neste.' },
   advancedInsights: { key: 'advancedInsights', icon: Sparkles, title: 'Insights inteligentes', description: 'Leituras inteligentes do seu padrão de gastos e crédito.' },
   smartNotifications: { key: 'smartNotifications', icon: Bell, title: 'Notificações inteligentes', description: 'Alertas certeiros nos momentos que realmente importam.' },

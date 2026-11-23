@@ -33,7 +33,7 @@ const Upgrade = () => {
               Faça parte dos primeiros usuários.
             </h1>
             <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
-              O FinZap Founders é o nosso reconhecimento aos primeiros — acesso vitalício, sem mensalidade, com tudo o que vier no caminho.
+              O FinZap Founders é o nosso reconhecimento aos primeiros, acesso vitalício, sem mensalidade, com tudo o que vier no caminho.
             </p>
             {isTrial && daysLeft !== null && (
               <p className="mt-3 text-xs text-muted-foreground">
@@ -91,7 +91,7 @@ const Upgrade = () => {
                     onClick={() => openFoundersWhatsApp()}
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />
-                    Desbloquear Founders
+                    Assinar Founders
                   </Button>
                   <p className="text-center text-[11px] text-muted-foreground">
                     Atendimento direto via WhatsApp · ativação manual em minutos

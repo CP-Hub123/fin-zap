@@ -167,7 +167,7 @@ export const PlanningCenterView = ({
               icon={Activity}
               eyebrow="Ainda construindo seu histórico"
               title="Padrões aparecem com o tempo"
-              description="Em poucos meses, o FinZap começa a prever sua faixa habitual por categoria — mínimo, média e máximo."
+              description="Em poucos meses, o FinZap começa a prever sua faixa habitual por categoria, mínimo, média e máximo."
               tone="neutral"
               compact
             />

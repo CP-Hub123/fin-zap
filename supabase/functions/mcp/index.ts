@@ -101,7 +101,7 @@ var get_month_summary_default = defineTool2({
       content: [
         {
           type: "text",
-          text: `M\xEAs ${summary.ref} (${summary.status}) \u2014 Receitas: ${brl(totalIncome)}, Despesas: ${brl(totalExpense)}, Saldo do per\xEDodo: ${brl(summary.net)}, Saldo com inicial: ${brl(summary.balance)}.`
+          text: `M\xEAs ${summary.ref} (${summary.status}), Receitas: ${brl(totalIncome)}, Despesas: ${brl(totalExpense)}, Saldo do per\xEDodo: ${brl(summary.net)}, Saldo com inicial: ${brl(summary.balance)}.`
         }
       ],
       structuredContent: summary
@@ -222,7 +222,7 @@ var create_transaction_default = defineTool5({
       content: [
         {
           type: "text",
-          text: `Lan\xE7amento criado: ${data.name} \u2014 ${brl(Number(data.amount))} (${type === "income" ? "receita" : "despesa"}) em ${data.date}.`
+          text: `Lan\xE7amento criado: ${data.name}, ${brl(Number(data.amount))} (${type === "income" ? "receita" : "despesa"}) em ${data.date}.`
         }
       ],
       structuredContent: { transaction: data }

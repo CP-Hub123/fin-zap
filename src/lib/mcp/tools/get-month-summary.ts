@@ -70,7 +70,7 @@ export default defineTool({
         {
           type: "text",
           text:
-            `Mês ${summary.ref} (${summary.status}) — Receitas: ${brl(totalIncome)}, ` +
+            `Mês ${summary.ref} (${summary.status}), Receitas: ${brl(totalIncome)}, ` +
             `Despesas: ${brl(totalExpense)}, Saldo do período: ${brl(summary.net)}, ` +
             `Saldo com inicial: ${brl(summary.balance)}.`,
         },

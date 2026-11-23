@@ -45,17 +45,17 @@ const Consent = () => (
     <LegalSection title="4. Decisões automatizadas">
       <p>
         O FinZap utiliza algoritmos para gerar insights e projeções, mas <strong>nenhuma decisão automatizada</strong>
-        afeta direitos seus de forma irreversível. Todas as recomendações são sugestões — você decide.
+        afeta direitos seus de forma irreversível. Todas as recomendações são sugestões, você decide.
       </p>
     </LegalSection>
 
     <LegalSection title="5. Base legal">
       <p>O tratamento de dados é fundamentado em:</p>
       <ul>
-        <li><strong>Execução de contrato</strong> (Art. 7º, V da LGPD) — para entregar o serviço.</li>
-        <li><strong>Consentimento</strong> (Art. 7º, I) — para recursos opcionais.</li>
-        <li><strong>Legítimo interesse</strong> (Art. 7º, IX) — para segurança e melhoria do produto.</li>
-        <li><strong>Cumprimento de obrigação legal</strong> (Art. 7º, II) — quando aplicável.</li>
+        <li><strong>Execução de contrato</strong> (Art. 7º, V da LGPD), para entregar o serviço.</li>
+        <li><strong>Consentimento</strong> (Art. 7º, I), para recursos opcionais.</li>
+        <li><strong>Legítimo interesse</strong> (Art. 7º, IX), para segurança e melhoria do produto.</li>
+        <li><strong>Cumprimento de obrigação legal</strong> (Art. 7º, II), quando aplicável.</li>
       </ul>
     </LegalSection>
   </LegalLayout>

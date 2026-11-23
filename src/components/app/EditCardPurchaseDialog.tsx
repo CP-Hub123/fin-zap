@@ -186,7 +186,7 @@ export function EditCardPurchaseDialog({ open, onOpenChange, purchase, cards }: 
                 ) : (
                   <p className="flex items-start gap-1.5">
                     <ShieldCheck className="h-3 w-3 mt-0.5 text-emerald-500 shrink-0" />
-                    <span>Nenhuma parcela consolidada — toda a compra será recalculada.</span>
+                    <span>Nenhuma parcela consolidada, toda a compra será recalculada.</span>
                   </p>
                 )}
 

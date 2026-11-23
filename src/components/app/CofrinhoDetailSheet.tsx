@@ -264,7 +264,7 @@ export const CofrinhoDetailSheet = ({ cofrinho: c, cofrinhos, open, onOpenChange
                 analysis.stats.deltaVsMesAnterior > 0 ? 'text-red-500' : 'text-emerald-600'
               }`}>
                 {analysis.stats.deltaVsMesAnterior === null
-                  ? '—'
+                  ? '-'
                   : `${analysis.stats.deltaVsMesAnterior > 0 ? '+' : ''}${Math.round(analysis.stats.deltaVsMesAnterior)}%`}
               </p>
               <p className="text-[10px] text-muted-foreground">em gastos</p>

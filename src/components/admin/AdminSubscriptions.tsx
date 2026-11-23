@@ -216,7 +216,7 @@ export const AdminSubscriptions = () => {
                 <TableCell>
                   {sub.expires_at
                     ? new Date(sub.expires_at).toLocaleDateString('pt-BR')
-                    : sub.status === 'active' ? '♾️ Vitalício' : '—'}
+                    : sub.status === 'active' ? '♾️ Vitalício' : '-'}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
@@ -253,7 +253,7 @@ export const AdminSubscriptions = () => {
       <Dialog open={!!editingSub} onOpenChange={() => setEditingSub(null)}>
         <DialogContent className="max-w-md mx-4 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle>Editar assinatura — {editingSub?.profile_name}</DialogTitle>
+            <DialogTitle>Editar assinatura, {editingSub?.profile_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">

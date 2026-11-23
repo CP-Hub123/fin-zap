@@ -90,7 +90,7 @@ export const ReserveSheet = ({ monthId, open, onOpenChange, initialMode = 'reser
               </SheetTitle>
               <SheetDescription className="text-white/80 text-[12.5px] mt-1">
                 {mode === 'reservar'
-                  ? 'Separe um valor do saldo livre. Não é uma despesa — é uma realocação interna.'
+                  ? 'Separe um valor do saldo livre. Não é uma despesa, é uma realocação interna.'
                   : 'Devolva um valor do reservado para o saldo livre.'}
               </SheetDescription>
             </div>

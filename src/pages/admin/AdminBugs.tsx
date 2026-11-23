@@ -111,7 +111,7 @@ export const AdminBugs = () => {
         profiles = data ?? [];
       }
       const map = new Map((profiles ?? []).map(p => [p.id, p.name]));
-      return (rows ?? []).map(r => ({ ...r, profile_name: map.get(r.user_id) ?? '—' })) as BugRow[];
+      return (rows ?? []).map(r => ({ ...r, profile_name: map.get(r.user_id) ?? '-' })) as BugRow[];
     },
   });
 
@@ -361,16 +361,16 @@ const BugDetailSheet = ({
               <section>
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Contexto</h4>
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                  <Meta label="Usuário" value={bug.profile_name ?? '—'} />
+                  <Meta label="Usuário" value={bug.profile_name ?? '-'} />
                   <Meta label="Data" value={new Date(bug.created_at).toLocaleString('pt-BR')} />
-                  <Meta label="Rota" value={bug.route ?? '—'} mono />
-                  <Meta label="Tela" value={bug.screen_size ?? '—'} />
-                  <Meta label="Tema" value={bug.theme ?? '—'} />
-                  <Meta label="Versão" value={bug.app_version ?? '—'} />
-                  <Meta label="Dispositivo" value={bug.device_info?.type ?? '—'} />
-                  <Meta label="OS" value={bug.device_info?.os ?? '—'} />
-                  <Meta label="Navegador" value={bug.browser_info?.name ?? '—'} />
-                  <Meta label="Idioma" value={bug.device_info?.language ?? '—'} />
+                  <Meta label="Rota" value={bug.route ?? '-'} mono />
+                  <Meta label="Tela" value={bug.screen_size ?? '-'} />
+                  <Meta label="Tema" value={bug.theme ?? '-'} />
+                  <Meta label="Versão" value={bug.app_version ?? '-'} />
+                  <Meta label="Dispositivo" value={bug.device_info?.type ?? '-'} />
+                  <Meta label="OS" value={bug.device_info?.os ?? '-'} />
+                  <Meta label="Navegador" value={bug.browser_info?.name ?? '-'} />
+                  <Meta label="Idioma" value={bug.device_info?.language ?? '-'} />
                 </dl>
               </section>
 

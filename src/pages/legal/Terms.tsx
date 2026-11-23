@@ -8,7 +8,7 @@ const Terms = () => (
   >
     <p>
       Ao criar uma conta no <strong>FinZap</strong>, você concorda com estes Termos de Uso. Recomendamos uma leitura
-      atenta — não há juridiquês escondido aqui.
+      atenta, não há juridiquês escondido aqui.
     </p>
 
     <LegalCallout title="O que o FinZap é">

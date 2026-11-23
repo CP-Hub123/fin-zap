@@ -69,7 +69,7 @@ export default function Account() {
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Nome</p>
               <p className="text-sm font-medium">
-                {(user?.user_metadata as { name?: string } | undefined)?.name ?? "—"}
+                {(user?.user_metadata as { name?: string } | undefined)?.name ?? "-"}
               </p>
             </div>
             <div className="space-y-1">
@@ -94,8 +94,8 @@ export default function Account() {
             <div className="space-y-1.5">
               <h2 className="text-base font-semibold">Excluir conta</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Sua conta e seus dados financeiros — transações, cartões, recorrências, cofrinhos,
-                preferências e notificações — serão removidos permanentemente. Essa ação não pode
+                Sua conta e seus dados financeiros, transações, cartões, recorrências, cofrinhos,
+                preferências e notificações, serão removidos permanentemente. Essa ação não pode
                 ser desfeita.
               </p>
             </div>

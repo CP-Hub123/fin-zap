@@ -170,7 +170,7 @@ export function NotificationCenterSheet({
               </div>
               <p className="text-sm font-medium">Nada por aqui ainda</p>
               <p className="text-xs text-muted-foreground mt-1 max-w-[260px] mx-auto">
-                O FinZap só fala quando realmente importa. Quando algo relevante acontecer, aparece aqui.
+                O FinZap só avisa quando importa. Quando algo relevante acontecer, aparece aqui.
               </p>
             </div>
           ) : (

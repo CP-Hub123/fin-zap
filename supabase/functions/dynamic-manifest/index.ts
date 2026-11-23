@@ -16,9 +16,9 @@ const cors = {
 type Mode = "normal" | "maintenance" | "event" | "founders";
 
 const ICONS: Record<Mode, { file: string; name: string; short: string; theme: string }> = {
-  normal:      { file: "/finzap-icon-normal-v1.png",      name: "FinZap — Decisão financeira inteligente", short: "FinZap",      theme: "#07090F" },
+  normal:      { file: "/finzap-icon-normal-v1.png",      name: "FinZap, Decisão financeira inteligente", short: "FinZap",      theme: "#07090F" },
   maintenance: { file: "/finzap-icon-maintenance-v1.png", name: "FinZap (manutenção)",                     short: "FinZap",      theme: "#1f1b16" },
-  event:       { file: "/finzap-icon-event-v1.png",       name: "FinZap — Evento especial",                short: "FinZap",      theme: "#1b0b2e" },
+  event:       { file: "/finzap-icon-event-v1.png",       name: "FinZap, Evento especial",                short: "FinZap",      theme: "#1b0b2e" },
   founders:    { file: "/finzap-icon-founders-v1.png",    name: "FinZap Founders",                         short: "Founders",    theme: "#0d0a02" },
 };
 
