@@ -80,6 +80,10 @@ Deno.serve(async (req) => {
 
     // 1. Item info (bank)
     const item = await pluggyGet(apiKey, `/items/${itemId}`);
+    // Bind item to caller: Pluggy stores the clientUserId set when the connect token was issued.
+    if (!item || item.clientUserId !== userId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const bankName = item?.connector?.name ?? "Banco";
     const bankLogo = item?.connector?.imageUrl ?? null;
 

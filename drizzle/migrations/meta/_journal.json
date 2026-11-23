@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795405526369,
+      "tag": "0000_security_hardening_cofrinhos_cards",
+      "breakpoints": true
+    }
+  ]
+}
