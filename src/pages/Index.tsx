@@ -1,3 +1,4 @@
+import SaasHero from '@/components/ui/saa-s-template';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -150,74 +151,29 @@ const Index = () => {
 
   return (
     <div ref={rootRef} className="finzap-landing">
-      {/* NAVBAR */}
-      <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="nav-inner">
-          <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="logo" aria-label="FinZap">
-            <LogoMark />
-            <span>Fin<span className="logo-accent">Zap</span></span>
-          </a>
-          <div className="nav-links">
-            <a className="nav-link" onClick={() => scrollTo('problema')}>Problema</a>
-            <a className="nav-link" onClick={() => scrollTo('solucao')}>Solução</a>
-            <a className="nav-link" onClick={() => scrollTo('demo')}>Demo</a>
-            <a className="nav-link" onClick={() => scrollTo('beneficios')}>Benefícios</a>
-            <a className="nav-link" onClick={() => scrollTo('seguranca')}>Segurança</a>
-            <a className="nav-link" onClick={() => scrollTo('faq')}>FAQ</a>
-          </div>
-          <div className="nav-cta">
-            <button onClick={goAuth} className="btn btn-ghost">Entrar</button>
-            <button onClick={goAuth} className="btn btn-primary">Começar grátis</button>
-          </div>
-          <button className="hamburger" aria-label="Menu" onClick={() => setMenuOpen((v) => !v)}>
-            <span style={menuOpen ? { transform: 'rotate(45deg) translate(5px,5px)' } : undefined} />
-            <span style={menuOpen ? { opacity: 0 } : undefined} />
-            <span style={menuOpen ? { transform: 'rotate(-45deg) translate(5px,-5px)' } : undefined} />
-          </button>
-        </div>
-        <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
-          <a className="mobile-link" onClick={() => scrollTo('problema')}>Problema</a>
-          <a className="mobile-link" onClick={() => scrollTo('solucao')}>Solução</a>
-          <a className="mobile-link" onClick={() => scrollTo('demo')}>Demo</a>
-          <a className="mobile-link" onClick={() => scrollTo('beneficios')}>Benefícios</a>
-          <a className="mobile-link" onClick={() => scrollTo('seguranca')}>Segurança</a>
-          <a className="mobile-link" onClick={() => scrollTo('faq')}>FAQ</a>
-          <button onClick={goAuth} className="btn btn-ghost w-full">Entrar</button>
-          <button onClick={goAuth} className="btn btn-primary w-full">Começar grátis</button>
-        </div>
-      </nav>
-
-      {/* HERO */}
-      <section className="hero" id="hero">
-        <div className="hero-bg" />
-        <div className="hero-grid" />
-        <div className="container hero-content">
-          <div className="hero-text">
-            <div className="badge">
-              <span className="badge-dot" />
-              Sistema de decisão financeira
-            </div>
-            <h1 className="hero-headline">
-              Seu dinheiro,<br />
-              <span className="gradient-text">finalmente</span> sob<br />
-              o seu comando.
-            </h1>
-            <p className="hero-sub">
-              Pare de descobrir para onde foi o seu dinheiro <strong>depois</strong>. O FinZap te mostra o impacto exato de cada gasto <strong>antes</strong> de você decidir — para você terminar todo mês com clareza, sobra e tranquilidade.
-            </p>
-            <div className="hero-cta">
-              <button onClick={goAuth} className="btn btn-primary btn-lg">
-                <span>Começar agora — é grátis</span><ArrowRight size={18} />
-              </button>
-              <button onClick={goAuth} className="btn btn-outline btn-lg">Já tenho conta</button>
-            </div>
-            <div className="hero-trust">
-              <div className="trust-item"><Lock /> Criptografia bancária</div>
-              <div className="trust-item"><Clock /> Pronto em 30 segundos</div>
-              <div className="trust-item"><CheckCircle2 /> Sem cartão de crédito</div>
-            </div>
-          </div>
-
+      {/* NAVBAR + HERO */}
+      <SaasHero
+        logo={<span className="flex items-center gap-2 text-xl font-semibold"><LogoMark /> Fin<span className="logo-accent">Zap</span></span>}
+        links={[
+          { label: 'Problema', onClick: () => scrollTo('problema') },
+          { label: 'Solução', onClick: () => scrollTo('solucao') },
+          { label: 'Benefícios', onClick: () => scrollTo('beneficios') },
+          { label: 'Segurança', onClick: () => scrollTo('seguranca') },
+          { label: 'FAQ', onClick: () => scrollTo('faq') },
+        ]}
+        onSignIn={goAuth}
+        onSignUp={goAuth}
+        signInLabel="Entrar"
+        signUpLabel="Começar grátis"
+        badgeText="Sistema de decisão financeira"
+        badgeLinkText="Ver como funciona"
+        onBadgeClick={() => scrollTo('solucao')}
+        title={<>Seu dinheiro, finalmente<br />sob o seu comando.</>}
+        subtitle="Veja o impacto exato de cada gasto antes de decidir — e termine todo mês com clareza, sobra e tranquilidade. Grátis por 3 dias, sem cartão."
+        ctaLabel="Começar agora — é grátis"
+        onCta={goAuth}
+        preview={
+          <div className="hero" style={{ minHeight: 0, padding: 0, background: 'transparent', maxWidth: 560, margin: '0 auto' }}>
           <div className="hero-visual">
             <div className="dashboard-mock">
               <div className="dash-header">
@@ -268,8 +224,10 @@ const Index = () => {
               <div><div className="float-title">Sobra deste mês</div><div className="float-value float-green">+ R$ 560,00</div></div>
             </div>
           </div>
-        </div>
-      </section>
+          </div>
+        }
+      />
+
 
       {/* FAIXA DE PROVA / POSICIONAMENTO */}
       <section className="proof-band" aria-label="Resultados e credibilidade">
