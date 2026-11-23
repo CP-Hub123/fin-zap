@@ -9,6 +9,7 @@ import { Logo } from '@/components/app/Logo';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Link } from 'react-router-dom';
+import { Component as FlooPortal } from '@/components/ui/pro-sign-in-animation';
 import { Loader2, Mail, Lock, User, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 const GoogleIcon = ({ className = 'h-5 w-5' }: { className?: string }) => (
@@ -92,15 +93,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-background px-4 py-8 sm:py-12"
+    <FlooPortal className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-8 sm:py-12"
          style={{ paddingTop: 'max(2rem, env(safe-area-inset-top))', paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
-      {/* Ambient background */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[320px] w-[320px] translate-x-1/3 translate-y-1/3 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(var(--primary)/0.08),transparent_60%)]" />
-      </div>
-
       <div className="w-full max-w-[420px] animate-rise-in">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center text-center">
@@ -249,7 +243,7 @@ const Auth = () => {
           <Link to="/legal/seguranca" className="hover:text-foreground">Segurança</Link>
         </div>
       </div>
-    </div>
+    </FlooPortal>
   );
 };
 
