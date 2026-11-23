@@ -159,6 +159,14 @@
 }
 
 @layer components {
+  .onboarding-page { font-family: 'Manrope', sans-serif; }
+  .onboarding-page h1, .onboarding-page h2, .onboarding-page p { letter-spacing: 0; }
+  .lens-reel { font-family: 'Manrope', sans-serif; letter-spacing: 0; }
+  .lens-reel h2 { letter-spacing: 0; }
+  .lens-preview > div { width: 100%; }
+  .lens-preview > div > div { min-width: 0; }
+  .lens-screen { box-shadow: var(--shadow-elevated); }
+  .lens-ring { box-shadow: var(--shadow-glow-primary); }
   .card-premium {
     @apply rounded-2xl border bg-card text-card-foreground;
     box-shadow: var(--shadow-card);

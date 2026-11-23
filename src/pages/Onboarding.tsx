@@ -4,6 +4,7 @@ import { useMonths } from '@/hooks/useMonths';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCofrinhos } from '@/hooks/useCofrinhos';
 import { Button } from '@/components/ui/button';
+import { LensReel, type LensShot } from '@/components/ui/cd-lens-reel';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
@@ -71,8 +72,8 @@ const VisualCard = () => (
       <p className="text-2xl font-bold tracking-tight">{fmt(1240)}</p>
     </div>
     <div className="space-y-1">
-      <div className="h-1.5 rounded-full bg-white/20 overflow-hidden">
-        <div className="h-full w-[62%] bg-white/90 rounded-full" />
+      <div className="h-1.5 rounded-full bg-primary-foreground/20 overflow-hidden">
+        <div className="h-full w-[62%] bg-primary-foreground/90 rounded-full" />
       </div>
       <p className="text-[10px] opacity-80">62% do limite</p>
     </div>
@@ -124,12 +125,12 @@ const VisualRecurring = () => (
 
 const VisualInsights = () => (
   <div className="space-y-2">
-    <div className="rounded-xl border bg-emerald-500/5 ring-1 ring-emerald-500/20 p-3">
-      <p className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">Margem confortável</p>
+    <div className="rounded-xl border bg-primary/5 ring-1 ring-primary/20 p-3">
+      <p className="text-[11px] font-medium text-primary">Saldo positivo</p>
       <p className="text-xs text-foreground/80">Você deve fechar o mês positivo.</p>
     </div>
-    <div className="rounded-xl border bg-amber-500/5 ring-1 ring-amber-500/20 p-3">
-      <p className="text-[11px] font-medium text-amber-700 dark:text-amber-300">Alimentação acima do padrão</p>
+    <div className="rounded-xl border bg-muted ring-1 ring-border p-3">
+      <p className="text-[11px] font-medium text-foreground">Alimentação acima do padrão</p>
       <p className="text-xs text-foreground/80">Ritmo 28% maior que sua média.</p>
     </div>
   </div>
@@ -175,8 +176,8 @@ const SLIDES: Slide[] = [
   {
     id: 'welcome',
     eyebrow: 'Bem-vindo',
-    title: 'Seu copiloto financeiro inteligente.',
-    body: 'O FinZap antecipa o futuro do seu mês, organiza cartões, parcelas e recorrências, e te mostra o caminho com clareza, sem julgar.',
+    title: 'Seu dinheiro no FinZap.',
+    body: 'Veja seu saldo, seus gastos e suas reservas.',
     icon: Sparkles,
     visual: (
       <div className="rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-6 text-center space-y-2">
@@ -188,16 +189,16 @@ const SLIDES: Slide[] = [
   {
     id: 'projection',
     eyebrow: 'Previsibilidade',
-    title: 'Veja como seu mês provavelmente vai terminar.',
-    body: 'O FinZap combina o que já aconteceu com o que ainda está previsto e mostra sua sobra estimada em tempo real.',
+    title: 'Veja o saldo previsto do mês.',
+    body: 'Compare os valores realizados com as entradas e saídas previstas.',
     icon: TrendingUp,
     visual: <VisualProjection />,
   },
   {
     id: 'cards',
     eyebrow: 'Central de Crédito',
-    title: 'Cartões com comprometimento futuro real.',
-    body: 'Cada cartão mostra fatura, limite usado e quanto do seu futuro já está comprometido, antes da fatura chegar.',
+    title: 'Acompanhe seus cartões.',
+    body: 'Veja a fatura, o limite usado e as parcelas futuras.',
     icon: CreditCard,
     visual: <VisualCard />,
   },
@@ -205,7 +206,7 @@ const SLIDES: Slide[] = [
     id: 'installments',
     eyebrow: 'Parcelamentos',
     title: 'Parcelas entram automaticamente no mês certo.',
-    body: 'Cadastrou uma compra em 6x? O FinZap distribui cada parcela no mês exato e atualiza sua previsão.',
+    body: 'Uma compra em 6x gera uma parcela em cada mês.',
     icon: Wand2,
     visual: <VisualInstallments />,
   },
@@ -213,35 +214,44 @@ const SLIDES: Slide[] = [
     id: 'recurring',
     eyebrow: 'Recorrências',
     title: 'Automatize o que se repete todo mês.',
-    body: 'Aluguel, assinaturas, salário, o sistema replica essas entradas e saídas automaticamente para você.',
+    body: 'Cadastre aluguel, salário e assinaturas uma vez.',
     icon: Repeat,
     visual: <VisualRecurring />,
   },
   {
     id: 'insights',
     eyebrow: 'Insights',
-    title: 'Sinais inteligentes, sem alarme.',
-    body: 'O FinZap observa seus padrões e te avisa com calma quando algo merece atenção, ou quando o mês está leve.',
+    title: 'Acompanhe seu ritmo de gastos.',
+    body: 'Compare seus gastos com os meses anteriores.',
     icon: Lightbulb,
     visual: <VisualInsights />,
   },
   {
     id: 'cofrinhos',
     eyebrow: 'Cofrinhos',
-    title: 'Organize por contexto, não por planilha.',
-    body: 'Separe gastos e reservas em cofrinhos. Cada transação vira parte de uma história clara.',
+    title: 'Defina orçamentos e reservas.',
+    body: 'Use cofrinhos mensais para gastos. Separe dinheiro em metas e reservas.',
     icon: PiggyBank,
     visual: <VisualCofrinhos />,
   },
   {
     id: 'ecosystem',
     eyebrow: 'Ecossistema',
-    title: 'Tudo conectado, do resumo ao fechamento.',
-    body: 'Resumo, Transações, Cartões, Plano e Fechamento conversam entre si. Você sempre sabe onde está.',
+    title: 'Seu mês em um só lugar.',
+    body: 'Consulte o resumo, as transações, os cartões e o planejamento.',
     icon: Shield,
     visual: <VisualEcosystem />,
   },
 ];
+
+const TOUR_SHOTS: LensShot[] = SLIDES.map((slide, i) => ({
+  id: slide.id,
+  title: slide.title,
+  blurb: slide.body,
+  tag: slide.eyebrow,
+  kind: (['dashboard', 'dashboard', 'insights', 'calendar', 'inbox', 'insights', 'editor', 'dashboard'] as const)[i],
+  preview: slide.visual,
+}));
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -265,7 +275,6 @@ const Onboarding = () => {
   const { createCofrinho } = useCofrinhos();
 
   const totalSlides = SLIDES.length;
-  const slide = SLIDES[slideIdx];
 
   const goNext = () => {
     if (slideIdx < totalSlides - 1) setSlideIdx(slideIdx + 1);
@@ -302,7 +311,7 @@ const Onboarding = () => {
       }
       await addTransaction.mutateAsync({
         month_id: createdMonthId,
-        cofrinho_id: cofrinhoId!,
+        cofrinho_id: cofrinhoId,
         type: txType,
         name: txName,
         amount: parseFloat(txAmount),
@@ -340,18 +349,18 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-gradient-to-b from-background via-background to-primary/5">
+    <div className="onboarding-page flex min-h-[100dvh] flex-col bg-background">
       {/* Top bar */}
       <header className="flex items-center justify-between px-4 pt-4 pb-2 sm:px-6">
         <div className="text-xs text-muted-foreground font-medium">
           {phase === 'tour' ? `${slideIdx + 1} / ${totalSlides}` : 'Configuração inicial'}
         </div>
-        <button
+        <Button variant="ghost" size="sm"
           onClick={skipAll}
           className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
         >
           Pular <X className="h-3 w-3" />
-        </button>
+        </Button>
       </header>
 
       {/* Progress segments */}
@@ -376,9 +385,15 @@ const Onboarding = () => {
 
       {/* Content */}
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-4">
-        <div className="w-full max-w-md">
+        <div className={cn('w-full', phase === 'tour' ? 'max-w-xl' : 'max-w-md')}>
           {phase === 'tour' ? (
-            <TourSlide slide={slide} />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <Logo />
+                <span className="text-xs text-muted-foreground">Exemplos de valores</span>
+              </div>
+              <LensReel items={TOUR_SHOTS} selectedIndex={slideIdx} onChange={setSlideIdx} title="Seu mês no FinZap" />
+            </div>
           ) : setupStep === 0 ? (
             <SetupMonth
               month={month} year={year} initialBalance={initialBalance}
@@ -419,31 +434,6 @@ const Onboarding = () => {
           </div>
         </footer>
       )}
-    </div>
-  );
-};
-
-const TourSlide = ({ slide }: { slide: Slide }) => {
-  const Icon = slide.icon;
-  return (
-    <div key={slide.id} className="space-y-5 animate-fade-in">
-      <div className="flex items-center gap-2">
-        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icon className="h-4 w-4 text-primary" />
-        </div>
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-          {slide.eyebrow}
-        </span>
-      </div>
-      <div className="space-y-2">
-        <h1 className="text-2xl sm:text-[28px] font-bold leading-tight tracking-tight text-foreground">
-          {slide.title}
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-          {slide.body}
-        </p>
-      </div>
-      <div className="pt-2">{slide.visual}</div>
     </div>
   );
 };
