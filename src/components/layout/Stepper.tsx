@@ -12,44 +12,41 @@ interface StepperProps {
   onStepChange: (step: number) => void;
 }
 
-/**
- * Stepper leve e contextual — sem pills coloridas, sem gradiente.
- * Indicador é apenas underline + peso tipográfico. Quase invisível quando inativo.
- */
+/** Segmented control: one clear selection, 44px targets, arrow-key navigation. */
 export const Stepper = ({ currentStep, onStepChange }: StepperProps) => {
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') onStepChange(Math.min(STEPS.length - 1, currentStep + 1));
+    if (e.key === 'ArrowLeft') onStepChange(Math.max(0, currentStep - 1));
+  };
   return (
-    <nav
-      aria-label="Etapas do mês"
-      className="flex items-center justify-between sm:justify-center gap-1 sm:gap-2 overflow-x-auto"
-    >
-      {STEPS.map((step, i) => {
-        const isActive = i === currentStep;
-        const isCompleted = i < currentStep;
-        return (
-          <button
-            key={step.label}
-            type="button"
-            onClick={() => onStepChange(i)}
-            aria-current={isActive ? 'step' : undefined}
-            className={cn(
-              'relative shrink-0 px-2.5 sm:px-3 py-1.5 text-[12px] sm:text-[13px] tracking-tight transition-colors duration-200 min-h-[36px]',
-              isActive
-                ? 'text-foreground font-semibold'
-                : isCompleted
-                ? 'text-muted-foreground hover:text-foreground font-medium'
-                : 'text-muted-foreground/70 hover:text-foreground font-medium',
-            )}
-          >
-            {step.label}
-            <span
+    <nav aria-label="Etapas do mês" className="w-full sm:flex sm:justify-center">
+      <div
+        role="tablist"
+        onKeyDown={onKey}
+        className="grid grid-cols-4 gap-1 rounded-2xl bg-muted p-1 sm:inline-grid sm:min-w-[440px]"
+      >
+        {STEPS.map((step, i) => {
+          const isActive = i === currentStep;
+          return (
+            <button
+              key={step.label}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
+              onClick={() => onStepChange(i)}
               className={cn(
-                'absolute left-1/2 -translate-x-1/2 -bottom-0.5 h-[2px] rounded-full transition-all duration-300',
-                isActive ? 'w-6 bg-primary' : 'w-0 bg-transparent',
+                'min-h-[40px] min-w-0 rounded-xl px-1 text-[12px] sm:px-2 sm:text-[13px] tracking-tight font-semibold transition-all duration-200',
+                isActive
+                  ? 'bg-card text-foreground shadow-card-premium'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
-            />
-          </button>
-        );
-      })}
+            >
+              {step.label}
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 };

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -16,14 +16,14 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 28% 12%;
 
-    --primary: 217 91% 60%;
+    --primary: 217 88% 51%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 18% 95.5%;
     --secondary-foreground: 224 28% 12%;
 
     --muted: 220 18% 95.5%;
-    --muted-foreground: 220 12% 46%;
+    --muted-foreground: 220 12% 40%;
 
     --accent: 220 18% 95.5%;
     --accent-foreground: 224 28% 12%;
@@ -33,7 +33,7 @@
 
     --border: 220 16% 91%;
     --input: 220 16% 91%;
-    --ring: 217 91% 60%;
+    --ring: 217 88% 51%;
 
     --radius: 1rem;
 
@@ -127,7 +127,8 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "tnum" 1;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -137,6 +138,8 @@
     -webkit-text-size-adjust: 100%;
   }
   #root { overflow-x: hidden; }
+  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; border-radius: 6px; }
+  button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   /* Prevent iOS auto zoom on input focus */
   input, select, textarea { font-size: 16px; }
   @media (min-width: 640px) {
@@ -278,7 +281,7 @@
     will-change: transform;
   }
   .hover-lift:hover {
-    transform: translateY(-3px) rotate(var(--tilt));
+    transform: translateY(-2px);
     box-shadow: var(--shadow-zap);
   }
 
@@ -286,7 +289,6 @@
   .btn-impulse {
     transition: transform 180ms var(--ease-zap), box-shadow 180ms var(--ease-zap), filter 180ms var(--ease-zap);
   }
-  .btn-impulse:hover { transform: translateY(-1px); filter: brightness(1.05); }
   .btn-impulse:active { transform: translateY(1px) scale(0.98); }
 
   /* Healthy / unhealthy decision states */
@@ -335,4 +337,11 @@
 @media (prefers-reduced-motion: reduce) {
   .hover-lift, .btn-impulse, .decision-healthy, .decision-neutral { transition: none; }
   .animate-rise-in, .animate-zap-grow, .animate-spark { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+@media (hover: none) {
+  .card-premium:hover, .hover-lift:hover { transform: none; }
 }
